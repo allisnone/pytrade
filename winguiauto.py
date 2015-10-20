@@ -1,25 +1,54 @@
 # -*- encoding: utf8 -*-
 
-# Module     : winGuiAuto.py
-# Synopsis   : Windows GUI automation utilities
-# Programmer : Simon Brunning - simon@brunningonline.net
-# Date       : 25 June 2003
-# Version    : 1.0 pre-alpha 2
-# Copyright  : Released to the public domain. Provided as-is, with no warranty.
-# Notes      : Requires Python 2.3, win32all and ctypes 
-'''Windows GUI automation utilities.
-
-Until I get around to writing some docs and examples, the tests at the foot of
-this module should serve to get you started.
-'''
 import time
 import struct
 import win32api
 import win32gui
+import ctypes
+
 import win32con
+import commctrl
+
+GetWindowThreadProcessId = ctypes.windll.user32.GetWindowThreadProcessId
+VirtualAllocEx = ctypes.windll.kernel32.VirtualAllocEx
+VirtualFreeEx = ctypes.windll.kernel32.VirtualFreeEx
+OpenProcess = ctypes.windll.kernel32.OpenProcess
+WriteProcessMemory = ctypes.windll.kernel32.WriteProcessMemory
+ReadProcessMemory = ctypes.windll.kernel32.ReadProcessMemory
 
 
-def findSpecifiedTopWindow(wantedText=None, wantedClass=None):
+def readListViewItems(hwnd, column_index=0):
+    # Allocate virtual memory inside target process
+    pid = ctypes.create_string_buffer(4)
+    p_pid = ctypes.addressof(pid)
+    GetWindowThreadProcessId(hwnd, p_pid)  # process owning the given hwnd
+    hProcHnd = OpenProcess(win32con.PROCESS_ALL_ACCESS, False, struct.unpack("i", pid)[0])
+    pLVI = VirtualAllocEx(hProcHnd, 0, 4096, win32con.MEM_RESERVE | win32con.MEM_COMMIT, win32con.PAGE_READWRITE)
+    pBuffer = VirtualAllocEx(hProcHnd, 0, 4096, win32con.MEM_RESERVE | win32con.MEM_COMMIT, win32con.PAGE_READWRITE)
+
+    # Prepare an LVITEM record and write it to target process memory
+    lvitem_str = struct.pack('iiiiiiiii', *[0, 0, column_index, 0, 0, pBuffer, 4096, 0, 0])
+    lvitem_buffer = ctypes.create_string_buffer(lvitem_str)
+    copied = ctypes.create_string_buffer(4)
+    p_copied = ctypes.addressof(copied)
+    WriteProcessMemory(hProcHnd, pLVI, ctypes.addressof(lvitem_buffer), ctypes.sizeof(lvitem_buffer), p_copied)
+
+    # iterate items in the SysListView32 control
+    num_items = win32gui.SendMessage(hwnd, commctrl.LVM_GETITEMCOUNT)
+    item_texts = []
+    for item_index in range(num_items):
+        win32gui.SendMessage(hwnd, commctrl.LVM_GETITEMTEXT, item_index, pLVI)
+        target_buff = ctypes.create_string_buffer(4096)
+        ReadProcessMemory(hProcHnd, pBuffer, ctypes.addressof(target_buff), 4096, p_copied)
+        item_texts.append(target_buff.value)
+
+    VirtualFreeEx(hProcHnd, pBuffer, 0, win32con.MEM_RELEASE)
+    VirtualFreeEx(hProcHnd, pLVI, 0, win32con.MEM_RELEASE)
+    win32api.CloseHandle(hProcHnd)
+    return item_texts
+
+
+def findTopWindow(wantedText=None, wantedClass=None):
     '''
     :param wantedText: 标题名字
     :param wantedClass: 窗口类名
@@ -36,90 +65,9 @@ def findPopupWindow(hwnd):
     return win32gui.GetWindow(hwnd, win32con.GW_ENABLEDPOPUP)
 
 
-def findTopWindow(wantedText=None, wantedClass=None, selectionFunction=None):
-    '''Find the hwnd of a top level window.
-    You can identify windows using captions, classes, a custom selection
-    function, or any combination of these. (Multiple selection criteria are
-    ANDed. If this isn't what's wanted, use a selection function.)
-
-    Parameters
-    ----------
-    wantedText          
-        Text which the required window's captions must contain.
-    wantedClass         
-        Class to which the required window must belong.
-    selectionFunction   
-        Window selection function. Reference to a function
-        should be passed here. The function should take hwnd as
-        an argument, and should return True when passed the
-        hwnd of a desired window.
-                    
-    Raises
-    ------
-    WinGuiAutoError     
-        When no window found.
-
-    Usage example::
-        
-        optDialog = findTopWindow(wantedText="Options")
+def dumpWindow(hwnd, wantedText=None, wantedClass=None):
     '''
-    topWindows = findTopWindows(wantedText, wantedClass, selectionFunction)
-    if topWindows:
-        return topWindows[0]
-    else:
-        raise WinGuiAutoError("No top level window found for wantedText=" +
-                              repr(wantedText) +
-                              ", wantedClass=" +
-                              repr(wantedClass) +
-                              ", selectionFunction=" +
-                              repr(selectionFunction))
-
-
-def findTopWindows(wantedText=None, wantedClass=None, selectionFunction=None):
-    '''Find the hwnd of top level windows.
-    
-    You can identify windows using captions, classes, a custom selection
-    function, or any combination of these. (Multiple selection criteria are
-    ANDed. If this isn't what's wanted, use a selection function.)
-
-    Parameters
-    ----------
-    wantedText          
-        Text which required windows' captions must contain.
-    wantedClass         
-        Class to which required windows must belong.
-    selectionFunction   
-        Window selection function. Reference to a function
-        should be passed here. The function should take hwnd as
-        an argument, and should return True when passed the
-        hwnd of a desired window.
-
-    Returns
-    -------
-    A list containing the window handles of all top level
-    windows matching the supplied selection criteria.
-
-    Usage example::
-        
-        optDialogs = findTopWindows(wantedText="Options")
-    '''
-    results = []
-    topWindows = []
-    win32gui.EnumWindows(_windowEnumerationHandler, topWindows)
-    for hwnd, windowText, windowClass in topWindows:
-        if wantedText and not _normaliseText(wantedText) in _normaliseText(windowText):
-            continue
-        if wantedClass and not windowClass == wantedClass:
-            continue
-        if selectionFunction and not selectionFunction(hwnd):
-            continue
-        results.append(hwnd)
-    return results
-
-
-def dumpSpecifiedWindow(hwnd, wantedText=None, wantedClass=None):
-    '''
-    :param hwnd: 父窗口句柄
+    :param hwnd: 窗口句柄
     :param wantedText: 指定子窗口名
     :param wantedClass: 指定子窗口类名
     :return: 返回父窗口下所有子窗体的句柄
@@ -135,29 +83,38 @@ def dumpSpecifiedWindow(hwnd, wantedText=None, wantedClass=None):
         else:
             return windows
 
-def findSpecifiedWindows(top_hwnd, numChildWindows=70):
+
+def findSubWindows(windows, numChildWindows):
     '''
-    查找某一窗口下指定数量的子窗口
-    :param top_hwnd: 主窗口句柄
+    查找窗口列表中的窗口，此窗口的子窗口数量为指定
+    :param windows: 句柄列表
     :param numChildWindows: 子窗口数量
     :return:子窗口列表，包括子窗口hwnd, title, className
     '''
-    windows = []
-    try:
-        win32gui.EnumChildWindows(top_hwnd, _windowEnumerationHandler, windows)
-    except win32gui.error:
-        # No child windows
-        return
     for window in windows:
         childHwnd, windowText, windowClass = window
-        windowContent = dumpSpecifiedWindow(childHwnd)
+        windowContent = dumpWindow(childHwnd)
         if len(windowContent) == numChildWindows:
             return windowContent
-    # 没有指定数量的句柄
-    return
 
-def dumpWindow(hwnd):
-    '''Dump all controls from a window into a nested list
+
+
+def findSubWindow(windows, wantedText=None, wantedClass=None):
+    '''
+    查找窗口列表中，含有wantedText和wantedClass
+    :param windows: 窗口列表
+    :param wantedText: 窗口文本
+    :param wantedClass: 窗口类名
+    :return:窗口句柄
+    '''
+    for window in windows:
+        childHwnd, windowText, windowClass = window
+        if windowText == wantedText and windowClass == wantedClass:
+            return childHwnd
+
+
+def dumpWindows(hwnd):
+    '''Dump all controls from a window
     
     Useful during development, allowing to you discover the structure of the
     contents of a window, showing the text and class of all contained controls.
@@ -169,8 +126,7 @@ def dumpWindow(hwnd):
 
     Returns
     -------
-    A nested list of controls. Each entry consists of the
-    control's hwnd, its text, its class, and its sub-controls, if any.
+        all windows
 
     Usage example::
         
@@ -178,34 +134,8 @@ def dumpWindow(hwnd):
         pprint.pprint(dumpWindow(replaceDialog))
     '''
     windows = []
-    try:
-        win32gui.EnumChildWindows(hwnd, _windowEnumerationHandler, windows)
-    except win32gui.error:
-        # No child windows
-        return
-    windows = [list(window) for window in windows]
-    for window in windows:
-        childHwnd, windowText, windowClass = window
-        window_content = dumpWindow(childHwnd)
-        if window_content:
-            window.append(window_content)
+    win32gui.EnumChildWindows(hwnd, _windowEnumerationHandler, windows)
     return windows
-
-
-def _closePopupWindow(top_hwnd, wantedText=None, wantedClass=None):
-    '''
-    关闭一个弹窗。
-    :param top_hwnd: 主窗口句柄
-    :param wantedText: 弹出对话框上的按钮文本
-    :param wantedClass: 弹出对话框上的按钮类名
-    :return: 如果有弹出式对话框，返回True，否则返回False
-    '''
-    hwnd_popup = findPopupWindow(top_hwnd)
-    if hwnd_popup:
-        hwnd_control = findControl(hwnd_popup, wantedText, wantedClass)
-        clickButton(hwnd_control)
-        return True
-    return False
 
 
 def closePopupWindows(top_hwnd):
@@ -506,6 +436,22 @@ def setEditText(hwnd, text):
 #                      win32con.EM_REPLACESEL,
 #                      True,
 #                      os.linesep.join(text))
+
+
+def _closePopupWindow(top_hwnd, wantedText=None, wantedClass=None):
+    '''
+    关闭一个弹窗。
+    :param top_hwnd: 主窗口句柄
+    :param wantedText: 弹出对话框上的按钮文本
+    :param wantedClass: 弹出对话框上的按钮类名
+    :return: 如果有弹出式对话框，返回True，否则返回False
+    '''
+    hwnd_popup = findPopupWindow(top_hwnd)
+    if hwnd_popup:
+        hwnd_control = findControl(hwnd_popup, wantedText, wantedClass)
+        clickButton(hwnd_control)
+        return True
+    return False
 
 
 def _windowEnumerationHandler(hwnd, resultList):

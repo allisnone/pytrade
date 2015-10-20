@@ -24,6 +24,7 @@
 * v 0.08 代码清理，添加了注释。现在可以同时监控5只股票。
 * v 0.09 增加配置文件pyautotrading.ini。加入自动刷新功能，每隔5分钟刷新一次，防止软件进入待机状态。
 * v0.10 修改了几个bug，买卖价格改由python计算，加快了下单速度（1.5s），稳定性增加了不少。需更改交易软件设置，请看图。
+* v0.11 重构交易接口。现在可以获取持仓，成交，资金状况。注意：打开交易软件后，需要依次点击菜单条上的按钮，从左向右，然后再打开本程序，否则无法正确获取句柄。见图七。
 
 
 -----------------------------------
@@ -33,4 +34,6 @@
 ![image](https://github.com/drongh/pyautotrade_tdx/raw/master/Logo/setting4.png)
 ![image](https://github.com/drongh/pyautotrade_tdx/raw/master/Logo/setting5.png)
 ![image](https://github.com/drongh/pyautotrade_tdx/raw/master/Logo/setting6.png)
+![image](https://github.com/drongh/pyautotrade_tdx/raw/master/Logo/setting7.png)
+![image](https://github.com/drongh/pyautotrade_tdx/raw/master/Logo/setting8.png)
 ![image](https://github.com/drongh/pyautotrade_tdx/raw/master/Logo/trading.png)

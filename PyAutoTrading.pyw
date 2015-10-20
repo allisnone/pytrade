@@ -14,12 +14,15 @@ import time
 import tushare as ts
 from winguiauto import *
 
+
 is_start = False
 is_monitor = True
 set_stock_info = []
 order_msg = []
 actual_stock_info = []
 is_ordered = [1] * 5  # 1：未下单  0：已下单
+running_money = 0
+position = []
 
 
 def getConfigData():
@@ -33,86 +36,113 @@ def getConfigData():
     return numChildWindows
 
 
-# def pickHwndOfControls(top_hwnd, num_child_windows):
-#     cleaned_hwnd_controls = []
-#     hwnd_controls = findSpecifiedWindows(top_hwnd, num_child_windows)
-#     for Hwnd, text_name, class_name in hwnd_controls:
-#         if class_name in ('Button', 'Edit'):
-#             cleaned_hwnd_controls.append((Hwnd, text_name, class_name))
-#     return cleaned_hwnd_controls
+class Trade:
+    def __init__(self, hwnd):
 
+        self.hwnd = hwnd
+        windows = dumpWindows(self.hwnd)
+        temp_hwnd = 0
+        for window in windows:
+            childHwnd, windowText, windowClass = window
+            if windowClass == 'AfxMDIFrame42':
+                temp_hwnd = childHwnd
+                break
+        temp_hwnds = dumpWindow(temp_hwnd)
+        temp_hwnds = dumpWindow(temp_hwnds[1][0])
+        self.menu_hwnd = dumpWindow(temp_hwnds[0][0])[0]
+        self.buy_hwnds = dumpWindow(temp_hwnds[4][0])
+        self.sell_hwnds = dumpWindow(temp_hwnds[5][0])
+        self.withdrawal_hwnds = dumpWindow(temp_hwnds[6][0])
+        self.deal_hwnds = dumpWindow(temp_hwnds[7][0])
+        self.position_hwnds = dumpWindow(temp_hwnds[8][0])
+        self.button = {'refresh': 180, 'position': 145, 'deal': 112, 'withdrawal': 83, 'sell': 50, 'buy': 20}
 
-def getRunningMoney(sub_hwnds):
-    '''
-    :param sub_hwnds: 双向委托操作界面下的控件句柄列表
-    :return:可用资金
-    '''
-    return getWindowText(sub_hwnds[12][1])
+    def _buy(self, code, stop_price, quantity):
+        self._clickMenuButton(self.button['buy'])
+        setEditText(self.buy_hwnds[2][0], code)
+        setEditText(self.buy_hwnds[3][0], stop_price)
+        setEditText(self.buy_hwnds[7][0], quantity)
+        time.sleep(0.3)
+        click(self.buy_hwnds[10][0])
+        time.sleep(0.3)
 
+    def _sell(self, code, stop_price, quantity):
+        self._clickMenuButton(self.button['sell'])
+        setEditText(self.sell_hwnds[2][0], code)
+        setEditText(self.sell_hwnds[3][0], stop_price)
+        setEditText(self.sell_hwnds[7][0], quantity)
+        time.sleep(0.3)
+        click(self.sell_hwnds[9][0])
+        time.sleep(0.3)
 
-def buy(sub_hwnds, code, stop_price, quantity):
-    '''
-    买函数，自动填写3个Edit控件，及点击买入按钮。
-    :param sub_hwnds: 双向委托操作界面下的控件句柄列表
-    :param code: 股票代码，字符串
-    :param stop_price: 涨停市价， 字符串
-    :param quantity: 买入股票 数量，字符串
-    :return:
-    '''
-    setEditText(sub_hwnds[0][0], code)
-    setEditText(sub_hwnds[1][0], stop_price)
-    setEditText(sub_hwnds[3][0], quantity)
-    time.sleep(0.3)
-    click(sub_hwnds[5][0])
-    time.sleep(0.3)
+    def order(self, code, prices, quantity, direction):
+        if direction == 'B':
+            self._buy(code, prices[0], quantity)
+        if direction == 'S':
+            self._sell(code, prices[1], quantity)
+        closePopupWindows(self.hwnd)
 
+    def _clickMenuButton(self, leftDistance):
+        left, top, right, bottom = win32gui.GetWindowRect(self.menu_hwnd[0])
+        win32api.SetCursorPos([left + leftDistance, (bottom - top) // 2 + top])
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+        time.sleep(0.1)
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+        time.sleep(0.3)
 
-def sell(sub_hwnds, code, stop_price, quantity):
-    '''
-    买函数，自动填写3个Edit控件，及点击卖出按钮。
-    :param sub_hwnds: 双向委托操作界面下的控件句柄列表
-    :param code: 股票代码，字符串
-    :param stop_price: 涨停市价， 字符串
-    :param quantity: 卖出股票 数量，字符串
-    :return:
-    '''
-    setEditText(sub_hwnds[24][0], code)
-    setEditText(sub_hwnds[25][0], stop_price)
-    setEditText(sub_hwnds[27][0], quantity)
-    time.sleep(0.3)
-    click(sub_hwnds[29][0])
-    time.sleep(0.3)
+    def refresh(self):
+        '''
+        点击刷新按钮
+        :return:
+        '''
+        self._clickMenuButton(self.button['refresh'])
 
+    def _getListViewInfo(self, hwnd):
+        '''
+        获取ListView的信息
+        :param hwnd: ListView句柄
+        :return:
+        '''
+        col_info = []
+        for col in range(10):
+            col_info.append(readListViewItems(hwnd, col))
+        row_info = []
 
-def order(top_hwnd, sub_hwnds, code, stop_prices, quantity, direction):
-    '''
-    买卖函数
-    :param top_hwnd: 顶层窗口句柄
-    :param sub_hwnds: 双向委托操作界面下的控件句柄列表
-    :param code: 股票代码， 字符串
-    :param stop_prices: 涨跌停价格，字符串
-    :param quantity: 买卖数量，字符串
-    :param direction: 交易方向，字符串
-    :return:
-    '''
-    if direction == 'B':
-        buy(sub_hwnds, code, stop_prices[0], quantity)
-    if direction == 'S':
-        sell(sub_hwnds, code, stop_prices[1], quantity)
+        # 按行
+        for row in range(len(col_info[0])):
+            row_info.append([])
+            for col in range(len(col_info)):
+                row_info[row].append(col_info[col][row].decode('GB2312'))
+        return row_info
 
+    def getMoneyInfo(self):
+        '''
+        :param sub_hwnds: 持仓句柄列表
+        :return:可以资金，参考市值， 资产， 盈亏
+        '''
+        self._clickMenuButton(self.button['position'])
+        text = self.position_hwnds[1][1].strip()
+        text = text.replace(':', ' ')
+        text = text.split(' ')
+        return float(text[4]), float(text[10]), float(text[13]), float(text[16])
 
-def tradingInit():
-    '''
-    获得交易软件句柄
-    :return:顶层窗口句柄，双向委托操作界面下的控件句柄列表
-    '''
-    top_hwnd = findSpecifiedTopWindow(wantedClass='TdxW_MainFrame_Class')
-    if top_hwnd == 0:
-        tkinter.messagebox.showerror('错误', '请先打开交易软件，再运行本软件')
-        return top_hwnd, []
-    else:
-        sub_hwnds = findSpecifiedWindows(top_hwnd, getConfigData())
-    return top_hwnd, sub_hwnds
+    def getPositionInfo(self):
+        '''获取持仓股票信息
+        '''
+        self._clickMenuButton(self.button['position'])
+        return self._getListViewInfo(self.position_hwnds[27][0])
+
+    def getWithdrawalInfo(self):
+        '''获取撤单信息
+        '''
+        self._clickMenuButton(self.button['withdrawal'])
+        return self._getListViewInfo(self.withdrawal_hwnds[27][0])
+
+    def getDealInfo(self):
+        '''获取成交信息
+        '''
+        self._clickMenuButton(self.button['deal'])
+        return self._getListViewInfo(self.deal_hwnds[27][0])
 
 
 def pickCodeFromItems(items_info):
@@ -167,19 +197,24 @@ def monitor():
     实时监控函数
     :return:
     '''
-    global actual_stock_info, order_msg, is_ordered, set_stock_info
+    global actual_stock_info, order_msg, is_ordered, set_stock_info, position
     count = 0
-    top_hwnd, sub_hwnds = tradingInit()
-    # 如果top_hwnd为零，直接终止循环
+
+    top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
+    if top_hwnd == 0:
+        tkinter.messagebox.showerror('错误', '请先打开交易软件，再运行本软件')
+    else:
+        trade = Trade(top_hwnd)
+
     while is_monitor and top_hwnd:
-        if count % 100 == 0:
-            # clickButton(sub_hwnd[12][0]) # 点击刷新按钮
-            time.sleep(1)
+        if count % 200 == 0:
+            # 点击刷新按钮
+            trade.refresh()
+
         time.sleep(3)
         count += 1
         if is_start:
             actual_stock_info = getStockData(set_stock_info)
-            # print('actual_stock_info', actual_stock_info)
             for row, (actual_code, actual_name, actual_price, stop_prices) in enumerate(actual_stock_info):
                 if is_start and actual_code and is_ordered[row] == 1 \
                         and set_stock_info[row][1] and set_stock_info[row][2] > 0 \
@@ -187,24 +222,26 @@ def monitor():
                         and datetime.datetime.now().time() > set_stock_info[row][5]:
                     if is_start and set_stock_info[row][1] == '>' and float(actual_price) > set_stock_info[row][2]:
                         dt = datetime.datetime.now()
-                        order(top_hwnd, sub_hwnds, actual_code, stop_prices,
+                        trade.order(actual_code, stop_prices,
                               set_stock_info[row][4], set_stock_info[row][3])
                         closePopupWindows(top_hwnd)
                         order_msg.append(
                             (dt.strftime('%x'), dt.strftime('%X'), actual_code,
                              actual_name, set_stock_info[row][3],
                              actual_price, set_stock_info[row][4], '已下单'))
+                        time.sleep(0.3)
                         is_ordered[row] = 0
 
                     if is_start and set_stock_info[row][1] == '<' and float(actual_price) < set_stock_info[row][2]:
                         dt = datetime.datetime.now()
-                        order(top_hwnd, sub_hwnds, actual_code, stop_prices,
+                        trade.order(actual_code, stop_prices,
                               set_stock_info[row][4], set_stock_info[row][3])
                         closePopupWindows(top_hwnd)
                         order_msg.append(
                             (dt.strftime('%x'), dt.strftime('%X'), actual_code,
                              actual_name, set_stock_info[row][3],
                              actual_price, set_stock_info[row][4], '已下单'))
+                        time.sleep(0.3)
                         is_ordered[row] = 0
 
 
@@ -361,7 +398,7 @@ class StockGui:
         '''
         global set_stock_info, actual_stock_info, is_start
         if is_start:
-            print('actual_stock_info', actual_stock_info)
+            # print('actual_stock_info', actual_stock_info)
             for row, (actual_code, actual_name, actual_price, _) in enumerate(actual_stock_info):
                 self.variable[row][1].set(actual_name)
                 self.variable[row][2].set(str(actual_price))
