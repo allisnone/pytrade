@@ -2,10 +2,21 @@
 # QQ群： 486224275
 __author__ = '人在江湖'
 
+try:
+    #Python3.0
+    import tkinter.messagebox
+    from tkinter import *
+    from tkinter.ttk import *
+except ImportError:
+    #Python2.7
+    import Tkinter
+    import tkMessageBox 
+    from Tkinter import *
+    from ttk import *
 
-import tkinter.messagebox
-from tkinter import *
-from tkinter.ttk import *
+#import tkinter.messagebox
+#from tkinter import *
+#from tkinter.ttk import *
 import datetime
 import threading
 import pickle
@@ -20,7 +31,8 @@ is_monitor = True
 set_stock_info = []
 order_msg = []
 actual_stock_info = []
-is_ordered = [1] * 5  # 1：未下单  0：已下单
+GUI_ROWS=10
+is_ordered = [1] * GUI_ROWS  # 1：未下单  0：已下单
 running_money = 0
 position = []
 
@@ -40,16 +52,22 @@ class Trade:
     def __init__(self, hwnd):
 
         self.hwnd = hwnd
+        print hwnd
         windows = dumpWindows(self.hwnd)
+        print windows
         temp_hwnd = 0
         for window in windows:
             childHwnd, windowText, windowClass = window
             if windowClass == 'AfxMDIFrame42':
                 temp_hwnd = childHwnd
+                print temp_hwnd
                 break
         temp_hwnds = dumpWindow(temp_hwnd)
+        print 'temp_hwnds1=',temp_hwnds
         temp_hwnds = dumpWindow(temp_hwnds[1][0])
+        print 'temp_hwnds2=',temp_hwnds
         self.menu_hwnd = dumpWindow(temp_hwnds[0][0])[0]
+        print self.menu_hwnd 
         self.buy_hwnds = dumpWindow(temp_hwnds[4][0])
         self.sell_hwnds = dumpWindow(temp_hwnds[5][0])
         self.withdrawal_hwnds = dumpWindow(temp_hwnds[6][0])
@@ -188,7 +206,7 @@ def getStockData(items_info):
             if is_found is False:
                 code_name_price.append(('', '', '', ('', '')))
     except:
-        code_name_price = [('', '', '', ('', ''))] * 5  # 网络不行，返回空
+        code_name_price = [('', '', '', ('', ''))] * GUI_ROWS  # 网络不行，返回空
     return code_name_price
 
 
@@ -202,7 +220,8 @@ def monitor():
 
     top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
     if top_hwnd == 0:
-        tkinter.messagebox.showerror('错误', '请先打开交易软件，再运行本软件')
+        #tkinter.messagebox.showerror('错误', '请先打开交易软件，再运行本软件')
+        tkMessageBox.showerror('错误', '请先打开交易软件，再运行本软件')
     else:
         trade = Trade(top_hwnd)
 
@@ -273,7 +292,7 @@ class StockGui:
         Label(frame1, text="状态", width=4, justify=CENTER).grid(
             row=1, column=9, padx=5, pady=5)
 
-        self.rows = 5
+        self.rows = GUI_ROWS
         self.cols = 9
 
         self.variable = []
@@ -389,7 +408,7 @@ class StockGui:
         '''
         global is_start, is_ordered
         if is_start is False:
-            is_ordered = [1] * 5
+            is_ordered = [1] * GUI_ROWS
 
     def updateControls(self):
         '''
@@ -492,6 +511,9 @@ class StockGui:
 
 
 if __name__ == '__main__':
+    '''
+    open txd, login and them input '221', normal buy in
+    '''
     t1 = threading.Thread(target=StockGui)
     t2 = threading.Thread(target=monitor)
     t1.start()
