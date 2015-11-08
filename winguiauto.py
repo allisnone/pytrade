@@ -54,6 +54,12 @@ def getListViewInfo(hwnd, cols):
         row_info.append([])
         for col in range(len(col_info)):
             row_info[row].append(col_info[col][row].decode('GB2312'))
+    #print('row_info=',row_info)
+    """
+    each row comtents:
+    ['000060', '中金岭南', '400', '400', '400', '0', '0', '-1305.00', '-20.86', '4952.00', '15.643', '12.380']
+    [证券代码, 证券名字 ,当前持仓，股票余额，可用余额 ，买入冻结，卖出冻结，参考盈亏，盈亏比例，参考市值，参考成本价，参考市价]
+    """
     return row_info
 
 
@@ -331,6 +337,7 @@ def click(hwnd):
 
 def clickWindow(hwnd, offset):
     left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    print(left, top, right, bottom)
     win32api.SetCursorPos([left + offset, (bottom - top) // 2 + top])
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
     time.sleep(0.2)

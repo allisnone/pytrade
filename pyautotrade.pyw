@@ -17,6 +17,7 @@ from winguiauto import (dumpWindow, dumpWindows, getWindowText,
                         maxFocusWindow, minWindow, getTableData, sendKeyEvent)
 
 NUM_OF_STOCKS = 5  # 自定义股票数量
+POSITION_COlS=12 #define columns of position view
 is_start = False
 is_monitor = True
 set_stocks_info = []
@@ -34,6 +35,7 @@ class OperationThs:
         temp_hwnds = dumpWindows(self.__top_hwnd)[0][0]
         temp_hwnds = dumpWindow(temp_hwnds)[4][0]
         self.__buy_sell_hwnds = dumpWindow(temp_hwnds)
+        print(len(self.__buy_sell_hwnds) )
         if len(self.__buy_sell_hwnds) != 73:
             tkinter.messagebox.showerror('错误', '无法获得同花顺双向委托界面的窗口句柄')
 
@@ -156,8 +158,7 @@ class OperationTdx:
         self.__buy_sell_hwnds = dumpWindow(temp_hwnds[4][0])
         if len(self.__buy_sell_hwnds) != 68:
             tkinter.messagebox.showerror('错误', '无法获得通达信对买对卖界面的窗口句柄')
-
-    def __buy(self, code, quantity):
+    def __buy0(self, code, quantity,actual_price):
         """
         买入函数
         :param code: 股票代码，字符串
@@ -165,11 +166,33 @@ class OperationTdx:
         """
         setEditText(self.__buy_sell_hwnds[0][0], code)
         time.sleep(0.2)
+        print(type(quantity))
         if quantity != '0':
             setEditText(self.__buy_sell_hwnds[3][0], quantity)
             time.sleep(0.2)
         click(self.__buy_sell_hwnds[5][0])
         time.sleep(0.2)
+        
+    def __buy(self, code, quantity,actual_price):
+        """
+        买入函数
+        :param code: 股票代码，字符串
+        :param quantity: 数量， 字符串
+        """
+        quantity=float(quantity)
+        mini_quantity=100
+        available_fund=self.getMoney()
+        max_valid_quantity=int(available_fund//actual_price//mini_quantity)*mini_quantity
+        acceptable_quantity=int(quantity//mini_quantity)*mini_quantity
+        final_quantity=min(max_valid_quantity,acceptable_quantity)
+        print('final_quantity=',final_quantity)
+        if final_quantity:
+            setEditText(self.__buy_sell_hwnds[0][0], code)
+            time.sleep(0.2)
+            setEditText(self.__buy_sell_hwnds[3][0], str(final_quantity))
+            time.sleep(0.2)
+            click(self.__buy_sell_hwnds[5][0])
+            time.sleep(0.2)
 
     def __sell(self, code, quantity):
         """
@@ -185,7 +208,7 @@ class OperationTdx:
         click(self.__buy_sell_hwnds[29][0])
         time.sleep(0.2)
 
-    def order(self, code, direction, quantity):
+    def order(self, code, direction, quantity,actual_price):
         """
         下单函数
         :param code: 股票代码， 字符串
@@ -194,7 +217,7 @@ class OperationTdx:
         """
         # restoreFocusWindow(self.__top_hwnd)
         if direction == 'B':
-            self.__buy(code, quantity)
+            self.__buy(code, quantity,actual_price)
         if direction == 'S':
             self.__sell(code, quantity)
         closePopupWindows(self.__top_hwnd)
@@ -228,7 +251,162 @@ class OperationTdx:
     def getPosition(self):
         """获取持仓股票信息
         """
-        return getListViewInfo(self.__buy_sell_hwnds[-4][0], 3)
+        return getListViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
+
+    def getDeal(self, code, pre_position, cur_position):
+        """
+        获取成交数量
+        :param code: 股票代码
+        :param pre_position: 下单前的持仓
+        :param cur_position: 下单后的持仓
+        :return: 0-未成交， 正整数是买入的数量， 负整数是卖出的数量
+        """
+        if pre_position == cur_position:
+            return 0
+        pre_len = len(pre_position)
+        cur_len = len(cur_position)
+        if pre_len == cur_len:
+            for row in range(cur_len):
+                if cur_position[row][0] == code:
+                    return int(cur_position[row][1]) - int(pre_position[row][1])
+        if cur_len > pre_len:
+            return int(cur_position[-1][1])
+        
+class OperationSzx:
+    def __init__(self):
+        print('find the window0')
+        
+        #self.__top_hwnd = findTopWindow(wantedClass='Afx:400000:b:10003:6:110345') Afx:400000:b:10003:6:2304bd
+        self.__top_hwnd = findTopWindow(wantedText='银河阿里云行情3 - 双子星 - 上证指数')#'银河阿里云行情4 - 双子星 - A股分时走势')#'网上股票交易系统5.0')
+        #'中国银河证券股份有限公司欢迎您。'
+        #self.__top_hwnd = findTopWindow(wantedClass='#32769')
+        #self.__button = {'refresh': 180, 'position': 145, 'deal': 112, 'withdrawal': 83, 'sell': 50, 'buy': 20}
+        print('self.__top_hwnd',self.__top_hwnd)
+        windows = dumpWindows(self.__top_hwnd)
+        print('windows=',windows)
+        #temp_hwnd=windows[0][0]
+        #"""
+        temp_hwnd = 0
+        for window in windows:
+            child_hwnd, window_text, window_class = window
+            if window_class == 'AfxMDIFrame42s':
+                temp_hwnd = child_hwnd
+                print('find the window')
+                break
+        #"""
+        temp_hwnds = dumpWindow(temp_hwnd)
+        
+        #temp_hwnds = findTopWindow(wantedClass='AfxMDIFrame42s')
+        print('temp_hwnds',temp_hwnds)
+        main_hwnds = dumpWindow(temp_hwnds[4][0])
+        print('main_hwnds=',main_hwnds)
+        self.fund_hwnds = dumpWindow(main_hwnds[0][0])
+        print('self.fund_hwnds=',self.fund_hwnds)
+        #self.refresh_hwnds=fund_hwnds[0][0]
+        #available_fund_hwnds=self.fund_hwnds[4][0]
+        #stock_fund_hwnds=self.fund_hwnds[5][0]
+        #total_fund_hwnds=self.fund_hwnds[6][0]
+        #self.__menu_hwnds = dumpWindow(temp_hwnds[0][0])
+        #self.__buy_sell_hwnds = dumpWindow(temp_hwnds[4][0])
+        self.__buy_sell_hwnds=main_hwnds
+        print('main_hwnds len =',len(main_hwnds))
+        if len(self.__buy_sell_hwnds) != 72:
+            tkinter.messagebox.showerror('错误', '无法获得通达信对买对卖界面的窗口句柄')
+
+    def __buy(self, code, quantity,actual_price):
+        """
+        买入函数
+        :param code: 股票代码，字符串
+        :param quantity: 数量， 字符串
+        """
+        setEditText(self.__buy_sell_hwnds[3][0], code)
+        #setEditText(self.__buy_sell_hwnds[6][0], code)  #buy price
+        time.sleep(0.2)
+        if quantity != '0':
+            setEditText(self.__buy_sell_hwnds[8][0], quantity)
+            time.sleep(0.2)
+        click(self.__buy_sell_hwnds[9][0])
+        time.sleep(0.2)
+
+    def __sell(self, code, quantity):
+        """
+        卖出函数
+        :param code: 股票代码， 字符串
+        :param quantity: 数量， 字符串
+        """
+        setEditText(self.__buy_sell_hwnds[12][0], code)
+        time.sleep(0.2)
+        #setEditText(self.__buy_sell_hwnds[15][0], code)  #sell price
+        if quantity != '0':
+            setEditText(self.__buy_sell_hwnds[17][0], quantity)
+            time.sleep(0.2)
+        click(self.__buy_sell_hwnds[18][0])
+        time.sleep(0.2)
+
+    def order(self, code, direction, quantity,actual_price):
+        """
+        下单函数
+        :param code: 股票代码， 字符串
+        :param direction: 买卖方向
+        :param quantity: 数量， 字符串，数量为‘0’时，由交易软件指定数量
+        """
+        # restoreFocusWindow(self.__top_hwnd)
+        if direction == 'B' and actual_price:
+            self.__buy(code, quantity,actual_price)
+        if direction == 'S':
+            self.__sell(code, quantity)
+        closePopupWindows(self.__top_hwnd)
+
+    def maximizeFocusWindow(self):
+        """
+        最大化窗口，获取焦点
+        """
+        maxFocusWindow(self.__top_hwnd)
+
+    def minimizeWindow(self):
+        """
+        最小化窗体
+        """
+        minWindow(self.__top_hwnd)
+
+    def clickRefreshButton(self, t=0.5):
+        """点击刷新按钮
+        """
+        #clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
+        click(self.fund_hwnds[0][0])
+        time.sleep(t)
+
+    def getMoney(self):
+        """获取可用资金
+        """
+        setEditText(self.__buy_sell_hwnds[24][0], '999999')  # 测试时获得资金情况
+        time.sleep(0.2)
+        money = getWindowText(self.__buy_sell_hwnds[12][0]).strip()
+        return float(money)
+    
+    def getFund(self):
+        """获取可用资金
+        """
+        available_fund=getWindowText(self.fund_hwnds[4][0]).strip()
+        stock_fund=getWindowText(self.fund_hwnds[5][0]).strip()
+        total_fund=getWindowText(self.fund_hwnds[6][0]).strip()
+        fund_list=[float(available_fund),float(stock_fund),float(total_fund)]
+        return fund_list
+
+    def getPosition(self):
+        """获取持仓股票信息
+        """
+        position_hwnds=self.__buy_sell_hwnds[-2][0]
+        temp_hwnds = dumpWindow(position_hwnds)
+        #temp_hwnds = dumpWindow(temp_hwnds[0][0])
+        #return getListViewInfo(self.__buy_sell_hwnds[-2][0], POSITION_COlS)
+        clickWindow(temp_hwnds[0][0], offset=20)
+        sendKeyEvent(win32con.VK_CONTROL, 0)
+        sendKeyEvent(ord('C'), 0)
+        sendKeyEvent(ord('C'), win32con.KEYEVENTF_KEYUP)
+        sendKeyEvent(win32con.VK_CONTROL, win32con.KEYEVENTF_KEYUP)
+        return getTableData(POSITION_COlS)
+        #return getListViewInfo(temp_hwnds[0][0], POSITION_COlS)
 
     def getDeal(self, code, pre_position, cur_position):
         """
@@ -301,6 +479,7 @@ def getStockData():
     """
     获取股票实时数据
     :return:股票实时数据
+    actual_stocks_info [('000001', '平安银行', 12.39), ('', '', 0), ('', '', 0), ('', '', 0), ('', '', 0)]
     """
     global stock_codes
     code_name_price = []
@@ -340,6 +519,66 @@ def monitor():
 
         if is_start:
             actual_stocks_info = getStockData()
+            #print('actual_stocks_info',actual_stocks_info)
+            for row, (actual_code, actual_name, actual_price) in enumerate(actual_stocks_info):
+                if actual_code and is_start and is_ordered[row] == 1 and actual_price > 0 \
+                        and set_stocks_info[row][1] and set_stocks_info[row][2] > 0 \
+                        and set_stocks_info[row][3] and set_stocks_info[row][4] \
+                        and datetime.datetime.now().time() > set_stocks_info[row][5]:
+                    if set_stocks_info[row][1] == '>' and actual_price > set_stocks_info[row][2]:
+                        #operation.maximizeFocusWindow()
+                        operation.clickRefreshButton()
+                        pre_position = operation.getPosition()
+                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price)
+                        dt = datetime.datetime.now()
+                        is_ordered[row] = 0
+                        operation.clickRefreshButton()
+                        cur_position = operation.getPosition()
+                        is_dealt[row] = operation.getDeal(actual_code, pre_position, cur_position)
+                        consignation_info.append(
+                            (dt.strftime('%x'), dt.strftime('%X'), actual_code,
+                             actual_name, set_stocks_info[row][3],
+                             actual_price, set_stocks_info[row][4], '已委托', is_dealt[row]))
+
+                    if set_stocks_info[row][1] == '<' and float(actual_price) < set_stocks_info[row][2]:
+                        #operation.maximizeFocusWindow()
+                        operation.clickRefreshButton()
+                        pre_position = operation.getPosition()
+                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4])
+                        dt = datetime.datetime.now()
+                        is_ordered[row] = 0
+                        operation.clickRefreshButton()
+                        cur_position = operation.getPosition()
+                        is_dealt[row] = operation.getDeal(actual_code, pre_position, cur_position)
+                        consignation_info.append(
+                            (dt.strftime('%x'), dt.strftime('%X'), actual_code,
+                             actual_name, set_stocks_info[row][3],
+                             actual_price, set_stocks_info[row][4], '已委托', is_dealt[row]))
+
+        if count % 200 == 0:
+            operation.clickRefreshButton()
+        time.sleep(3)
+        count += 1
+
+def monitor1():
+    """
+    实时监控函数
+    """
+    global actual_stocks_info, consignation_info, is_ordered, is_dealt, set_stocks_info
+    count = 1
+    try:
+        try:
+            operation = OperationSzx()
+        except:
+            operation = OperationThs()
+    except:
+        tkinter.messagebox.showerror('错误', '无法获得交易软件句柄')
+
+    while is_monitor:
+
+        if is_start:
+            actual_stocks_info = getStockData()
+            #print('actual_stocks_info',actual_stocks_info)
             for row, (actual_code, actual_name, actual_price) in enumerate(actual_stocks_info):
                 if actual_code and is_start and is_ordered[row] == 1 and actual_price > 0 \
                         and set_stocks_info[row][1] and set_stocks_info[row][2] > 0 \
@@ -377,7 +616,6 @@ def monitor():
             operation.clickRefreshButton()
         time.sleep(3)
         count += 1
-
 
 class StockGui:
     def __init__(self):
