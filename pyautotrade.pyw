@@ -180,6 +180,7 @@ class OperationTdx:
         :param quantity: 数量， 字符串
         """
         quantity=float(quantity)
+        actual_price=float(actual_price)
         mini_quantity=100
         available_fund=self.getMoney()
         max_valid_quantity=int(available_fund//actual_price//mini_quantity)*mini_quantity
