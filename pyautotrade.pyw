@@ -179,13 +179,8 @@ class OperationTdx:
         :param code: 股票代码，字符串
         :param quantity: 数量， 字符串
         """
-        quantity=float(quantity)
-        actual_price=float(actual_price)
-        mini_quantity=100
         available_fund=self.getMoney()
-        max_valid_quantity=int(available_fund//actual_price//mini_quantity)*mini_quantity
-        acceptable_quantity=int(quantity//mini_quantity)*mini_quantity
-        final_quantity=min(max_valid_quantity,acceptable_quantity)
+        final_quantity=self._get_valid_buy_quantity(available_fund, actual_price, quantity)
         print('final_quantity=',final_quantity)
         if final_quantity:
             setEditText(self.__buy_sell_hwnds[0][0], code)
@@ -194,20 +189,72 @@ class OperationTdx:
             time.sleep(0.2)
             click(self.__buy_sell_hwnds[5][0])
             time.sleep(0.2)
-
+            
+    def _get_valid_buy_quantity(self,available_fund,actual_price,expect_quantity=None,patial=None):
+        """
+        买入数量函数
+        :param available_fund: 可用资金
+        :param actual_price: 买入标的价格
+        :param expect_quantity: 期望买入数量
+        :param patial: 使用资金比例，如0.75,，0.5,0.33，0.25,0.10
+        """
+        actual_price=float(actual_price)
+        available_fund=float(available_fund)
+        if patial:
+            available_fund=available_fund*patial
+        mini_quantity=100
+        max_valid_quantity=int(available_fund//actual_price//mini_quantity)*mini_quantity
+        acceptable_quantity=max_valid_quantity
+        if expect_quantity:
+            expect_quantity=int(expect_quantity)
+            acceptable_quantity=int(expect_quantity//mini_quantity)*mini_quantity
+        final_quantity=min(max_valid_quantity,acceptable_quantity)
+        return final_quantity
+    
     def __sell(self, code, quantity):
         """
         卖出函数
         :param code: 股票代码， 字符串
         :param quantity: 数量， 字符串
         """
-        setEditText(self.__buy_sell_hwnds[24][0], code)
-        time.sleep(0.2)
-        if quantity != '0':
-            setEditText(self.__buy_sell_hwnds[27][0], quantity)
+        quantity=self._get_valid_sell_quantity(code, quantity)
+        if quantity:
+            setEditText(self.__buy_sell_hwnds[24][0], code)
             time.sleep(0.2)
-        click(self.__buy_sell_hwnds[29][0])
-        time.sleep(0.2)
+            setEditText(self.__buy_sell_hwnds[27][0], str(quantity))
+            time.sleep(0.2)
+            click(self.__buy_sell_hwnds[29][0])
+            time.sleep(0.2)
+    
+    def _get_valid_sell_quantity(self,code,expect_quantity=None,patial=None):
+        """
+        卖出数量函数
+        :param code: 买入股票代码 
+        :param expect_quantity: 期望卖出数量
+        :param patial: 使用资金比例，如0.75,，0.5,0.33，0.25,0.10
+        """
+        available_position=0
+        all_position=self.getPosition()
+        if not all_position:
+            return available_position
+        this_position=[]
+        for position in all_position:
+            position_code=position[0]
+            if position_code==code:
+                this_position=position
+                break
+        if this_position:
+            available_position=this_position[4]
+        if patial:
+            available_position=available_position*patial
+        mini_quantity=100
+        max_valid_quantity=int(available_position//mini_quantity)*mini_quantity
+        acceptable_quantity=max_valid_quantity
+        if expect_quantity:
+            expect_quantity=int(expect_quantity)
+            acceptable_quantity=int(expect_quantity//mini_quantity)*mini_quantity
+        final_quantity=min(max_valid_quantity,acceptable_quantity)
+        return final_quantity
 
     def order(self, code, direction, quantity,actual_price):
         """

@@ -52,22 +52,22 @@ class Trade:
     def __init__(self, hwnd):
 
         self.hwnd = hwnd
-        print hwnd
+       
         windows = dumpWindows(self.hwnd)
-        print windows
+       
         temp_hwnd = 0
         for window in windows:
             childHwnd, windowText, windowClass = window
             if windowClass == 'AfxMDIFrame42':
                 temp_hwnd = childHwnd
-                print temp_hwnd
+               
                 break
         temp_hwnds = dumpWindow(temp_hwnd)
-        print 'temp_hwnds1=',temp_hwnds
+       
         temp_hwnds = dumpWindow(temp_hwnds[1][0])
-        print 'temp_hwnds2=',temp_hwnds
+       
         self.menu_hwnd = dumpWindow(temp_hwnds[0][0])[0]
-        print self.menu_hwnd 
+        
         self.buy_hwnds = dumpWindow(temp_hwnds[4][0])
         self.sell_hwnds = dumpWindow(temp_hwnds[5][0])
         self.withdrawal_hwnds = dumpWindow(temp_hwnds[6][0])
