@@ -10,9 +10,10 @@ import time
 
 import win32con
 import tushare as ts
+import tushare as ts
 
-from winguiauto import (dumpWindow, dumpWindows, getWindowText,
-                        getListViewInfo, setEditText, clickWindow,
+from winguiauto import (dumpWindow, dumpWindows, getWindowText,getParentWindow,activeWindow,_readListViewItems,
+                        getWindowStyle,getListViewInfo, setEditText, clickWindow,
                         click, closePopupWindows, findTopWindow,
                         maxFocusWindow, minWindow, getTableData, sendKeyEvent)
 
@@ -141,6 +142,7 @@ class OperationThs:
 
 
 class OperationTdx:
+    """
     def __init__(self):
 
         self.__top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
@@ -156,6 +158,32 @@ class OperationTdx:
         temp_hwnds = dumpWindow(temp_hwnds[1][0])
         self.__menu_hwnds = dumpWindow(temp_hwnds[0][0])
         self.__buy_sell_hwnds = dumpWindow(temp_hwnds[4][0])
+        if len(self.__buy_sell_hwnds) not in (68,):
+            msg_box.showerror('错误', '无法获得通达信对买对卖界面的窗口句柄')
+    """
+    def __init__(self):
+        self.__top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
+        self.__button = {'refresh': 180, 'position': 145, 'deal': 112, 'withdrawal': 83, 'sell': 50, 'buy': 20}
+        windows = dumpWindows(self.__top_hwnd)
+        print('windows=',windows)
+        temp_hwnd = 0
+        temp_hwnd1=0
+        p_hwnd=0
+        for window in windows:
+            child_hwnd, window_text, window_class = window
+            if window_text=='买卖关联同一支股票':
+                temp_hwnd1 = child_hwnd
+                print("find the hwnd: 买卖关联同一支股票",temp_hwnd1)
+        p_hwnd=getParentWindow(temp_hwnd1)
+        print('p_hwnd=',p_hwnd)
+        p_hwnd_children = dumpWindow(p_hwnd)
+        print('p_hwnd_children=',p_hwnd_children)
+        p_p_hwnd=getParentWindow(p_hwnd)
+        p_p_hwnd_children = dumpWindow(p_p_hwnd)   #右侧操作区
+        self.__menu_hwnds = dumpWindow(p_p_hwnd_children[0][0])
+        print(self.__menu_hwnds)
+        self.__buy_sell_hwnds = p_hwnd_children
+        print(len(p_hwnd_children))
         if len(self.__buy_sell_hwnds) != 68:
             tkinter.messagebox.showerror('错误', '无法获得通达信对买对卖界面的窗口句柄')
     def __buy0(self, code, quantity,actual_price):
@@ -287,14 +315,22 @@ class OperationTdx:
         """
         clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
         time.sleep(t)
+        print('refresh')
 
     def getMoney(self):
         """获取可用资金
         """
         setEditText(self.__buy_sell_hwnds[24][0], '999999')  # 测试时获得资金情况
         time.sleep(0.2)
+        print(self.__buy_sell_hwnds[12][0])
         money = getWindowText(self.__buy_sell_hwnds[12][0]).strip()
-        return float(money)
+        print('money_str=',len(money))
+        try:
+            money=float(money)
+        except:
+            money=0.0
+        print('money=',money)
+        return money
 
     def getPosition(self):
         """获取持仓股票信息
@@ -553,11 +589,12 @@ def monitor():
     """
     实时监控函数
     """
-    global actual_stocks_info, consignation_info, is_ordered, is_dealt, set_stocks_info
+    global actual_stocks_info, consignation_info, is_ordered, is_dealt, set_stocks_info,operation
     count = 1
     try:
         try:
             operation = OperationTdx()
+            print('OperationTdx completed')
         except:
             operation = OperationThs()
     except:
@@ -592,7 +629,7 @@ def monitor():
                         #operation.maximizeFocusWindow()
                         operation.clickRefreshButton()
                         pre_position = operation.getPosition()
-                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4])
+                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price)
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0
                         operation.clickRefreshButton()
@@ -635,6 +672,7 @@ def monitor1():
                     if set_stocks_info[row][1] == '>' and actual_price > set_stocks_info[row][2]:
                         operation.maximizeFocusWindow()
                         pre_position = operation.getPosition()
+                        print('pre_position=',pre_position)
                         operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4])
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0
@@ -649,6 +687,7 @@ def monitor1():
                     if set_stocks_info[row][1] == '<' and float(actual_price) < set_stocks_info[row][2]:
                         operation.maximizeFocusWindow()
                         pre_position = operation.getPosition()
+                        print('pre_position=',pre_position)
                         operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4])
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0

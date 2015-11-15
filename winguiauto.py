@@ -79,6 +79,18 @@ def findPopupWindow(hwnd):
     """
     return win32gui.GetWindow(hwnd, win32con.GW_ENABLEDPOPUP)
 
+def getParentWindow(child_hwnd):
+    
+    return win32gui.GetParent(child_hwnd)
+
+def activeWindow(hwnd):
+    #win32gui.GetWindowLong(hwnd,0)
+    #win32gui.BringWindowToTop(hwnd)
+    return win32gui.SetActiveWindow(hwnd)
+    #return win32gui.SetForegroundWindow(hwnd)#SetActiveWindow(hwnd)
+
+def getWindowStyle(hwnd):
+    return win32gui.GetWindowLong(hwnd,win32con.WS_EX_LEFT)#WS_CHILDWINDOW)#GWL_STYLE)#GWL_HWNDPARENT)#GWL_USERDATA)#GWL_EXSTYLE)#DWL_DLGPROC)
 
 def dumpWindow(hwnd, wantedText=None, wantedClass=None):
     """
@@ -161,8 +173,10 @@ def closePopupWindow(top_hwnd, wantedText=None, wantedClass=None):
     :return: 如果有弹出式对话框，返回True，否则返回False
     """
     hwnd_popup = findPopupWindow(top_hwnd)
+    print('hwnd_popup',hwnd_popup)
     if hwnd_popup:
         hwnd_control = findControl(hwnd_popup, wantedText, wantedClass)
+        print('hwnd_control=',hwnd_control)
         clickButton(hwnd_control)
         return True
     return False
@@ -398,6 +412,17 @@ def doubleClickStatic(hwnd):
 #     text = buffer[:bufLen]
 #     return text
 
+def find_idxSubHandle(pHandle, winClass, index=0):
+    """
+    已知子窗口的窗体类名
+    寻找第index号个同类型的兄弟窗口
+    """
+    assert type(index) == int and index >= 0
+    handle = win32gui.FindWindowEx(pHandle, 0, winClass, None)
+    while index > 0:
+        handle = win32gui.FindWindowEx(pHandle, handle, winClass, None)
+        index -= 1
+    return handle
 
 def getWindowText(hwnd):
     """
@@ -414,6 +439,7 @@ def setEditText(hwnd, text):
     :return:
     """
     win32gui.SendMessage(hwnd, win32con.WM_SETTEXT, None, text)
+    sendKeyMsg(hwnd, win32con.VK_RETURN)
     time.sleep(0.2)
 
 
