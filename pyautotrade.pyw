@@ -228,7 +228,7 @@ class OperationTdx:
         """
         actual_price=float(actual_price)
         available_fund=float(available_fund)
-        if patial:
+        if patial!=None and patial>0 and patial<=1.0:
             available_fund=available_fund*patial
         mini_quantity=100
         max_valid_quantity=int(available_fund//actual_price//mini_quantity)*mini_quantity
@@ -273,7 +273,7 @@ class OperationTdx:
                 break
         if this_position:
             available_position=this_position[4]
-        if patial:
+        if patial!=None and patial>0 and patial<=1.0:
             available_position=available_position*patial
         mini_quantity=100
         max_valid_quantity=int(available_position//mini_quantity)*mini_quantity
@@ -313,7 +313,8 @@ class OperationTdx:
     def clickRefreshButton(self, t=0.5):
         """点击刷新按钮
         """
-        clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
+        #clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
+        self.getMoney()
         time.sleep(t)
         print('refresh')
 
