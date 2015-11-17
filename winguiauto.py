@@ -62,6 +62,29 @@ def getListViewInfo(hwnd, cols):
     """
     return row_info
 
+def getDictViewInfo(hwnd, cols):
+    
+    """
+    获取sysListView32的信息
+    :param hwnd: sysListView32句柄
+    :param cols: 读取的列数
+    :return: sysListView32中的内容
+    """
+    row_dict={}
+    row_info=getListViewInfo(hwnd, cols)
+    if row_info:
+        for row in row_info:
+            code_str=row.pop(0)
+            print(code_str,type(code_str))
+            row_dict[code_str]=row
+            print('row=',row)
+    #print('row_dict=',row_dict)
+    """
+    each row comtents:
+    {'000060': ['中金岭南', '400', '400', '400', '0', '0', '-1305.00', '-20.86', '4952.00', '15.643', '12.380'],}
+    [证券名字 ,当前持仓，股票余额，可用余额 ，买入冻结，卖出冻结，参考盈亏，盈亏比例，参考市值，参考成本价，参考市价]
+    """
+    return row_dict
 
 def findTopWindow(wantedText=None, wantedClass=None):
     """
@@ -189,7 +212,7 @@ def closePopupWindows(top_hwnd):
     :return:
     """
     while closePopupWindow(top_hwnd):
-        time.sleep(0.3)
+        time.sleep(2)
 
 
 def findControl(topHwnd,
@@ -236,18 +259,23 @@ def findControl(topHwnd,
     controls = findControls(topHwnd,
                             wantedText=wantedText,
                             wantedClass=wantedClass,
-                            selectionFunction=selectionFunction)
+                           selectionFunction=selectionFunction)
+    #try:
     if controls:
+        print('controls[0]=',controls[0])
         return controls[0]
     else:
         raise WinGuiAutoError("No control found for topHwnd=" +
-                              repr(topHwnd) +
-                              ", wantedText=" +
-                              repr(wantedText) +
-                              ", wantedClass=" +
-                              repr(wantedClass) +
-                              ", selectionFunction=" +
-                              repr(selectionFunction))
+                                repr(topHwnd) +
+                                ", wantedText=" +
+                                repr(wantedText) +
+                                ", wantedClass=" +
+                                repr(wantedClass) +
+                                ", selectionFunction=" +
+                                repr(selectionFunction))
+        return 0
+    #except:
+        #pass
 
 
 def findControls(topHwnd,

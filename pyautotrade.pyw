@@ -12,12 +12,12 @@ import win32con
 import tushare as ts
 import tushare as ts
 
-from winguiauto import (dumpWindow, dumpWindows, getWindowText,getParentWindow,activeWindow,_readListViewItems,
-                        getWindowStyle,getListViewInfo, setEditText, clickWindow,
+from winguiauto import (dumpWindow, dumpWindows, getWindowText,getParentWindow,activeWindow,
+                        getWindowStyle,getListViewInfo, setEditText, clickWindow,getDictViewInfo,
                         click, closePopupWindows, findTopWindow,
                         maxFocusWindow, minWindow, getTableData, sendKeyEvent)
 
-NUM_OF_STOCKS = 5  # 自定义股票数量
+NUM_OF_STOCKS = 10  # 自定义股票数量
 POSITION_COlS=12 #define columns of position view
 is_start = False
 is_monitor = True
@@ -261,6 +261,7 @@ class OperationTdx:
         :param expect_quantity: 期望卖出数量
         :param patial: 使用资金比例，如0.75,，0.5,0.33，0.25,0.10
         """
+        """
         available_position=0
         all_position=self.getPosition()
         if not all_position:
@@ -272,7 +273,10 @@ class OperationTdx:
                 this_position=position
                 break
         if this_position:
-            available_position=this_position[4]
+            available_position=int(this_position[4])
+            print('available_position=',available_position)
+        """
+        all_holding,available_position=self.getCodePosition(code)
         if patial!=None and patial>0 and patial<=1.0:
             available_position=available_position*patial
         mini_quantity=100
@@ -282,6 +286,7 @@ class OperationTdx:
             expect_quantity=int(expect_quantity)
             acceptable_quantity=int(expect_quantity//mini_quantity)*mini_quantity
         final_quantity=min(max_valid_quantity,acceptable_quantity)
+        print('final_quantity=',final_quantity,type(final_quantity))
         return final_quantity
 
     def order(self, code, direction, quantity,actual_price):
@@ -296,6 +301,7 @@ class OperationTdx:
             self.__buy(code, quantity,actual_price)
         if direction == 'S':
             self.__sell(code, quantity)
+        print('self.__top_hwnd=',self.__top_hwnd)
         closePopupWindows(self.__top_hwnd)
 
     def maximizeFocusWindow(self):
@@ -313,8 +319,8 @@ class OperationTdx:
     def clickRefreshButton(self, t=0.5):
         """点击刷新按钮
         """
-        #clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
-        self.getMoney()
+        clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
+        #self.getMoney()
         time.sleep(t)
         print('refresh')
 
@@ -325,6 +331,8 @@ class OperationTdx:
         time.sleep(0.2)
         print(self.__buy_sell_hwnds[12][0])
         money = getWindowText(self.__buy_sell_hwnds[12][0]).strip()
+        #setEditText(self.__buy_sell_hwnds[24][0], '')  # 测试时获得资金情况
+        time.sleep(0.2)
         print('money_str=',len(money))
         try:
             money=float(money)
@@ -337,6 +345,17 @@ class OperationTdx:
         """获取持仓股票信息
         """
         return getListViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
+    
+    def getCodePosition(self,code):
+        """获取持仓股票信息
+        """
+        position_dict=getDictViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
+        all_holding=0
+        all_available_holding=0
+        if code in list(position_dict.keys()):
+            all_holding=int(position_dict[code][1])
+            all_available_holding=int(position_dict[code][3])
+        return all_holding,all_available_holding
 
     def getDeal(self, code, pre_position, cur_position):
         """
@@ -353,7 +372,7 @@ class OperationTdx:
         if pre_len == cur_len:
             for row in range(cur_len):
                 if cur_position[row][0] == code:
-                    return int(cur_position[row][1]) - int(pre_position[row][1])
+                    return int(cur_position[row][2]) - int(pre_position[row][2])
         if cur_len > pre_len:
             return int(cur_position[-1][1])
         
@@ -614,13 +633,16 @@ def monitor():
                     if set_stocks_info[row][1] == '>' and actual_price > set_stocks_info[row][2]:
                         #operation.maximizeFocusWindow()
                         operation.clickRefreshButton()
-                        pre_position = operation.getPosition()
+                        #pre_position = operation.getPosition()
+                        pre_all_holding,_pre_available_position=operation.getCodePosition(actual_code)
                         operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price)
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0
                         operation.clickRefreshButton()
-                        cur_position = operation.getPosition()
-                        is_dealt[row] = operation.getDeal(actual_code, pre_position, cur_position)
+                        #cur_position = operation.getPosition()
+                        cur_all_holding,_cur_available_position=operation.getCodePosition(actual_code)
+                        #is_dealt[row] = operation.getDeal(actual_code, pre_position, cur_position)
+                        is_dealt[row]=cur_all_holding-pre_all_holding
                         consignation_info.append(
                             (dt.strftime('%x'), dt.strftime('%X'), actual_code,
                              actual_name, set_stocks_info[row][3],
@@ -629,19 +651,23 @@ def monitor():
                     if set_stocks_info[row][1] == '<' and float(actual_price) < set_stocks_info[row][2]:
                         #operation.maximizeFocusWindow()
                         operation.clickRefreshButton()
-                        pre_position = operation.getPosition()
+                        #pre_position = operation.getPosition()
+                        pre_all_holding,_pre_available_position=operation.getCodePosition(actual_code)
                         operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price)
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0
                         operation.clickRefreshButton()
-                        cur_position = operation.getPosition()
-                        is_dealt[row] = operation.getDeal(actual_code, pre_position, cur_position)
+                        #cur_position = operation.getPosition()
+                        cur_all_holding,_cur_available_position=operation.getCodePosition(actual_code)
+                        #is_dealt[row] = operation.getDeal(actual_code, pre_position, cur_position)
+                        is_dealt[row]=cur_all_holding-pre_all_holding
+                        #is_dealt[row] = operation.getDeal(actual_code, pre_position, cur_position)
                         consignation_info.append(
                             (dt.strftime('%x'), dt.strftime('%X'), actual_code,
                              actual_name, set_stocks_info[row][3],
                              actual_price, set_stocks_info[row][4], '已委托', is_dealt[row]))
 
-        if count % 200 == 0:
+        if count % 100 == 0:
             operation.clickRefreshButton()
         time.sleep(3)
         count += 1
@@ -753,11 +779,11 @@ class StockGui:
                   width=8).grid(row=row + 2, column=3, padx=5, pady=5)
             Combobox(frame1, values=('<', '>'), textvariable=self.variable[row][3],
                      width=2).grid(row=row + 2, column=4, padx=5, pady=5)
-            Spinbox(frame1, from_=0, to=1000, textvariable=self.variable[row][4], justify=RIGHT,
+            Spinbox(frame1, from_=0, to=10, textvariable=self.variable[row][4], justify=RIGHT,
                     increment=0.01, width=6).grid(row=row + 2, column=5, padx=5, pady=5)
             Combobox(frame1, values=('B', 'S'), textvariable=self.variable[row][5],
                      width=2).grid(row=row + 2, column=6, padx=5, pady=5)
-            Spinbox(frame1, from_=0, to=100000, textvariable=self.variable[row][6], justify=RIGHT,
+            Spinbox(frame1, from_=0, to=100, textvariable=self.variable[row][6], justify=RIGHT,
                     increment=100, width=6).grid(row=row + 2, column=7, padx=5, pady=5)
             Entry(frame1, textvariable=self.variable[row][7],
                   width=8).grid(row=row + 2, column=8, padx=5, pady=5)
