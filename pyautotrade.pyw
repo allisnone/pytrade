@@ -583,7 +583,7 @@ def getStockData():
     """
     获取股票实时数据
     :return:股票实时数据
-    actual_stocks_info [('000001', '平安银行', 12.39), ('', '', 0), ('', '', 0), ('', '', 0), ('', '', 0)]
+    actual_stocks_info [('000001', '平安银行', 12.39,False), ('', '', 0,False), ('', '', 0,False), ('', '', 0,False), ('', '', 0,False)]
     """
     global stock_codes,max_drop_down
     code_name_price = []
