@@ -27,7 +27,7 @@ consignation_info = []
 is_ordered = [1] * NUM_OF_STOCKS  # 1：未下单  0：已下单
 is_dealt = [0] * NUM_OF_STOCKS  # 0: 未成交   负整数：卖出数量， 正整数：买入数量
 stock_codes = [''] * NUM_OF_STOCKS
-
+max_drop_down=[2.5]*NUM_OF_STOCKS
 
 class OperationThs:
     def __init__(self):
@@ -585,7 +585,7 @@ def getStockData():
     :return:股票实时数据
     actual_stocks_info [('000001', '平安银行', 12.39), ('', '', 0), ('', '', 0), ('', '', 0), ('', '', 0)]
     """
-    global stock_codes
+    global stock_codes,max_drop_down
     code_name_price = []
     try:
         df = ts.get_realtime_quotes(stock_codes)
@@ -595,13 +595,16 @@ def getStockData():
             for i in range(df_len):
                 actual_code = df['code'][i]
                 if stock_code == actual_code:
-                    code_name_price.append((actual_code, df['name'][i], float(df['price'][i])))
+                    high_price=float(df['high'][i])
+                    current_price=float(df['price'][i])
+                    is_great_drop_down=current_price<high_price*(1-max_drop_down[i]/100.0)
+                    code_name_price.append((actual_code, df['name'][i], current_price,is_great_drop_down))
                     is_found = True
                     break
             if is_found is False:
-                code_name_price.append(('', '', 0))
+                code_name_price.append(('', '', 0,False))
     except:
-        code_name_price = [('', '', 0)] * NUM_OF_STOCKS  # 网络不行，返回空
+        code_name_price = [('', '', 0,False)] * NUM_OF_STOCKS  # 网络不行，返回空
     return code_name_price
 
 
