@@ -6,7 +6,7 @@ insertDBdata.py Created on Dec.18
 '''
 import logging
 import pymysql as MySQLdb
-#import MySQLdb
+#import MySQLdb        #for py2.7
 #import common
 import sys,time,datetime
 from _mysql import result
