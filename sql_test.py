@@ -37,7 +37,8 @@ update_data=mysql_obj.update_data(sql_update)
 q_data=mysql_obj.query(sql_q)
 print('update_data=',q_data)
 
-sql_delete=form_sql(table_name='stock.account',oper_type='delete',where_condition='acc_name<300000')
+sql_delete=form_sql(table_name='stock.account',oper_type='delete',where_condition="initial=14200.0")
+update_data=mysql_obj.update_data(sql_delete)
 print('sql_delete=',sql_delete)
 
 q_data=mysql_obj.query(sql_q)
