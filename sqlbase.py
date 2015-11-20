@@ -116,9 +116,9 @@ class Sqloperation(object):
         flag = self.executemany(sql, data) 
         #print('flag=',flag)
         if flag:
-            print('Successful stored data to DB!')
+            print('Successful inserted data to DB!')
         else:
-            print('No data stored to DB.')
+            print('No data inserted to DB.')
         return flag
     
     def update_data(self,sql,data=None):
@@ -128,9 +128,9 @@ class Sqloperation(object):
         else:
             flag = self.executemany(sql,data)
         if flag:
-            print('Successful stored new data to DB!')
+            print('Successful updated data to DB!')
         else:
-            print('No new data stored to DB.')
+            print('No data updated to DB.')
         return flag
     """        
     def get_data(self, sql):
