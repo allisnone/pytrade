@@ -5,34 +5,31 @@ insertDBdata.py Created on Dec.18
 @author: Vicky Zhao, Jason Zhang
 '''
 import logging
-import pymysql as MySQLdb
+import pymysql 
 #import MySQLdb        #for py2.7
 #import common
-import sys,time,datetime
-from _mysql import result
-from datetime import date
-RECONNECT_COUNT=10
-Operation_COUNT=10
-TIMEOUT_COUNT=10
+import sys,time
+
 
 sys.setrecursionlimit(1000000)     #maximum recursion depth exceeded
 
-class _MySQL(object):
-    def __init__(self, host, port, user, passwd, db, charset='utf8'):
+class Sqloperation(object):
+    def __init__(self, host, port, user, passwd, db):#, charset='utf8'):
         self.host=host
         self.port=port
         self.user=user
         self.passwd=passwd
         self.db=db
-        self.charset=charset
-        self.conn = MySQLdb.connect(
+        #self.charset=charset
+        print(time.time())
+        self.conn = pymysql.connect(
                                     host=self.host,
                                     port=self.port,
                                     user=self.user,
                                     passwd=self.passwd,
-                                    db=self.db,
-                                    charset=self.charset)
-    
+                                    db=self.db)
+                                    #charset=self.charset)
+        print(time.time())
     def reconnect(self):
        
         #print 'reconnect==========',datetime.datetime.now()
@@ -42,13 +39,13 @@ class _MySQL(object):
             if self.conn:
                 self.close()
             print('Try to restart mysql connection...')
-            self.conn = MySQLdb.connect(
+            self.conn = pymysql.connect(
                                         host=self.host,
                                         port=self.port,
                                         user=self.user,
                                         passwd=self.passwd,
-                                        db=self.db,
-                                        charset=self.charset)
+                                        db=self.db)
+                                        #charset=self.charset)
             print('MySQL normal reconnected successfully!')
             print('restart directly completed')
             
@@ -113,25 +110,64 @@ class _MySQL(object):
 
     def __del__(self):
         self.close()
-
-def insert_data(mysql,sql,data):
-    flag = mysql.executemany(sql, data) 
-    if flag == 1:
-        print('Successful stored data to DB!')
-    else:
-        print('No data stored to DB.')
         
-def update_data(mysql,sql,data=None):
-    flag=0
-    if data==None:
-        flag = mysql.execute(sql)
+    
+    def insert_data(self,sql,data):
+        flag = self.executemany(sql, data) 
+        #print('flag=',flag)
+        if flag:
+            print('Successful stored data to DB!')
+        else:
+            print('No data stored to DB.')
+        return flag
+    
+    def update_data(self,sql,data=None):
+        flag=0
+        if data==None:
+            flag = self.execute(sql)
+        else:
+            flag = self.executemany(sql,data)
+        if flag:
+            print('Successful stored new data to DB!')
+        else:
+            print('No new data stored to DB.')
+        return flag
+    """        
+    def get_data(self, sql):
+        tupledata = self.query(sql)
+        return tupledata
+    """
+    
+def form_sql(table_name,oper_type='query',select_field=None,where_condition=None,insert_field=None,update_field=None,set_value_str=None):
+    """
+    :param table_name: string type, db_name.table_name
+    :param select_field: string type, like 'id,type,value'
+    :param where_condition: string type, like 'field_value>50'
+    :param insert_field: string type, like '(date_time,measurement_id,value)'
+    :param set_field: string type, like 'value'
+    :param set_value_str: string type, like '1000' or "'normal_type'"
+    :return: sql string
+    """
+    sql=''
+    if table_name=='':
+        return sql
+    if oper_type=='query':
+        field='*'
+        if select_field:
+            field=select_field
+        condition=''
+        if where_condition:
+            condition=' where %s' % where_condition
+        sql='select %s from %s'%(field,table_name) + condition +';'
+    elif oper_type=='insert' and insert_field:
+        num=len(insert_field.split(','))
+        value_tail='%s,'*num
+        value_tail='('+value_tail[:-1]+')'
+        sql='insert into %s '% table_name +insert_field +' values'+ value_tail + ';'
+    elif oper_type=='update' and where_condition and update_field and set_value_str:
+        sql='update %s set %s='%(table_name,update_field)+ set_value_str + ' where '+  where_condition + ';'
+    elif oper_type=='delete' and where_condition:
+        sql='delete from %s'%table_name + ' where ' + where_condition + ';'
     else:
-        flag = mysql.executemany(sql,data)
-    if flag == 1:
-        print('Successful stored new data to DB!')
-    else:
-        print('No new data stored to DB.')
-        
-def get_data(mysql, sql):
-    tupledata = mysql.query(sql)
-    return tupledata
+        pass
+    return sql
