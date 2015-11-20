@@ -135,31 +135,3 @@ def update_data(mysql,sql,data=None):
 def get_data(mysql, sql):
     tupledata = mysql.query(sql)
     return tupledata
-
-def get_ems_site_conf(tcp_port=None):
-    ems_mysql=_MySQL(host='localhost',port=3306,user='emsadmin',passwd='emsadmin',db='emsdb')
-    first_tcp_port=9900
-    if tcp_port:
-        first_tcp_port=tcp_port
-    site_info_sql="SELECT id,area_id,name,co2_factor,data_interval FROM emsdb.site;"
-    site_datas=get_data(ems_mysql, site_info_sql)
-    site_data_map={}
-    site_listening_ports=[]
-    site_id_list=[]
-    if site_datas:
-        for site_data in site_datas:
-            if len(site_data)>=2:
-                site_id=int(site_data[0])
-                area_id=int(site_data[1])
-                tcp_port=first_tcp_port+(area_id-1)*20+site_id
-                site_listening_ports.append(tcp_port)
-                site_data_map[site_id]=site_data
-                site_id_list.append(site_id)
-            else:
-                pass      
-    else:
-        print('There is no site info config in EMS system...')
-    if site_id_list:
-        site_data_map['site_ids']=site_id_list
-        
-    return site_data_map,site_listening_ports
