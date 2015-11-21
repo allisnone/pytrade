@@ -13,7 +13,7 @@ import sys,time
 
 sys.setrecursionlimit(1000000)     #maximum recursion depth exceeded
 
-class Sqloperation(object):
+class SqlOperation(object):
     def __init__(self, host, port, user, passwd, db):#, charset='utf8'):
         self.host=host
         self.port=port
@@ -21,7 +21,7 @@ class Sqloperation(object):
         self.passwd=passwd
         self.db=db
         #self.charset=charset
-        print(time.time())
+        #print(time.time())
         self.conn = pymysql.connect(
                                     host=self.host,
                                     port=self.port,
@@ -31,7 +31,6 @@ class Sqloperation(object):
                                     #charset=self.charset)
         print(time.time())
     def reconnect(self):
-       
         #print 'reconnect==========',datetime.datetime.now()
         time.sleep(1)
         #print 'reconnect==========',datetime.datetime.now()
@@ -65,7 +64,6 @@ class Sqloperation(object):
 
         except Exception as e:
             logging.error("mysql query error: %s", e)
-            print('query^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
             self.reconnect()
             return None
         finally:
@@ -80,7 +78,6 @@ class Sqloperation(object):
             affected_row = cursor.rowcount
         except Exception as e:
             logging.error("mysql execute error: %s", e)
-            print('execute^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
             self.reconnect()
             return 0
         finally:
@@ -95,7 +92,6 @@ class Sqloperation(object):
             affected_rows = cursor.rowcount
         except Exception as e:
             logging.error("mysql executemany error: %s", e)
-            print('executemany^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
             self.reconnect()
             return 0
         finally:
@@ -113,6 +109,9 @@ class Sqloperation(object):
         
     
     def insert_data(self,sql,data):
+        """
+        :param data, list type, like: data=[['223458',10000,0.0005],['223459',14200,0.01]]
+        """
         flag = self.executemany(sql, data) 
         #print('flag=',flag)
         if flag:
@@ -138,15 +137,21 @@ class Sqloperation(object):
         return tupledata
     """
     
-def form_sql(table_name,oper_type='query',select_field=None,where_condition=None,insert_field=None,update_field=None,set_value_str=None):
+def form_sql(table_name,oper_type='query',select_field=None,where_condition=None,insert_field=None,update_field=None,update_value=None):
     """
     :param table_name: string type, db_name.table_name
     :param select_field: string type, like 'id,type,value'
     :param where_condition: string type, like 'field_value>50'
     :param insert_field: string type, like '(date_time,measurement_id,value)'
     :param set_field: string type, like 'value'
-    :param set_value_str: string type, like '1000' or "'normal_type'"
+    :param update_value: string type, like '1000' or "'normal_type'"
     :return: sql string
+    
+    :use example:
+    :query: sql_q=form_sql(table_name='stock.account',oper_type='query',select_field='acc_name,initial',where_condition="acc_name='36005'")
+    :insert: sql_insert=form_sql(table_name='stock.account',oper_type='insert',insert_field='(acc_name,initial,comm)')
+    :update: sql_update=form_sql(table_name='stock.account',oper_type='update',update_field='initial',where_condition='initial=2900019000',set_value_str='29000')
+    :delete: sql_delete=form_sql(table_name='stock.account',oper_type='delete',where_condition="initial=14200.0")
     """
     sql=''
     if table_name=='':
@@ -164,10 +169,11 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
         value_tail='%s,'*num
         value_tail='('+value_tail[:-1]+')'
         sql='insert into %s '% table_name +insert_field +' values'+ value_tail + ';'
-    elif oper_type=='update' and where_condition and update_field and set_value_str:
-        sql='update %s set %s='%(table_name,update_field)+ set_value_str + ' where '+  where_condition + ';'
+    elif oper_type=='update' and where_condition and update_field and update_value:
+        sql='update %s set %s='%(table_name,update_field)+ update_value + ' where '+  where_condition + ';'
     elif oper_type=='delete' and where_condition:
         sql='delete from %s'%table_name + ' where ' + where_condition + ';'
     else:
         pass
+    print('%s_sql=%s'%(oper_type,sql))
     return sql

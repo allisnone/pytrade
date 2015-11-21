@@ -2,6 +2,7 @@ from sqlbase import *
 
 def get_stock_hist(code,type,fromdate,todate):
     return
+
 def update_stock_hist(code,type,fromdate,todate):
     return
 
