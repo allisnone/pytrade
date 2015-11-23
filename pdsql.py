@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import tushare as ts
 from pandas.io import sql
+from tradeStrategy import *
 
 def form_sql(table_name,oper_type='query',select_field=None,where_condition=None,insert_field=None,update_field=None,update_value=None):
     """
@@ -62,6 +63,75 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
     print('%s_sql=%s'%(oper_type,sql))
     return sql
 
+def get_raw_hist_df(code_str,latest_count=None):
+    file_type='csv'
+    file_name=RAW_HIST_DIR+code_str+'.'+file_type
+    raw_column_list=['date','open','high','low','close','volume','rmb']
+    #print('file_name=',file_name)
+    df_0=pd.DataFrame({},columns=raw_column_list)
+    try:
+        df_0=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
+    except (OSError,PermissionError) as e:
+        print(e)
+        return df_0
+    #print df_0
+    #delete column 'rmb' and delete the last row
+    #del df_0['rmb']
+    df=df_0.ix[0:(len(df_0)-2)]  #to delete '通达信‘
+    #print df
+    df= df.set_index('date')
+    df.to_csv(file_name,encoding='utf-8')
+    #column_list=['date','open','high','low','close','volume']
+    column_list=['date','open','high','low','close','volume','rmb']
+    df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8')
+    return df
+
+
+def get_raw_hist_df1(code_str,latest_count=None):
+    file_type='csv'
+    file_name=RAW_HIST_DIR+code_str+'.'+file_type
+    raw_column_list=['date0','open','high','low','close','volume','rmb']
+    print('file_name=',file_name)
+    df_0=pd.DataFrame({},columns=raw_column_list)
+    try:
+        df_0=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
+    except OSError as e:
+        print('OSError:',e)
+        return df_0
+    #print df_0
+    #delete column 'rmb' and delete the last row
+    #del df_0['rmb']
+    df=df_0.ix[0:(len(df_0)-2)]  #to delete '通达信‘
+    #print df
+    
+    """"check"""
+    df= df.set_index('date0')
+    """
+    #df.index.name='date'
+    this_time=datetime.datetime.now()
+    this_time_str=this_time.strftime('%Y-%m-%d %X')
+    df.index.name=this_time_str
+    hist_dir=ROOT_DIR+'/hist/'
+    file_type='csv'
+    file_name=hist_dir+code_str+'.'+file_type
+    #print df
+    df.to_csv(file_name)
+    hist_dir=ROOT_DIR+'/update/'
+    file_name=hist_dir+code_str+'.'+file_type
+    """
+    df.to_csv(file_name,encoding='utf-8')
+    #column_list=['date','open','high','low','close','volume']
+    column_list=['date0','open','high','low','close','volume','rmb']
+    time_list=['00:00:00']*len(df)
+    df['time0']=pd.Series(time_list,index=df.index)
+    #p=df.pop('code')
+    #df.insert(0,'code',p)
+    date_spec = {'date': [0, 7]}
+    print(df)
+    df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8',parse_dates=date_spec)
+    print(df)
+    return df
+
 class StockSQL(object):
     def __init__(self):
         self.engine = create_engine('mysql+pymysql://emsadmin:Ems4you@112.74.101.126/stock?charset=utf8')#,encoding='utf-8',echo=True,convert_unicode=True)
@@ -83,7 +153,7 @@ class StockSQL(object):
         :param table_name: string type, name of table
         :return: 
         """
-        data_frame.to_sql(table_name, self.engine, index=True)#encoding='utf-8')
+        data_frame.to_sql(table_name, self.engine, index=False,if_exists='append')#encoding='utf-8')
         return
     
     def query_data(self,table,fields=None,condition=None):
@@ -103,6 +173,7 @@ class StockSQL(object):
         :param data: list type of list value, like: data=[['李5'],['黄9']]
         :return: 
         """
+        fields='(' + fields +')'
         insert_sql=form_sql(table_name=table,oper_type='insert',insert_field=fields)
         sql.execute(insert_sql, self.engine, params=data)
         
@@ -126,6 +197,41 @@ class StockSQL(object):
         delete_sql=form_sql(table_name=table,oper_type='delete',where_condition=condition)
         sql.execute(delete_sql, self.engine)
     
+    def get_last_db_date0(self,code_str):
+        code_condition="code='%s'" % code_str
+        last_df=self.query_data(table='histdata', fields='date', condition=code_condition + ' order by date desc limit 1')
+        print(last_df)
+        if last_df.empty:
+            return ''
+        else:
+            last_date=last_df.ix[0].date
+            print(type(last_date))
+            print('last_date=',last_date)
+            return last_date
+    
+    def get_last_db_date(self,code_str,histdata_last_df):
+        if histdata_last_df.empty:
+            print('histdata_last_df is empty')
+            return None
+        else:
+            try:
+                histdata_last_df=histdata_last_df.set_index('code')
+                last_date=histdata_last_df.loc[code_str,'last_db_time']
+                return last_date
+            except KeyError as e:
+                print('KeyError:',e)
+                return None
+            
+    def update_last_db_date(self,code_str,last_date,update_date,histdata_last_df):
+        if last_date:
+            if update_date>last_date:
+                self.update_data(table=histdata_last, fields='last_db_time', values=update_date, condition="code='%s'"%code_str)
+            else:
+                pass
+        elif update_date:
+            self.insert_data(table='histdata_last', fields='code,last_db_time', data=[[code_str,update_date]])
+        else:
+            pass
     #for chunk_df in pd.read_sql_query("SELECT * FROM today_stock", engine, chunksize=5):
     #    print(chunk_df)
 
@@ -144,14 +250,67 @@ def stock_sql_test():
     print(df3)
     print('insert_data:')
     data=[['李二'],['黄三']]
-    stock_sql_obj.insert_data(table, '(name)', data)
+    stock_sql_obj.insert_data(table, 'name', data)
     print('update_data:')
     stock_sql_obj.update_data(table, 'name', "'陈五'", condition="name='王五'")
     #stock_sql_obj.update_data(table, 'name', "'陈五'", condition="name='王五'")
     print('delete_data')
     stock_sql_obj.delete_data(table, "name='陈五'")
 
-#if __name__ == '__main__':
-#    stock_sql_test()
+def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
+    df=get_raw_hist_df(code_str)
+    if df.empty:
+        return
+    code_list=[code_str]*len(df)
+    df['code']=pd.Series(code_list,index=df.index)
+    p=df.pop('code')
+    df.insert(0,'code',p)
+    last_db_date=stock_sql_obj.get_last_db_date(code_str,histdata_last_df)
+    print('last_db_date',last_db_date,type(last_db_date))
+    last_db_date_str='%s' % last_db_date
+    last_db_date_str=last_db_date_str[:10]
+    print('last_db_date_str',last_db_date_str)
+    if last_db_date:
+        df=df[df.date>last_db_date_str]
+        if df.empty:
+            print('History data up-to-date for %s, no need update' % code_str)
+            return 0
+    stock_sql_obj.insert_table(df, 'histdata')
+    print(df.tail(1))
+    print(df.tail(1).iloc[0])
+    update_date=df.tail(1).iloc[0].date
+    #last_date=histdata_last_df.loc[date[-1],'date']
+    #update_date= 2015-11-20 <class 'str'>
+    print('update_date=',update_date,type(update_date))
+    stock_sql_obj.update_last_db_date(code_str,last_db_date,update_date,histdata_last_df)
+    return len(df)
+
+#get the all file source data in certain DIR
+def get_all_code(hist_dir):
+    all_code=[]
+    for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
+        code=filename[:-4]
+        if len(code)==6:
+            all_code.append(code)
+    return all_code
     
+def update_hist_data_tosql(codes):
+    #all_code=get_all_code(RAW_HIST_DIR)
+    #pd.DataFrame.to_sql()
+    stock_sql_obj=StockSQL()
+    #stock_sql_test()
+    #code_str='000987'
+    #code_str='002678'
+    histdata_last_df=stock_sql_obj.query_data(table='histdata_last')
+    for code_str in codes:
+        update_one_hist(code_str, stock_sql_obj,histdata_last_df)
+    print('update completed')
+        
+    
+if __name__ == '__main__':   
+    
+    codes=get_all_code(RAW_HIST_DIR)
+    codes=['000987','000060','600750','600979','000875','600103','002678']
+    update_hist_data_tosql(codes)
+
     
