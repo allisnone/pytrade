@@ -210,6 +210,11 @@ class StockSQL(object):
             return last_date
     
     def get_last_db_date(self,code_str,histdata_last_df):
+        """
+        :param code_str: string type, code_name
+        :param histdata_last_df: dataframe type, df from table histdata
+        :return:  last_date: string type, last db date
+        """
         if histdata_last_df.empty:
             print('histdata_last_df is empty')
             return None
@@ -223,6 +228,13 @@ class StockSQL(object):
                 return None
             
     def update_last_db_date(self,code_str,last_date,update_date,histdata_last_df):
+        """
+        :param code_str: string type, code_name
+        :param last_date: string type, last db date
+        :param update_date: string type, this date 
+        :param histdata_last_df: dataframe type, df from table histdata
+        :return: 
+        """
         if last_date:
             if update_date>last_date:
                 self.update_data(table=histdata_last, fields='last_db_time', values=update_date, condition="code='%s'"%code_str)
@@ -258,6 +270,11 @@ def stock_sql_test():
     stock_sql_obj.delete_data(table, "name='陈五'")
 
 def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
+    """
+    :param table_name: string type, db_name.table_name
+    :param condition: string type, like 'field_value>50'
+    :return: 
+    """
     df=get_raw_hist_df(code_str)
     if df.empty:
         return
@@ -287,6 +304,10 @@ def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
 
 #get the all file source data in certain DIR
 def get_all_code(hist_dir):
+    """
+    :param hist_dir: string type, DIR of export data
+    :return: list type, code string list 
+    """
     all_code=[]
     for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
         code=filename[:-4]
@@ -295,6 +316,10 @@ def get_all_code(hist_dir):
     return all_code
     
 def update_hist_data_tosql(codes):
+    """
+    :param codes: list type, code string list 
+    :return: 
+    """
     #all_code=get_all_code(RAW_HIST_DIR)
     #pd.DataFrame.to_sql()
     stock_sql_obj=StockSQL()
