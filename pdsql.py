@@ -271,8 +271,9 @@ def stock_sql_test():
 
 def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
     """
-    :param table_name: string type, db_name.table_name
-    :param condition: string type, like 'field_value>50'
+    :param code_str: string type, code string_name
+    :param stock_sql_obj: StockSQL type, 
+    :param histdata_last_df: dataframe type, df from table histdata
     :return: 
     """
     df=get_raw_hist_df(code_str)
