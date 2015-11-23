@@ -131,6 +131,68 @@ def get_raw_hist_df1(code_str,latest_count=None):
     df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8',parse_dates=date_spec)
     print(df)
     return df
+def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
+    """
+    :param code_str: string type, code string_name
+    :param stock_sql_obj: StockSQL type, 
+    :param histdata_last_df: dataframe type, df from table histdata
+    :return: 
+    """
+    df=get_raw_hist_df(code_str)
+    if df.empty:
+        return
+    code_list=[code_str]*len(df)
+    df['code']=pd.Series(code_list,index=df.index)
+    p=df.pop('code')
+    df.insert(0,'code',p)
+    last_db_date=stock_sql_obj.get_last_db_date(code_str,histdata_last_df)
+    print('last_db_date',last_db_date,type(last_db_date))
+    last_db_date_str='%s' % last_db_date
+    last_db_date_str=last_db_date_str[:10]
+    print('last_db_date_str',last_db_date_str)
+    if last_db_date:
+        df=df[df.date>last_db_date_str]
+        if df.empty:
+            print('History data up-to-date for %s, no need update' % code_str)
+            return 0
+    stock_sql_obj.insert_table(df, 'histdata')
+    print(df.tail(1))
+    print(df.tail(1).iloc[0])
+    update_date=df.tail(1).iloc[0].date
+    #last_date=histdata_last_df.loc[date[-1],'date']
+    #update_date= 2015-11-20 <class 'str'>
+    print('update_date=',update_date,type(update_date))
+    stock_sql_obj.update_last_db_date(code_str,last_db_date,update_date,histdata_last_df)
+    return len(df)
+
+#get the all file source data in certain DIR
+def get_all_code(hist_dir):
+    """
+    :param hist_dir: string type, DIR of export data
+    :return: list type, code string list 
+    """
+    all_code=[]
+    for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
+        code=filename[:-4]
+        if len(code)==6:
+            all_code.append(code)
+    return all_code
+    
+def update_hist_data_tosql(codes):
+    """
+    :param codes: list type, code string list 
+    :return: 
+    """
+    #all_code=get_all_code(RAW_HIST_DIR)
+    #pd.DataFrame.to_sql()
+    stock_sql_obj=StockSQL()
+    #stock_sql_test()
+    #code_str='000987'
+    #code_str='002678'
+    histdata_last_df=stock_sql_obj.query_data(table='histdata_last')
+    for code_str in codes:
+        update_one_hist(code_str, stock_sql_obj,histdata_last_df)
+    print('update completed')
 
 class StockSQL(object):
     def __init__(self):
@@ -268,70 +330,6 @@ def stock_sql_test():
     #stock_sql_obj.update_data(table, 'name', "'陈五'", condition="name='王五'")
     print('delete_data')
     stock_sql_obj.delete_data(table, "name='陈五'")
-
-def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
-    """
-    :param code_str: string type, code string_name
-    :param stock_sql_obj: StockSQL type, 
-    :param histdata_last_df: dataframe type, df from table histdata
-    :return: 
-    """
-    df=get_raw_hist_df(code_str)
-    if df.empty:
-        return
-    code_list=[code_str]*len(df)
-    df['code']=pd.Series(code_list,index=df.index)
-    p=df.pop('code')
-    df.insert(0,'code',p)
-    last_db_date=stock_sql_obj.get_last_db_date(code_str,histdata_last_df)
-    print('last_db_date',last_db_date,type(last_db_date))
-    last_db_date_str='%s' % last_db_date
-    last_db_date_str=last_db_date_str[:10]
-    print('last_db_date_str',last_db_date_str)
-    if last_db_date:
-        df=df[df.date>last_db_date_str]
-        if df.empty:
-            print('History data up-to-date for %s, no need update' % code_str)
-            return 0
-    stock_sql_obj.insert_table(df, 'histdata')
-    print(df.tail(1))
-    print(df.tail(1).iloc[0])
-    update_date=df.tail(1).iloc[0].date
-    #last_date=histdata_last_df.loc[date[-1],'date']
-    #update_date= 2015-11-20 <class 'str'>
-    print('update_date=',update_date,type(update_date))
-    stock_sql_obj.update_last_db_date(code_str,last_db_date,update_date,histdata_last_df)
-    return len(df)
-
-#get the all file source data in certain DIR
-def get_all_code(hist_dir):
-    """
-    :param hist_dir: string type, DIR of export data
-    :return: list type, code string list 
-    """
-    all_code=[]
-    for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
-        code=filename[:-4]
-        if len(code)==6:
-            all_code.append(code)
-    return all_code
-    
-def update_hist_data_tosql(codes):
-    """
-    :param codes: list type, code string list 
-    :return: 
-    """
-    #all_code=get_all_code(RAW_HIST_DIR)
-    #pd.DataFrame.to_sql()
-    stock_sql_obj=StockSQL()
-    #stock_sql_test()
-    #code_str='000987'
-    #code_str='002678'
-    histdata_last_df=stock_sql_obj.query_data(table='histdata_last')
-    for code_str in codes:
-        update_one_hist(code_str, stock_sql_obj,histdata_last_df)
-    print('update completed')
-        
     
 if __name__ == '__main__':   
     
