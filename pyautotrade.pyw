@@ -607,6 +607,15 @@ def getStockData():
         code_name_price = [('', '', 0,False)] * NUM_OF_STOCKS  # 网络不行，返回空
     return code_name_price
 
+def is_trade_time_now():
+    except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
+    now_timestamp=time.time()
+    this_time=datetime.datetime.now()
+    hour=this_time.hours
+    minute=this_time.minutes
+    is_trade_time=((hour>=9 and minute>=30) and (hour<=11 and minute<=30)) or (hour>=13 and hour<=15)
+    is_working_date=this_time.isoweekday()<6 and (this_date not in except_trade_day_list)
+    return is_trade_time and is_working_date
 
 def monitor():
     """
@@ -624,8 +633,7 @@ def monitor():
         tkinter.messagebox.showerror('错误', '无法获得交易软件句柄')
 
     while is_monitor:
-
-        if is_start:
+        if is_start and is_trade_time_now():
             actual_stocks_info = getStockData()
             #print('actual_stocks_info',actual_stocks_info)
             for row, (actual_code, actual_name, actual_price) in enumerate(actual_stocks_info):
