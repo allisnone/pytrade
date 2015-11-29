@@ -10,7 +10,7 @@ import time
 
 import win32con
 import tushare as ts
-import tushare as ts
+import pdsql
 
 from winguiauto import (dumpWindow, dumpWindows, getWindowText,getParentWindow,activeWindow,
                         getWindowStyle,getListViewInfo, setEditText, clickWindow,getDictViewInfo,
@@ -27,7 +27,7 @@ consignation_info = []
 is_ordered = [1] * NUM_OF_STOCKS  # 1：未下单  0：已下单
 is_dealt = [0] * NUM_OF_STOCKS  # 0: 未成交   负整数：卖出数量， 正整数：买入数量
 stock_codes = [''] * NUM_OF_STOCKS
-max_drop_down=[2.5]*NUM_OF_STOCKS
+max_drop_down=[5.0]*NUM_OF_STOCKS
 
 class OperationThs:
     def __init__(self):
@@ -607,16 +607,6 @@ def getStockData():
         code_name_price = [('', '', 0,False)] * NUM_OF_STOCKS  # 网络不行，返回空
     return code_name_price
 
-def is_trade_time_now():
-    except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
-    now_timestamp=time.time()
-    this_time=datetime.datetime.now()
-    hour=this_time.hours
-    minute=this_time.minutes
-    is_trade_time=((hour>=9 and minute>=30) and (hour<=11 and minute<=30)) or (hour>=13 and hour<=15)
-    is_working_date=this_time.isoweekday()<6 and (this_date not in except_trade_day_list)
-    return is_trade_time and is_working_date
-
 def monitor():
     """
     实时监控函数
@@ -633,7 +623,7 @@ def monitor():
         tkinter.messagebox.showerror('错误', '无法获得交易软件句柄')
 
     while is_monitor:
-        if is_start and is_trade_time_now():
+        if is_start and pdsql.is_trade_time_now():
             actual_stocks_info = getStockData()
             #print('actual_stocks_info',actual_stocks_info)
             for row, (actual_code, actual_name, actual_price) in enumerate(actual_stocks_info):
