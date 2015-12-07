@@ -508,6 +508,26 @@ def get_limit_price(actual_name,pre_close):
         lowest = str(round(pre_close * 0.9, 2))
     return highest,lowest
 
+def get_pass_time(this_time):
+    """
+    提取已开市时间比例
+    :param this_time: ，string
+    :return:,float 
+    """
+    total_second=4*60*60
+    pass_second=0
+    if this_time<'09:30:00':
+        pass
+    elif this_time<'11:30:00':
+        pass_second=this_time-'09:30:00'
+    elif this_time<'13:00:00':
+        pass_second=2*60*60
+    elif this_time<'13:00:00':
+        pass_second=2*60*60+this_time-'13:00:00'
+    else:
+        pass_second=total_second
+    return round(round(pass_second/total_second,2),2)
+
 def getStockData():
     """
     获取股票实时数据
