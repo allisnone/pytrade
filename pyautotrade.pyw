@@ -389,7 +389,9 @@ class OperationTdx:
         if cur_len > pre_len:
             return int(cur_position[-1][1])
         
-    def order_operation(self,code_str,realtime_dict):
+    def _to_sell(self,strategy_dict):
+        stop_profit_price=strategy_dict['stop_p']
+        exit_price=strategy_dict['exit']
         realtime_dict,position_dict=self.get_realtime_holding()
         if not realtime_dict or (code_str not in list(realtime_dict.keys()) and realtime_dict):
             return ''
