@@ -508,22 +508,28 @@ def get_limit_price(actual_name,pre_close):
         lowest = str(round(pre_close * 0.9, 2))
     return highest,lowest
 
-def get_pass_time(this_time):
+def get_pass_time():
     """
     提取已开市时间比例
     :param this_time: ，string
     :return:,float 
     """
-    total_second=4*60*60
     pass_second=0
-    if this_time<'09:30:00':
+    if not is_trade_time_now():
+        return pass_second
+    this_time=datetime.datetime.now()
+    hour=this_time.hour
+    minute=this_time.minute
+    second=this_time.second
+    total_second=4*60*60
+    if hour<9 or (hour==9 and minute<=30):
         pass
-    elif this_time<'11:30:00':
-        pass_second=this_time-'09:30:00'
-    elif this_time<'13:00:00':
+    elif hour<11 or (hour==11 and minute<=30):
+        pass_second=(hour*3600+minute*60+second)-(9*3600+30*60)
+    elif hour<13:
         pass_second=2*60*60
-    elif this_time<'13:00:00':
-        pass_second=2*60*60+this_time-'13:00:00'
+    elif hour<15:
+        pass_second=(hour*3600+minute*60+second)-(9*3600+30*60)-(1.5*3600)
     else:
         pass_second=total_second
     return round(round(pass_second/total_second,2),2)
