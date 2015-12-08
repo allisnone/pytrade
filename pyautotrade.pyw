@@ -389,16 +389,19 @@ class OperationTdx:
         if cur_len > pre_len:
             return int(cur_position[-1][1])
         
-    def order_operation(self,code_str):
-        realtime_dict=self.get_realtime()
+    def order_operation(self,code_str,realtime_dict):
+        realtime_dict,position_dict=self.get_realtime_holding()
         if not realtime_dict or (code_str not in list(realtime_dict.keys()) and realtime_dict):
             return ''
         realtime_series=realtime_dict[code_str]
         name=realtime_series.name
         open=realtime_series.open
         pre_close=realtime_series.pre_close
-        limit_price=get_limit_price(name, pre_close)
-            
+        highest_price,lowest_price=get_limit_price(name, pre_close)
+        
+        all_holding=int(position_dict[code_str][1])
+        all_available_holding=int(position_dict[code_str][3])
+        profit=float(position_dict[code_str][6])  
         price=realtime_series.price
         high=realtime_series.high
         low=realtime_series.low
@@ -436,7 +439,7 @@ class OperationTdx:
         buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
         return
     
-    def get_realtime(self):
+    def get_realtime_holding(self):
         total_money=self.getMoney()
         position_dict=self.getPosition()
         realtime_dict={}
@@ -446,11 +449,12 @@ class OperationTdx:
         holding_realtime_df=ts.get_realtime_quotes(holding_codes)
         for i in range(len(holding_codes)):
             code_str=holding_codes[i]
+            realtime_dict[code_str]=holding_realtime_df.iloc[i]
+            """
             all_holding=int(position_dict[code_str][1])
             all_available_holding=int(position_dict[code_str][3])
             profit=float(position_dict[code_str][6])
-            realtime_dict[code_str]=holding_realtime_df.iloc[i]
-            """
+            
             name=holding_realtime_df.iloc[i].name
             open=holding_realtime_df.iloc[i].open
             pre_close=holding_realtime_df.iloc[i].pre_close
@@ -491,7 +495,7 @@ class OperationTdx:
             buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
             """
             
-        return realtime_dict
+        return realtime_dict,position_dict
 
 def pickCodeFromItems(items_info):
     """
