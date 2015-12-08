@@ -388,20 +388,69 @@ class OperationTdx:
                     return int(cur_position[row][2]) - int(pre_position[row][2])
         if cur_len > pre_len:
             return int(cur_position[-1][1])
+        
+    def order_operation(self,code_str):
+        realtime_dict=self.get_realtime()
+        if not realtime_dict or (code_str not in list(realtime_dict.keys()) and realtime_dict):
+            return ''
+        realtime_series=realtime_dict[code_str]
+        name=realtime_series.name
+        open=realtime_series.open
+        pre_close=realtime_series.pre_close
+        limit_price=get_limit_price(name, pre_close)
+            
+        price=realtime_series.price
+        high=realtime_series.high
+        low=realtime_series.low
+        realtime_atr=max(high-pre_close,pre_close-low,high-low)
+        
+        bid=realtime_series.bid
+        ask=realtime_series.ask
+        volume=realtime_series.volume
+        amount=realtime_series.amount
+        b1_v=realtime_series.b1_v
+        b1_p=realtime_series.b1_p
+        b2_v=realtime_series.b2_v
+        b2_p=realtime_series.b2_p
+        b3_v=realtime_series.b3_v
+        b3_p=realtime_series.b3_p
+        b4_v=realtime_series.b4_v
+        b4_p=realtime_series.b4_p
+        b5_v=realtime_series.b5_v
+        b5_p=realtime_series.b5_p
+        a1_v=realtime_series.a1_v
+        a1_p=realtime_series.a1_p
+        a2_v=realtime_series.a2_v
+        a2_p=realtime_series.a2_p
+        a3_v=realtime_series.a3_v
+        a3_p=realtime_series.a3_p
+        a4_v=realtime_series.a4_v
+        a4_p=realtime_series.a4_p
+        a5_v=realtime_series.a5_v
+        a5_p=realtime_series.a5_p
+        time=realtime_series.time
+        date=realtime_series.date
+        sell_5_min_price=b5_p
+        sell_5_v_total=b1_v+b2_v+b3_v+b4_v+b5_v
+        buy_5_max_price=a5_p
+        buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
+        return
     
     def get_realtime(self):
         total_money=self.getMoney()
         position_dict=self.getPosition()
         realtime_dict={}
         holding_codes=list(position_dict.keys())
+        if not position_dict or (code_str not in list(position_dict.keys()) and position_dict):
+            return realtime_dict
         holding_realtime_df=ts.get_realtime_quotes(holding_codes)
         for i in range(len(holding_codes)):
             code_str=holding_codes[i]
             all_holding=int(position_dict[code_str][1])
             all_available_holding=int(position_dict[code_str][3])
             profit=float(position_dict[code_str][6])
-            
             realtime_dict[code_str]=holding_realtime_df.iloc[i]
+            """
             name=holding_realtime_df.iloc[i].name
             open=holding_realtime_df.iloc[i].open
             pre_close=holding_realtime_df.iloc[i].pre_close
@@ -440,9 +489,9 @@ class OperationTdx:
             sell_5_v_total=b1_v+b2_v+b3_v+b4_v+b5_v
             buy_5_max_price=a5_p
             buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
+            """
             
-            
-        return
+        return realtime_dict
 
 def pickCodeFromItems(items_info):
     """
@@ -514,7 +563,7 @@ def get_pass_time():
     :param this_time: ，string
     :return:,float 
     """
-    pass_second=0
+    pass_second=0.0
     if not is_trade_time_now():
         return pass_second
     this_time=datetime.datetime.now()
@@ -529,7 +578,7 @@ def get_pass_time():
     elif hour<13:
         pass_second=2*60*60
     elif hour<15:
-        pass_second=(hour*3600+minute*60+second)-(9*3600+30*60)-(1.5*3600)
+        pass_second=2*60*60+(hour*3600+minute*60+second)-13*3600
     else:
         pass_second=total_second
     return round(round(pass_second/total_second,2),2)
