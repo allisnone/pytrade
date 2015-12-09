@@ -720,7 +720,6 @@ def monitor():
                             (dt.strftime('%x'), dt.strftime('%X'), actual_code,
                              actual_name, set_stocks_info[row][3],
                              actual_price, set_stocks_info[row][4], '已委托', is_dealt[row]))
-
         if count % 60 == 0:
             operation.clickRefreshButton()
         time.sleep(3)
