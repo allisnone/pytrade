@@ -9,6 +9,7 @@ from pandas.lib import Timestamp
 import datetime,time,os
 #ROOT_DIR='E:/work/stockAnalyze'
 ROOT_DIR="C:/中国银河证券海王星/T0002"
+#ROOT_DIR="C:\work\stockAnalyze"
 RAW_HIST_DIR=ROOT_DIR+'/export/'  
 #HIST_DIR=ROOT_DIR+'/update/'
 
@@ -29,7 +30,7 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
     :delete: sql_delete=form_sql(table_name='stock.account',oper_type='delete',where_condition="initial=14200.0")
     """
     sql=''
-    if table_name=='':
+    if table_name=='' or not table_name:
         return sql
     if oper_type=='query':
         field='*'
@@ -70,7 +71,7 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
         sql='delete from %s'%table_name + condition + ';'
     else:
         pass
-    #print('%s_sql=%s'%(oper_type,sql))
+    # print('%s_sql=%s'%(oper_type,sql))
     return sql
 
 def get_raw_hist_df0(code_str,latest_count=None):
@@ -108,12 +109,14 @@ def get_raw_hist_df(code_str,latest_count=None):
         #print('pd.read_csv=',df)
         if df.empty:
             #print('code_str=',code_str)
-            return df
+            return df_0
         last_date=df.tail(1).iloc[0].date
         if last_date=='数据来源:通达信':
             df=df[:-1]
             #print('数据来源:通达信')
             #print(df.tail(1).iloc[0].date)
+            if df.empty:
+                return df_0
             last_volume=df.tail(1).iloc[0].volume
             if int(last_volume)==0:
                 df=df[:-1]
@@ -126,7 +129,7 @@ def get_raw_hist_df(code_str,latest_count=None):
         #print('OSError:',e)
         return df_0
 
-def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
+def update_one_hist(code_str,stock_sql_obj,histdata_last_df,update_db=True):
     """
     :param code_str: string type, code string_name
     :param stock_sql_obj: StockSQL type, 
@@ -140,7 +143,9 @@ def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
     df['code']=pd.Series(code_list,index=df.index)
     p=df.pop('code')
     df.insert(0,'code',p)
+    #print("update_one_hist1")
     last_db_date=stock_sql_obj.get_last_db_date(code_str,histdata_last_df)
+    #print("update_one_hist2")
     last_db_date_str=''
     #print('last_db_date',last_db_date,type(last_db_date))
     #print('last_db_date_str',last_db_date_str)
@@ -155,7 +160,8 @@ def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
     if df.empty:
         #print('History data up-to-date for %s, no need update' % code_str)
         return 0
-    stock_sql_obj.insert_table(df, 'histdata')
+    if update_db:
+        stock_sql_obj.insert_table(df, 'histdata')
     #print(df.tail(1))
     #print(df.tail(1).iloc[0])
     update_date=df.tail(1).iloc[0].date
@@ -178,7 +184,7 @@ def get_all_code(hist_dir):
             all_code.append(code)
     return all_code
     
-def update_hist_data_tosql(codes):
+def update_all_hist_data(codes,update_db=True):
     """
     :param codes: list type, code string list 
     :return: 
@@ -190,9 +196,11 @@ def update_hist_data_tosql(codes):
     #stock_sql_test()
     #code_str='000987'
     #code_str='002678'
+    print('histdata_last_df1',datetime.datetime.now())
     histdata_last_df=stock_sql_obj.query_data(table='histdata_last')
+    print('histdata_last_df2',datetime.datetime.now())
     for code_str in codes:
-        update_one_hist(code_str, stock_sql_obj,histdata_last_df)
+        update_one_hist(code_str, stock_sql_obj,histdata_last_df,update_db)
     deltatime=datetime.datetime.now()-starttime
     print('update duration=',deltatime.days*24*3600+deltatime.seconds)
     print('update completed')
@@ -274,6 +282,14 @@ class StockSQL(object):
         :return: 
         """
         delete_sql=form_sql(table_name=table,oper_type='delete',where_condition=condition)
+        sql.execute(delete_sql, self.engine)
+    
+    def drop_table(self,table):
+        """
+        :param table_name: string type, db_name.table_name
+        :return: 
+        """
+        drop_sql='drop table %s' % table
         sql.execute(delete_sql, self.engine)
     
     def get_last_db_date(self,code_str,histdata_last_df):
