@@ -201,15 +201,16 @@ class OperationTdx:
         click(self.__buy_sell_hwnds[5][0])
         time.sleep(0.2)
         
-    def __buy(self, code, quantity,actual_price,highest=None):
+    def __buy(self, code, quantity,actual_price,limit=None):
         """
         买入函数
         :param code: 股票代码，字符串
         :param quantity: 数量， 字符串
         """
+        
         available_fund=self.getMoney()
-        if highest:
-            actual_price=highest
+        #if highest:
+        #    actual_price=highest
         final_quantity=self._get_valid_buy_quantity(available_fund, actual_price, quantity)
         print('final_quantity=',final_quantity)
         if final_quantity:
@@ -217,7 +218,8 @@ class OperationTdx:
             time.sleep(0.2)
             setEditText(self.__buy_sell_hwnds[3][0], str(final_quantity))
             time.sleep(0.2)
-            if highest:
+            if limit:
+                highest=limit[0]
                 setEditText(self.__buy_sell_hwnds[1][0], str(highest))
                 time.sleep(0.2)
             click(self.__buy_sell_hwnds[5][0])
@@ -244,7 +246,7 @@ class OperationTdx:
         final_quantity=min(max_valid_quantity,acceptable_quantity)
         return final_quantity
     
-    def __sell(self, code, quantity,lowest=None):
+    def __sell(self, code, quantity,limit=None):
         """
         卖出函数
         :param code: 股票代码， 字符串
@@ -256,7 +258,8 @@ class OperationTdx:
             time.sleep(0.2)
             setEditText(self.__buy_sell_hwnds[27][0], str(quantity))
             time.sleep(0.2)
-            if lowest:
+            if limit:
+                lowest=limit[1]
                 setEditText(self.__buy_sell_hwnds[25][0], str(lowest))
                 time.sleep(0.2)
             click(self.__buy_sell_hwnds[29][0])
@@ -304,16 +307,16 @@ class OperationTdx:
         :param direction: 买卖方向
         :param quantity: 数量， 字符串，数量为‘0’时，由交易软件指定数量
         """
-        highest=None
-        lowest=None
-        if limit_price and len(limit_price)>=2:
-            highest=limit_price[0]
-            lowest=limit_price[1]
+        #highest=None
+        #lowest=None
+        #if limit_price and len(limit_price)>=2:
+        #    highest=limit_price[0]
+        #    lowest=limit_price[1]
         # restoreFocusWindow(self.__top_hwnd)
         if direction == 'B':
-            self.__buy(code, quantity,actual_price,highest)
+            self.__buy(code, quantity,actual_price,limit_price)
         if direction == 'S':
-            self.__sell(code, quantity,lowest)
+            self.__sell(code, quantity,limit_price)
         print('self.__top_hwnd=',self.__top_hwnd)
         closePopupWindows(self.__top_hwnd)
 
@@ -452,50 +455,51 @@ class OperationTdx:
         for i in range(len(holding_codes)):
             code_str=holding_codes[i]
             realtime_dict[code_str]=holding_realtime_df.iloc[i]
-            """
+            
+            realtime_series=realtime_dict[code_str]
+            name=realtime_series.name
+            open=realtime_series.open
+            pre_close=realtime_series.pre_close
+            highest_price,lowest_price=get_limit_price(name, pre_close)
+            
             all_holding=int(position_dict[code_str][1])
             all_available_holding=int(position_dict[code_str][3])
-            profit=float(position_dict[code_str][6])
+            profit=float(position_dict[code_str][6])  
+            price=realtime_series.price
+            high=realtime_series.high
+            low=realtime_series.low
+            realtime_atr=max(high-pre_close,pre_close-low,high-low)
             
-            name=holding_realtime_df.iloc[i].name
-            open=holding_realtime_df.iloc[i].open
-            pre_close=holding_realtime_df.iloc[i].pre_close
-            limit_price=get_limit_price(name, pre_close)
-            
-            price=holding_realtime_df.iloc[i].price
-            high=holding_realtime_df.iloc[i].high
-            low=holding_realtime_df.iloc[i].low
-            bid=holding_realtime_df.iloc[i].bid
-            ask=holding_realtime_df.iloc[i].ask
-            volume=holding_realtime_df.iloc[i].volume
-            amount=holding_realtime_df.iloc[i].amount
-            b1_v=holding_realtime_df.iloc[i].b1_v
-            b1_p=holding_realtime_df.iloc[i].b1_p
-            b2_v=holding_realtime_df.iloc[i].b2_v
-            b2_p=holding_realtime_df.iloc[i].b2_p
-            b3_v=holding_realtime_df.iloc[i].b3_v
-            b3_p=holding_realtime_df.iloc[i].b3_p
-            b4_v=holding_realtime_df.iloc[i].b4_v
-            b4_p=holding_realtime_df.iloc[i].b4_p
-            b5_v=holding_realtime_df.iloc[i].b5_v
-            b5_p=holding_realtime_df.iloc[i].b5_p
-            a1_v=holding_realtime_df.iloc[i].a1_v
-            a1_p=holding_realtime_df.iloc[i].a1_p
-            a2_v=holding_realtime_df.iloc[i].a2_v
-            a2_p=holding_realtime_df.iloc[i].a2_p
-            a3_v=holding_realtime_df.iloc[i].a3_v
-            a3_p=holding_realtime_df.iloc[i].a3_p
-            a4_v=holding_realtime_df.iloc[i].a4_v
-            a4_p=holding_realtime_df.iloc[i].a4_p
-            a5_v=holding_realtime_df.iloc[i].a5_v
-            a5_p=holding_realtime_df.iloc[i].a5_p
-            time=holding_realtime_df.iloc[i].time
-            date=holding_realtime_df.iloc[i].date
+            bid=realtime_series.bid
+            ask=realtime_series.ask
+            volume=realtime_series.volume
+            amount=realtime_series.amount
+            b1_v=realtime_series.b1_v
+            b1_p=realtime_series.b1_p
+            b2_v=realtime_series.b2_v
+            b2_p=realtime_series.b2_p
+            b3_v=realtime_series.b3_v
+            b3_p=realtime_series.b3_p
+            b4_v=realtime_series.b4_v
+            b4_p=realtime_series.b4_p
+            b5_v=realtime_series.b5_v
+            b5_p=realtime_series.b5_p
+            a1_v=realtime_series.a1_v
+            a1_p=realtime_series.a1_p
+            a2_v=realtime_series.a2_v
+            a2_p=realtime_series.a2_p
+            a3_v=realtime_series.a3_v
+            a3_p=realtime_series.a3_p
+            a4_v=realtime_series.a4_v
+            a4_p=realtime_series.a4_p
+            a5_v=realtime_series.a5_v
+            a5_p=realtime_series.a5_p
+            time=realtime_series.time
+            date=realtime_series.date
             sell_5_min_price=b5_p
             sell_5_v_total=b1_v+b2_v+b3_v+b4_v+b5_v
             buy_5_max_price=a5_p
             buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
-            """
             
         return realtime_dict,position_dict
 
@@ -587,7 +591,37 @@ def get_pass_time():
         pass_second=2*60*60+(hour*3600+minute*60+second)-13*3600
     else:
         pass_second=total_second
-    return round(round(pass_second/total_second,2),2)
+    pass_rate=round(round(pass_second/total_second,2),2)
+    return pass_rate
+
+def set_terminate_profit():
+    """
+    提取已开市时间比例
+    :param this_time: ，string
+    :return:,float 
+    """
+    pass_second=0.0
+    if not is_trade_time_now():
+        return pass_second
+    this_time=datetime.datetime.now()
+    hour=this_time.hour
+    minute=this_time.minute
+    second=this_time.second
+    total_second=4*60*60
+    limit=10.0
+    terminate_rate=limit
+    if hour<10 or (hour==10 and minute<=30):
+        terminate_rate=limit*0.618
+    elif hour<11 or (hour==11 and minute<=30):
+        terminate_rate=limit*0.382
+    elif hour<14:
+        terminate_rate=2.0
+    elif hour<15:
+        terminate_rate=2.0
+    else:
+        terminate_rate=10.0
+    
+    return terminate_rate
 
 def getStockData():
     """
@@ -612,13 +646,13 @@ def getStockData():
                     high_price=float(df['high'][i])
                     current_price=float(df['price'][i])
                     is_great_drop_down=current_price<high_price*(1-max_drop_down[i]/100.0)
-                    code_name_price.append((actual_code, df['name'][i], current_price,is_great_drop_down))
+                    code_name_price.append((actual_code, df['name'][i], current_price,limit_price))
                     is_found = True
                     break
             if is_found is False:
-                code_name_price.append(('', '', 0,False))
+                code_name_price.append(('', '', 0,(0,0)))
     except:
-        code_name_price = [('', '', 0,False)] * NUM_OF_STOCKS  # 网络不行，返回空
+        code_name_price = [('', '', 0,(0,0))] * NUM_OF_STOCKS  # 网络不行，返回空
     return code_name_price
 
 def monitor():
@@ -640,7 +674,7 @@ def monitor():
         if is_start:# and pdsql.is_trade_time_now():
             actual_stocks_info = getStockData()
             #print('actual_stocks_info',actual_stocks_info)
-            for row, (actual_code, actual_name, actual_price,is_great_drop) in enumerate(actual_stocks_info):
+            for row, (actual_code, actual_name, actual_price,limit_price) in enumerate(actual_stocks_info):
                 if actual_code and is_start and is_ordered[row] == 1 and actual_price > 0 \
                         and set_stocks_info[row][1] and set_stocks_info[row][2] > 0 \
                         and set_stocks_info[row][3] and set_stocks_info[row][4] \
@@ -650,7 +684,7 @@ def monitor():
                         operation.clickRefreshButton()
                         #pre_position = operation.getPosition()
                         pre_all_holding,_pre_available_position=operation.getCodePosition(actual_code)
-                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price)
+                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price,limit_price)
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0
                         operation.clickRefreshButton()
@@ -668,7 +702,7 @@ def monitor():
                         operation.clickRefreshButton()
                         #pre_position = operation.getPosition()
                         pre_all_holding,_pre_available_position=operation.getCodePosition(actual_code)
-                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price)
+                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price,limit_price)
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0
                         operation.clickRefreshButton()
@@ -682,7 +716,7 @@ def monitor():
                              actual_name, set_stocks_info[row][3],
                              actual_price, set_stocks_info[row][4], '已委托', is_dealt[row]))
 
-        if count % 100 == 0:
+        if count % 50 == 0:
             operation.clickRefreshButton()
         time.sleep(3)
         count += 1
