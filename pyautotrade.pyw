@@ -332,24 +332,30 @@ class OperationTdx:
         """
         minWindow(self.__top_hwnd)
 
-    def clickRefreshButton(self, t=0.5):
+    def clickRefreshButton(self, t=0.3):
         """点击刷新按钮
         """
-        clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
+        #clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
         #self.getMoney()
+        """点击'关联同一只股票'按钮
+        """
+        click(self.__buy_sell_hwnds[49][0])
         time.sleep(t)
-        print('refresh')
+        #click(self.__buy_sell_hwnds[49][0])
+        #time.sleep(t)
+        print('refresh_hwnd=',self.__buy_sell_hwnds[49][0])
+        print(datetime.datetime.now())
 
     def getMoney(self):
         """获取可用资金
         """
         setEditText(self.__buy_sell_hwnds[24][0], '999999')  # 测试时获得资金情况
         time.sleep(0.2)
-        print(self.__buy_sell_hwnds[12][0])
+        #print(self.__buy_sell_hwnds[12][0])
         money = getWindowText(self.__buy_sell_hwnds[12][0]).strip()
         #setEditText(self.__buy_sell_hwnds[24][0], '')  # 测试时获得资金情况
         time.sleep(0.2)
-        print('money_str=',len(money))
+        #print('money_str=',len(money))
         try:
             money=float(money)
         except:
@@ -642,7 +648,7 @@ def getStockData():
                     actual_name = df['name'][i]
                     pre_close = float(df['pre_close'][i])
                     limit_price=get_limit_price(actual_name, pre_close)
-                    print('limit_price=',limit_price)
+                    #print('limit_price=',limit_price)
                     high_price=float(df['high'][i])
                     current_price=float(df['price'][i])
                     is_great_drop_down=current_price<high_price*(1-max_drop_down[i]/100.0)
@@ -716,7 +722,7 @@ def monitor():
                              actual_name, set_stocks_info[row][3],
                              actual_price, set_stocks_info[row][4], '已委托', is_dealt[row]))
 
-        if count % 50 == 0:
+        if count % 60 == 0:
             operation.clickRefreshButton()
         time.sleep(3)
         count += 1
