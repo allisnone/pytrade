@@ -386,7 +386,6 @@ def clickWindow(hwnd, offset):
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
     time.sleep(0.2)
 
-
 def sendKeyMsg(hwnd, key_code):
     """
     模拟按键
