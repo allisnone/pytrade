@@ -677,7 +677,7 @@ def monitor():
         tkinter.messagebox.showerror('错误', '无法获得交易软件句柄')
 
     while is_monitor:
-        if is_start:# and pdsql.is_trade_time_now():
+        if is_start and pdsql.is_trade_time_now():
             actual_stocks_info = getStockData()
             #print('actual_stocks_info',actual_stocks_info)
             for row, (actual_code, actual_name, actual_price,limit_price) in enumerate(actual_stocks_info):
