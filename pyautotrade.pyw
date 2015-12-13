@@ -223,6 +223,8 @@ class OperationTdx:
                 setEditText(self.__buy_sell_hwnds[1][0], str(highest))
                 time.sleep(0.2)
             click(self.__buy_sell_hwnds[5][0])
+            print('final_quantity=',final_quantity)
+            print(datetime.datetime.now())
             time.sleep(0.2)
             
     def _get_valid_buy_quantity(self,available_fund,actual_price,expect_quantity=None,patial=None):
@@ -263,6 +265,9 @@ class OperationTdx:
                 setEditText(self.__buy_sell_hwnds[25][0], str(lowest))
                 time.sleep(0.2)
             click(self.__buy_sell_hwnds[29][0])
+            print('final_quantity=',quantity)
+            print(datetime.datetime.now())
+            time.sleep(0.2)
             time.sleep(0.2)
     
     def _get_valid_sell_quantity(self,code,expect_quantity=None,patial=None):
@@ -675,6 +680,7 @@ def monitor():
             operation = OperationThs()
     except:
         tkinter.messagebox.showerror('错误', '无法获得交易软件句柄')
+
     while is_monitor:
         if is_start and pdsql.is_trade_time_now():
             actual_stocks_info = getStockData()
@@ -720,6 +726,7 @@ def monitor():
                             (dt.strftime('%x'), dt.strftime('%X'), actual_code,
                              actual_name, set_stocks_info[row][3],
                              actual_price, set_stocks_info[row][4], '已委托', is_dealt[row]))
+
         if count % 60 == 0:
             operation.clickRefreshButton()
         time.sleep(3)

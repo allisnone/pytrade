@@ -22,6 +22,7 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
     :param update_field: string type, like 'value' or  '(measurement_id,value)'
     :param update_value: value or string type, like '1000' or "'normal_type'"
     :return: sql string
+    
     :use example:
     :query: sql_q=form_sql(table_name='stock.account',oper_type='query',select_field='acc_name,initial',where_condition="acc_name='36005'")
     :insert: sql_insert=form_sql(table_name='stock.account',oper_type='insert',insert_field='(acc_name,initial,comm)')
