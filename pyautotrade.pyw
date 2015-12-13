@@ -201,13 +201,16 @@ class OperationTdx:
         click(self.__buy_sell_hwnds[5][0])
         time.sleep(0.2)
         
-    def __buy(self, code, quantity,actual_price):
+    def __buy(self, code, quantity,actual_price,limit=None):
         """
         买入函数
         :param code: 股票代码，字符串
         :param quantity: 数量， 字符串
         """
+        
         available_fund=self.getMoney()
+        #if highest:
+        #    actual_price=highest
         final_quantity=self._get_valid_buy_quantity(available_fund, actual_price, quantity)
         print('final_quantity=',final_quantity)
         if final_quantity:
@@ -215,7 +218,13 @@ class OperationTdx:
             time.sleep(0.2)
             setEditText(self.__buy_sell_hwnds[3][0], str(final_quantity))
             time.sleep(0.2)
+            if limit:
+                highest=limit[0]
+                setEditText(self.__buy_sell_hwnds[1][0], str(highest))
+                time.sleep(0.2)
             click(self.__buy_sell_hwnds[5][0])
+            print('final_quantity=',final_quantity)
+            print(datetime.datetime.now())
             time.sleep(0.2)
             
     def _get_valid_buy_quantity(self,available_fund,actual_price,expect_quantity=None,patial=None):
@@ -239,7 +248,7 @@ class OperationTdx:
         final_quantity=min(max_valid_quantity,acceptable_quantity)
         return final_quantity
     
-    def __sell(self, code, quantity):
+    def __sell(self, code, quantity,limit=None):
         """
         卖出函数
         :param code: 股票代码， 字符串
@@ -251,7 +260,14 @@ class OperationTdx:
             time.sleep(0.2)
             setEditText(self.__buy_sell_hwnds[27][0], str(quantity))
             time.sleep(0.2)
+            if limit:
+                lowest=limit[1]
+                setEditText(self.__buy_sell_hwnds[25][0], str(lowest))
+                time.sleep(0.2)
             click(self.__buy_sell_hwnds[29][0])
+            print('final_quantity=',quantity)
+            print(datetime.datetime.now())
+            time.sleep(0.2)
             time.sleep(0.2)
     
     def _get_valid_sell_quantity(self,code,expect_quantity=None,patial=None):
@@ -289,18 +305,23 @@ class OperationTdx:
         print('final_quantity=',final_quantity,type(final_quantity))
         return final_quantity
 
-    def order(self, code, direction, quantity,actual_price):
+    def order(self, code, direction, quantity,actual_price,limit_price=None):
         """
         下单函数
         :param code: 股票代码， 字符串
         :param direction: 买卖方向
         :param quantity: 数量， 字符串，数量为‘0’时，由交易软件指定数量
         """
+        #highest=None
+        #lowest=None
+        #if limit_price and len(limit_price)>=2:
+        #    highest=limit_price[0]
+        #    lowest=limit_price[1]
         # restoreFocusWindow(self.__top_hwnd)
         if direction == 'B':
-            self.__buy(code, quantity,actual_price)
+            self.__buy(code, quantity,actual_price,limit_price)
         if direction == 'S':
-            self.__sell(code, quantity)
+            self.__sell(code, quantity,limit_price)
         print('self.__top_hwnd=',self.__top_hwnd)
         closePopupWindows(self.__top_hwnd)
 
@@ -316,24 +337,30 @@ class OperationTdx:
         """
         minWindow(self.__top_hwnd)
 
-    def clickRefreshButton(self, t=0.5):
+    def clickRefreshButton(self, t=0.3):
         """点击刷新按钮
         """
-        clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
+        #clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
         #self.getMoney()
+        """点击'关联同一只股票'按钮
+        """
+        click(self.__buy_sell_hwnds[49][0])
         time.sleep(t)
-        print('refresh')
+        #click(self.__buy_sell_hwnds[49][0])
+        #time.sleep(t)
+        print('refresh_hwnd=',self.__buy_sell_hwnds[49][0])
+        print(datetime.datetime.now())
 
     def getMoney(self):
         """获取可用资金
         """
         setEditText(self.__buy_sell_hwnds[24][0], '999999')  # 测试时获得资金情况
         time.sleep(0.2)
-        print(self.__buy_sell_hwnds[12][0])
+        #print(self.__buy_sell_hwnds[12][0])
         money = getWindowText(self.__buy_sell_hwnds[12][0]).strip()
         #setEditText(self.__buy_sell_hwnds[24][0], '')  # 测试时获得资金情况
         time.sleep(0.2)
-        print('money_str=',len(money))
+        #print('money_str=',len(money))
         try:
             money=float(money)
         except:
@@ -376,161 +403,116 @@ class OperationTdx:
         if cur_len > pre_len:
             return int(cur_position[-1][1])
         
-class OperationSzx:
-    def __init__(self):
-        print('find the window0')
+    def _to_sell(self,strategy_dict):
+        stop_profit_price=strategy_dict['stop_p']
+        exit_price=strategy_dict['exit']
+        realtime_dict,position_dict=self.get_realtime_holding()
+        if not realtime_dict or (code_str not in list(realtime_dict.keys()) and realtime_dict):
+            return ''
+        realtime_series=realtime_dict[code_str]
+        name=realtime_series.name
+        open=realtime_series.open
+        pre_close=realtime_series.pre_close
+        highest_price,lowest_price=get_limit_price(name, pre_close)
         
-        #self.__top_hwnd = findTopWindow(wantedClass='Afx:400000:b:10003:6:110345') Afx:400000:b:10003:6:2304bd
-        self.__top_hwnd = findTopWindow(wantedText='银河阿里云行情3 - 双子星 - 上证指数')#'银河阿里云行情4 - 双子星 - A股分时走势')#'网上股票交易系统5.0')
-        #'中国银河证券股份有限公司欢迎您。'
-        #self.__top_hwnd = findTopWindow(wantedClass='#32769')
-        #self.__button = {'refresh': 180, 'position': 145, 'deal': 112, 'withdrawal': 83, 'sell': 50, 'buy': 20}
-        print('self.__top_hwnd',self.__top_hwnd)
-        windows = dumpWindows(self.__top_hwnd)
-        print('windows=',windows)
-        #temp_hwnd=windows[0][0]
-        #"""
-        temp_hwnd = 0
-        for window in windows:
-            child_hwnd, window_text, window_class = window
-            if window_class == 'AfxMDIFrame42s':
-                temp_hwnd = child_hwnd
-                print('find the window')
-                break
-        #"""
-        temp_hwnds = dumpWindow(temp_hwnd)
+        all_holding=int(position_dict[code_str][1])
+        all_available_holding=int(position_dict[code_str][3])
+        profit=float(position_dict[code_str][6])  
+        price=realtime_series.price
+        high=realtime_series.high
+        low=realtime_series.low
+        realtime_atr=max(high-pre_close,pre_close-low,high-low)
         
-        #temp_hwnds = findTopWindow(wantedClass='AfxMDIFrame42s')
-        print('temp_hwnds',temp_hwnds)
-        main_hwnds = dumpWindow(temp_hwnds[4][0])
-        print('main_hwnds=',main_hwnds)
-        self.fund_hwnds = dumpWindow(main_hwnds[0][0])
-        print('self.fund_hwnds=',self.fund_hwnds)
-        #self.refresh_hwnds=fund_hwnds[0][0]
-        #available_fund_hwnds=self.fund_hwnds[4][0]
-        #stock_fund_hwnds=self.fund_hwnds[5][0]
-        #total_fund_hwnds=self.fund_hwnds[6][0]
-        #self.__menu_hwnds = dumpWindow(temp_hwnds[0][0])
-        #self.__buy_sell_hwnds = dumpWindow(temp_hwnds[4][0])
-        self.__buy_sell_hwnds=main_hwnds
-        print('main_hwnds len =',len(main_hwnds))
-        if len(self.__buy_sell_hwnds) != 72:
-            tkinter.messagebox.showerror('错误', '无法获得通达信对买对卖界面的窗口句柄')
-
-    def __buy(self, code, quantity,actual_price):
-        """
-        买入函数
-        :param code: 股票代码，字符串
-        :param quantity: 数量， 字符串
-        """
-        setEditText(self.__buy_sell_hwnds[3][0], code)
-        #setEditText(self.__buy_sell_hwnds[6][0], code)  #buy price
-        time.sleep(0.2)
-        if quantity != '0':
-            setEditText(self.__buy_sell_hwnds[8][0], quantity)
-            time.sleep(0.2)
-        click(self.__buy_sell_hwnds[9][0])
-        time.sleep(0.2)
-
-    def __sell(self, code, quantity):
-        """
-        卖出函数
-        :param code: 股票代码， 字符串
-        :param quantity: 数量， 字符串
-        """
-        setEditText(self.__buy_sell_hwnds[12][0], code)
-        time.sleep(0.2)
-        #setEditText(self.__buy_sell_hwnds[15][0], code)  #sell price
-        if quantity != '0':
-            setEditText(self.__buy_sell_hwnds[17][0], quantity)
-            time.sleep(0.2)
-        click(self.__buy_sell_hwnds[18][0])
-        time.sleep(0.2)
-
-    def order(self, code, direction, quantity,actual_price):
-        """
-        下单函数
-        :param code: 股票代码， 字符串
-        :param direction: 买卖方向
-        :param quantity: 数量， 字符串，数量为‘0’时，由交易软件指定数量
-        """
-        # restoreFocusWindow(self.__top_hwnd)
-        if direction == 'B' and actual_price:
-            self.__buy(code, quantity,actual_price)
-        if direction == 'S':
-            self.__sell(code, quantity)
-        closePopupWindows(self.__top_hwnd)
-
-    def maximizeFocusWindow(self):
-        """
-        最大化窗口，获取焦点
-        """
-        maxFocusWindow(self.__top_hwnd)
-
-    def minimizeWindow(self):
-        """
-        最小化窗体
-        """
-        minWindow(self.__top_hwnd)
-
-    def clickRefreshButton(self, t=0.5):
-        """点击刷新按钮
-        """
-        #clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
-        click(self.fund_hwnds[0][0])
-        time.sleep(t)
-
-    def getMoney(self):
-        """获取可用资金
-        """
-        setEditText(self.__buy_sell_hwnds[24][0], '999999')  # 测试时获得资金情况
-        time.sleep(0.2)
-        money = getWindowText(self.__buy_sell_hwnds[12][0]).strip()
-        return float(money)
+        bid=realtime_series.bid
+        ask=realtime_series.ask
+        volume=realtime_series.volume
+        amount=realtime_series.amount
+        b1_v=realtime_series.b1_v
+        b1_p=realtime_series.b1_p
+        b2_v=realtime_series.b2_v
+        b2_p=realtime_series.b2_p
+        b3_v=realtime_series.b3_v
+        b3_p=realtime_series.b3_p
+        b4_v=realtime_series.b4_v
+        b4_p=realtime_series.b4_p
+        b5_v=realtime_series.b5_v
+        b5_p=realtime_series.b5_p
+        a1_v=realtime_series.a1_v
+        a1_p=realtime_series.a1_p
+        a2_v=realtime_series.a2_v
+        a2_p=realtime_series.a2_p
+        a3_v=realtime_series.a3_v
+        a3_p=realtime_series.a3_p
+        a4_v=realtime_series.a4_v
+        a4_p=realtime_series.a4_p
+        a5_v=realtime_series.a5_v
+        a5_p=realtime_series.a5_p
+        time=realtime_series.time
+        date=realtime_series.date
+        sell_5_min_price=b5_p
+        sell_5_v_total=b1_v+b2_v+b3_v+b4_v+b5_v
+        buy_5_max_price=a5_p
+        buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
+        return
     
-    def getFund(self):
-        """获取可用资金
-        """
-        available_fund=getWindowText(self.fund_hwnds[4][0]).strip()
-        stock_fund=getWindowText(self.fund_hwnds[5][0]).strip()
-        total_fund=getWindowText(self.fund_hwnds[6][0]).strip()
-        fund_list=[float(available_fund),float(stock_fund),float(total_fund)]
-        return fund_list
-
-    def getPosition(self):
-        """获取持仓股票信息
-        """
-        position_hwnds=self.__buy_sell_hwnds[-2][0]
-        temp_hwnds = dumpWindow(position_hwnds)
-        #temp_hwnds = dumpWindow(temp_hwnds[0][0])
-        #return getListViewInfo(self.__buy_sell_hwnds[-2][0], POSITION_COlS)
-        clickWindow(temp_hwnds[0][0], offset=20)
-        sendKeyEvent(win32con.VK_CONTROL, 0)
-        sendKeyEvent(ord('C'), 0)
-        sendKeyEvent(ord('C'), win32con.KEYEVENTF_KEYUP)
-        sendKeyEvent(win32con.VK_CONTROL, win32con.KEYEVENTF_KEYUP)
-        return getTableData(POSITION_COlS)
-        #return getListViewInfo(temp_hwnds[0][0], POSITION_COlS)
-
-    def getDeal(self, code, pre_position, cur_position):
-        """
-        获取成交数量
-        :param code: 股票代码
-        :param pre_position: 下单前的持仓
-        :param cur_position: 下单后的持仓
-        :return: 0-未成交， 正整数是买入的数量， 负整数是卖出的数量
-        """
-        if pre_position == cur_position:
-            return 0
-        pre_len = len(pre_position)
-        cur_len = len(cur_position)
-        if pre_len == cur_len:
-            for row in range(cur_len):
-                if cur_position[row][0] == code:
-                    return int(cur_position[row][1]) - int(pre_position[row][1])
-        if cur_len > pre_len:
-            return int(cur_position[-1][1])
-
+    def get_realtime_holding(self):
+        total_money=self.getMoney()
+        position_dict=self.getPosition()
+        realtime_dict={}
+        holding_codes=list(position_dict.keys())
+        if not position_dict or (code_str not in list(position_dict.keys()) and position_dict):
+            return realtime_dict
+        holding_realtime_df=ts.get_realtime_quotes(holding_codes)
+        for i in range(len(holding_codes)):
+            code_str=holding_codes[i]
+            realtime_dict[code_str]=holding_realtime_df.iloc[i]
+            
+            realtime_series=realtime_dict[code_str]
+            name=realtime_series.name
+            open=realtime_series.open
+            pre_close=realtime_series.pre_close
+            highest_price,lowest_price=get_limit_price(name, pre_close)
+            
+            all_holding=int(position_dict[code_str][1])
+            all_available_holding=int(position_dict[code_str][3])
+            profit=float(position_dict[code_str][6])  
+            price=realtime_series.price
+            high=realtime_series.high
+            low=realtime_series.low
+            realtime_atr=max(high-pre_close,pre_close-low,high-low)
+            
+            bid=realtime_series.bid
+            ask=realtime_series.ask
+            volume=realtime_series.volume
+            amount=realtime_series.amount
+            b1_v=realtime_series.b1_v
+            b1_p=realtime_series.b1_p
+            b2_v=realtime_series.b2_v
+            b2_p=realtime_series.b2_p
+            b3_v=realtime_series.b3_v
+            b3_p=realtime_series.b3_p
+            b4_v=realtime_series.b4_v
+            b4_p=realtime_series.b4_p
+            b5_v=realtime_series.b5_v
+            b5_p=realtime_series.b5_p
+            a1_v=realtime_series.a1_v
+            a1_p=realtime_series.a1_p
+            a2_v=realtime_series.a2_v
+            a2_p=realtime_series.a2_p
+            a3_v=realtime_series.a3_v
+            a3_p=realtime_series.a3_p
+            a4_v=realtime_series.a4_v
+            a4_p=realtime_series.a4_p
+            a5_v=realtime_series.a5_v
+            a5_p=realtime_series.a5_p
+            time=realtime_series.time
+            date=realtime_series.date
+            sell_5_min_price=b5_p
+            sell_5_v_total=b1_v+b2_v+b3_v+b4_v+b5_v
+            buy_5_max_price=a5_p
+            buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
+            
+        return realtime_dict,position_dict
 
 def pickCodeFromItems(items_info):
     """
@@ -579,6 +561,79 @@ def pickCodeFromItems(items_info):
 #     return code_name_price
 
 
+def get_limit_price(actual_name,pre_close):
+    """
+    提取股票涨停、跌停价
+    :param actual_name: 股票中文名字，string
+    :param pre_close: 股票上一交易日收盘价格, float
+    :return:股票涨停、跌停价,string 
+    """
+    highest=0.0
+    lowest=0.0
+    if 'ST' in actual_name:
+        highest = str(round(pre_close * 1.05, 2))
+        lowest = str(round(pre_close * 0.95, 2))
+    else:
+        highest = str(round(pre_close * 1.1, 2))
+        lowest = str(round(pre_close * 0.9, 2))
+    return highest,lowest
+
+def get_pass_time():
+    """
+    提取已开市时间比例
+    :param this_time: ，string
+    :return:,float 
+    """
+    pass_second=0.0
+    if not is_trade_time_now():
+        return pass_second
+    this_time=datetime.datetime.now()
+    hour=this_time.hour
+    minute=this_time.minute
+    second=this_time.second
+    total_second=4*60*60
+    if hour<9 or (hour==9 and minute<=30):
+        pass
+    elif hour<11 or (hour==11 and minute<=30):
+        pass_second=(hour*3600+minute*60+second)-(9*3600+30*60)
+    elif hour<13:
+        pass_second=2*60*60
+    elif hour<15:
+        pass_second=2*60*60+(hour*3600+minute*60+second)-13*3600
+    else:
+        pass_second=total_second
+    pass_rate=round(round(pass_second/total_second,2),2)
+    return pass_rate
+
+def set_terminate_profit():
+    """
+    提取已开市时间比例
+    :param this_time: ，string
+    :return:,float 
+    """
+    pass_second=0.0
+    if not is_trade_time_now():
+        return pass_second
+    this_time=datetime.datetime.now()
+    hour=this_time.hour
+    minute=this_time.minute
+    second=this_time.second
+    total_second=4*60*60
+    limit=10.0
+    terminate_rate=limit
+    if hour<10 or (hour==10 and minute<=30):
+        terminate_rate=limit*0.618
+    elif hour<11 or (hour==11 and minute<=30):
+        terminate_rate=limit*0.382
+    elif hour<14:
+        terminate_rate=2.0
+    elif hour<15:
+        terminate_rate=2.0
+    else:
+        terminate_rate=10.0
+    
+    return terminate_rate
+
 def getStockData():
     """
     获取股票实时数据
@@ -595,16 +650,20 @@ def getStockData():
             for i in range(df_len):
                 actual_code = df['code'][i]
                 if stock_code == actual_code:
+                    actual_name = df['name'][i]
+                    pre_close = float(df['pre_close'][i])
+                    limit_price=get_limit_price(actual_name, pre_close)
+                    #print('limit_price=',limit_price)
                     high_price=float(df['high'][i])
                     current_price=float(df['price'][i])
                     is_great_drop_down=current_price<high_price*(1-max_drop_down[i]/100.0)
-                    code_name_price.append((actual_code, df['name'][i], current_price,is_great_drop_down))
+                    code_name_price.append((actual_code, df['name'][i], current_price,limit_price))
                     is_found = True
                     break
             if is_found is False:
-                code_name_price.append(('', '', 0,False))
+                code_name_price.append(('', '', 0,(0,0)))
     except:
-        code_name_price = [('', '', 0,False)] * NUM_OF_STOCKS  # 网络不行，返回空
+        code_name_price = [('', '', 0,(0,0))] * NUM_OF_STOCKS  # 网络不行，返回空
     return code_name_price
 
 def monitor():
@@ -626,7 +685,7 @@ def monitor():
         if is_start and pdsql.is_trade_time_now():
             actual_stocks_info = getStockData()
             #print('actual_stocks_info',actual_stocks_info)
-            for row, (actual_code, actual_name, actual_price) in enumerate(actual_stocks_info):
+            for row, (actual_code, actual_name, actual_price,limit_price) in enumerate(actual_stocks_info):
                 if actual_code and is_start and is_ordered[row] == 1 and actual_price > 0 \
                         and set_stocks_info[row][1] and set_stocks_info[row][2] > 0 \
                         and set_stocks_info[row][3] and set_stocks_info[row][4] \
@@ -636,7 +695,7 @@ def monitor():
                         operation.clickRefreshButton()
                         #pre_position = operation.getPosition()
                         pre_all_holding,_pre_available_position=operation.getCodePosition(actual_code)
-                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price)
+                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price,limit_price)
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0
                         operation.clickRefreshButton()
@@ -654,7 +713,7 @@ def monitor():
                         operation.clickRefreshButton()
                         #pre_position = operation.getPosition()
                         pre_all_holding,_pre_available_position=operation.getCodePosition(actual_code)
-                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price)
+                        operation.order(actual_code, set_stocks_info[row][3], set_stocks_info[row][4],actual_price,limit_price)
                         dt = datetime.datetime.now()
                         is_ordered[row] = 0
                         operation.clickRefreshButton()
@@ -668,7 +727,7 @@ def monitor():
                              actual_name, set_stocks_info[row][3],
                              actual_price, set_stocks_info[row][4], '已委托', is_dealt[row]))
 
-        if count % 100 == 0:
+        if count % 60 == 0:
             operation.clickRefreshButton()
         time.sleep(3)
         count += 1
@@ -885,7 +944,7 @@ class StockGui:
         """
         global actual_stocks_info, is_start
         if is_start:
-            for row, (actual_code, actual_name, actual_price) in enumerate(actual_stocks_info):
+            for row, (actual_code, actual_name, actual_price,is_great_drop) in enumerate(actual_stocks_info):
                 if actual_code:
                     self.variable[row][1].set(actual_name)
                     self.variable[row][2].set(str(actual_price))
