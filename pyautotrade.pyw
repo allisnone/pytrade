@@ -820,9 +820,12 @@ class StockGui:
             row=1, column=9, padx=5, pady=5)
         Label(frame1, text="成交", width=6, justify=CENTER).grid(
             row=1, column=10, padx=5, pady=5)
+        
+        Label(frame1, text="涨幅", width=6, justify=CENTER).grid(
+            row=1, column=11, padx=5, pady=5)
 
         self.rows = NUM_OF_STOCKS
-        self.cols = 10
+        self.cols = 11
 
         self.variable = []
         for row in range(self.rows):
@@ -851,6 +854,8 @@ class StockGui:
                   width=6).grid(row=row + 2, column=9, padx=5, pady=5)
             Entry(frame1, textvariable=self.variable[row][9], state=DISABLED, justify=RIGHT,
                   width=6).grid(row=row + 2, column=10, padx=5, pady=5)
+            Spinbox(frame1, from_=0.9, to=1.1, textvariable=self.variable[row][10], justify=RIGHT,
+                    increment=0.01, width=6).grid(row=row + 2, column=11, padx=5, pady=5)
 
         frame3 = Frame(self.window)
         frame3.pack(padx=10, pady=10)
@@ -862,6 +867,9 @@ class StockGui:
         Button(frame3, text='保存', command=self.save).pack(side=LEFT)
         self.load_bt = Button(frame3, text='载入', command=self.load)
         self.load_bt.pack(side=LEFT)
+        
+        self.sellall_bt = Button(frame3, text='清仓', command=self.sellAll())
+        self.sellall_bt.pack(side=LEFT)
 
         self.window.protocol(name="WM_DELETE_WINDOW", func=self.close)
         self.window.after(100, self.updateControls)
@@ -937,6 +945,9 @@ class StockGui:
         global is_start, is_ordered
         if is_start is False:
             is_ordered = [1] * NUM_OF_STOCKS
+    
+    def sellAll(self):
+        return
 
     def updateControls(self):
         """
