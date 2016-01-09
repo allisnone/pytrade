@@ -14,6 +14,22 @@ def hushen_risk():
     far_from_lowest_20=True
     return
 
+def quick_drop_down(test_interval_minutes=5,drop_rate=-3.0):
+    return
+
+def is_first_down():
+    is_increase_trend=True
+    is_close_lower_than_last_lowest=True
+    is_lowest_lower_than_last_lowest=True
+    is_low_open_than_last_lowest=True
+    return
+
+def is_great_weak():
+    return
+
+def is_first_up():
+    return
+
 def chye_risk():
     return
 
