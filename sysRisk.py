@@ -49,18 +49,20 @@ def risk_score(hushen_score,chye_score):
     elif sys_risk_score < 0.25*sys_risk_range:
         #position=(0.25*sys_risk_range+is_sys_risk)/0.5*sys_risk_range
         position=round(0.5 +2.0*sys_risk_score/sys_risk_range,2)
-        if hushen_score<=-4.0 or chye_score<=-4.5:
+        if  hushen_score<=-5.0 or chye_score<=-5.0:
+            position=0.0
+        elif hushen_score<=-4.0 or chye_score<=-4.5:
             position=min(0.1,position)
         elif hushen_score<=-2.5 or chye_score<=-3:
             position=min(0.3,position)
-        elif hushen_score<=0 or chye_score<=0:
+        elif hushen_score<=1 or chye_score<=1:
             pass
-            #position=min(0.6,position)
+            position=min(0.75,position)
         else:
-            pass
+            position=min(0.85,position)
         is_sys_risk=False
     else:
-        position=1.0
+        position=0.85
         is_sys_risk=False
     return sys_risk_score,position
 
@@ -78,8 +80,8 @@ def exit_all():
 def test():
     #hushen_score=-5
     #chye_score=-5
-    for hushen_score in range(-5,5):
-        for chye_score in range(-5,5):
+    for hushen_score in range(-5,6):
+        for chye_score in range(-5,6):
             print('hushen_score=',hushen_score,'chye_score=',chye_score)
             sys_risk_score,position=risk_score(hushen_score, chye_score)
             print('sys_risk_score=',sys_risk_score,'position=',position)
