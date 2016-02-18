@@ -1,5 +1,5 @@
-
-def hushen_risk():
+# -*- coding:utf-8 -*-
+def hushen_risk0():
     is_over_ma5=False
     is_over_ma30=False
     is_great_drop_in_5m=True
@@ -30,26 +30,39 @@ def is_great_weak():
 def is_first_up():
     return
 
-def chye_risk():
-    return
+def hushen_risk(score):
+    return score
 
-def risk_score():
+def chye_risk(score):
+    return score
+
+def risk_score(hushen_score,chye_score):
     is_sys_risk=False
     position=0
-    hushen_risk_score=hushen_risk()
-    chye_risk_score=chye_risk()
-    sys_risk_score=0.65*hushen_risk_score+0.35*chye_risk_score  #-5 ~5
+    hushen_risk_score=hushen_risk(hushen_score)
+    chye_risk_score=chye_risk(chye_score)
+    sys_risk_score=round(0.65*hushen_risk_score+0.35*chye_risk_score,2)  #-5 ~5
     sys_risk_range=10.0
     if sys_risk_score<-0.25*sys_risk_range:
         is_sys_risk=True
         position=0.0
     elif sys_risk_score < 0.25*sys_risk_range:
         #position=(0.25*sys_risk_range+is_sys_risk)/0.5*sys_risk_range
-        position=0.5 +2.0*is_sys_risk/sys_risk_range
+        position=round(0.5 +2.0*sys_risk_score/sys_risk_range,2)
+        if hushen_score<=-4.0 or chye_score<=-4.5:
+            position=min(0.1,position)
+        elif hushen_score<=-2.5 or chye_score<=-3:
+            position=min(0.3,position)
+        elif hushen_score<=0 or chye_score<=0:
+            pass
+            #position=min(0.6,position)
+        else:
+            pass
+        is_sys_risk=False
     else:
         position=1.0
-        
-    return is_sys_risk,position
+        is_sys_risk=False
+    return sys_risk_score,position
 
 def position_control():
     return
@@ -60,4 +73,16 @@ def stock_risk():
 
 def exit_all():
     sys_risk=True
+    
+    
+def test():
+    #hushen_score=-5
+    #chye_score=-5
+    for hushen_score in range(-5,5):
+        for chye_score in range(-5,5):
+            print('hushen_score=',hushen_score,'chye_score=',chye_score)
+            sys_risk_score,position=risk_score(hushen_score, chye_score)
+            print('sys_risk_score=',sys_risk_score,'position=',position)
+            
+test()
     

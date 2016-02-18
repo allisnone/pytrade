@@ -92,17 +92,20 @@ def buyX_multi_choice_utilization(code_list,fund_total):
         utilization=round((1-remain_fund/fund_total),4)
     else:
         pass
-    return utilization,final_buy_dict
+    final_buy_amount_dict={}
+    for code in final_buy_dict.keys():
+        final_buy_amount_dict[code]=final_buy_dict[code]*100*get_code_price(code)
+    return utilization,final_buy_dict,final_buy_amount_dict
 
 
 def test():
-    fund_total=100000.0
+    fund_total=60000.0
     code='600001'
     #utilization,num_shou=buy1_utilization(code, fund_total)
     code_list=['000001','000002','600001','200001','300002','300003','300001']
     #max_utilization,max_utilization_code,max_utilization_num_shou=buy1_multi_choice_utilization(code_list, fund_total)
     #print(max_utilization_code,max_utilization,max_utilization_num_shou)
-    max_utilization,final_buy_dict=buyX_multi_choice_utilization(code_list, fund_total)
+    max_utilization,final_buy_dict,final_buy_amount_dict=buyX_multi_choice_utilization(code_list, fund_total)
     print(max_utilization,final_buy_dict)
-    
-#test()
+    print(final_buy_amount_dict)
+test()
