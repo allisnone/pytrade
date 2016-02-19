@@ -701,7 +701,8 @@ class Stockhistory:
     def get_market_score(self):
         ma_score_l=self.get_market_ma_score(period_type='long_turn')
         ma_score_s=self.get_market_ma_score(period_type='short_turn')
-        ma_score=0.5*(ma_score_l+ma_score_s)
+        ma_score=(0.3*ma_score_l+0.7*ma_score_s)
+        #ma_score=ma_score_s
         print('ma_score=',ma_score)
         trend_score=self.get_trend_score()
         print('trend_score=',trend_score)
