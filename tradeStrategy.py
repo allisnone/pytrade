@@ -187,12 +187,25 @@ def get_latest_trade_date(this_date=None):
     return latest_day_str
 
 #to get the latest trade day
-def get_last_trade_date():
-    
-    latest_day_str=get_latest_trade_date()
-    print('latest_day_str=',latest_day_str)
-    latest_datetime_str=latest_day_str+' 10:00:00'
-    latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
+def get_last_trade_date(given_latest_datetime=None):
+    latest_datetime=datetime.datetime.now()
+    if given_latest_datetime:
+        latest_datetime=given_latest_datetime
+        if isinstance(latest_datetime, str):
+            latest_datetime_str=latest_datetime+' 10:00:00'
+            try:
+                latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
+            except:
+                latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y/%m/%d %X')
+    else:
+        latest_day_str=get_latest_trade_date()
+        print('latest_day_str=',latest_day_str)
+        latest_datetime_str=latest_day_str+' 10:00:00'
+        try:
+            latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
+        except:
+            latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y/%m/%d %X')
+    print(type(latest_datetime))
     last_datetime=latest_datetime+datetime.timedelta(days=-1)
     last_date_str=get_latest_trade_date(last_datetime)
     print('last_date_str=',last_date_str)

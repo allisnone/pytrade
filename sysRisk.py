@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from tradeStrategy import *
 def get_market_score(market_type='sh'):
     ma_score=get_market_ma_score()
     trend_score=get_trend_score(initial_score)
@@ -242,14 +243,23 @@ def is_great_weak():
 def is_first_up():
     return
 
-def risk_score(hushen_score,chye_score):
+def risk_score():
+    
+    shz_code_str='999999'
+    print(shz_code_str,'----------------------------------')
+    shz_stock=Stockhistory(shz_code_str,'D')
+    shangzheng_score=shz_stock.get_market_score()
+    
+    chy_code_str='399006'
+    print(chy_code_str,'----------------------------------')
+    chy_stock=Stockhistory(chy_code_str,'D')
+    chuangye_score=chy_stock.get_market_score()
+    
     is_sys_risk=False
     position=0
     #hushen_risk_score=get_market_score(market_type='sh')
     #chye_risk_score=get_market_score(market_type='chye')
-    hushen_risk_score=hushen_score
-    chye_risk_score=chye_score
-    sys_risk_score=round(0.65*hushen_risk_score+0.35*chye_risk_score,2)  #-5 ~5
+    sys_risk_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
     sys_risk_range=10.0
     MAX_POSITION=0.85
     ultimate_coefficient=0.25
@@ -277,6 +287,7 @@ def risk_score(hushen_score,chye_score):
     else:
         position=MAX_POSITION
         is_sys_risk=False
+    print('position=',position,'sys_risk_score=',sys_risk_score,'is_sys_risk=',is_sys_risk)
     return position,sys_risk_score,is_sys_risk
 
 def position_control():
@@ -300,26 +311,8 @@ def test():
             print('sys_risk_score=',sys_risk_score,'position=',position)
             
 #test()
-from tradeStrategy import *
+
 def tes1t():
-    
-    code_str='000001'
-    print(code_str,'----------------------------------')
-    stock=Stockhistory(code_str,'D')
-    stock.get_market_score()
-    
-    print(code_str,'----------------------------------')
-    code_str='999999'
-    stock=Stockhistory(code_str,'D')
-    shangzheng_score=stock.get_market_score()
-    
-    print(code_str,'----------------------------------')
-    code_str='399006'
-    stock=Stockhistory(code_str,'D')
-    chuangye_score=stock.get_market_score()
-    print(code_str,'----------------------------------')
-    position,sys_risk_score,is_sys_risk=risk_score(shangzheng_score, chuangye_score)
-    print(shangzheng_score, chuangye_score)
-    print(position,sys_risk_score,is_sys_risk)
+    position,sys_risk_score,is_sys_risk=risk_score()
     
 tes1t()
