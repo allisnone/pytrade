@@ -106,7 +106,6 @@ def revised_position(sys_risk_anlyse_position,recent_100d_great_dropdown,recent_
             final_position=min(max(sys_risk_anlyse_position,revise_posistion),max_position)
         else:
             final_position=max_position
-    
     else:
         pass
     print('final_position=',final_position)
