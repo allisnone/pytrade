@@ -65,6 +65,10 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
     print('position=',position,'sys_score=',sys_score,'is_sys_risk=',is_sys_risk)
     return position,sys_score,is_sys_risk
 
+def get_recent_100d_great_dropdown():
+    return
+def get_recent_100d_great_increase():
+    return
 def revised_position(sys_risk_anlyse_position,recent_100d_great_dropdown,recent_100d_great_increase,max_position=0.85):
     """ 
     when recent_100d_great_dropdown less then 2.0*permit_great_dropdown, will be linearly increased by recent_100d_great_dropdown
