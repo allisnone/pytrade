@@ -129,22 +129,23 @@ def test():
 
 def tes1t():
     position,sys_score,is_sys_risk=sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25)
+    revised_position(sys_risk_anlyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.3,max_position=0.85)
     
-#tes1t()
+tes1t()
 
-revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.16,recent_100d_great_increase=0.3,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.3,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.35,recent_100d_great_increase=0.3,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.3,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.70,recent_100d_great_increase=0.3,max_position=0.85)
-
-print('------------------------------')
-
-revised_position(sys_risk_anlyse_position=0.50,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.5,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.7,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.9,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.0,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.2,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.4,max_position=0.85)
-revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=2.4,max_position=0.85)
-    
+def revised_position_test():
+    revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.16,recent_100d_great_increase=0.3,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.3,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.35,recent_100d_great_increase=0.3,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.3,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.70,recent_100d_great_increase=0.3,max_position=0.85)
+    print('------------------------------')
+    revised_position(sys_risk_anlyse_position=0.50,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.5,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.7,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.9,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.0,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.2,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.4,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=2.4,max_position=0.85)
+#revised_position_test()
+   
