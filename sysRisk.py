@@ -114,7 +114,6 @@ def revised_position(sys_risk_anlyse_position,recent_100d_great_dropdown,recent_
 def stock_risk():
     return
 
-
 def exit_all():
     sys_risk=True
     
