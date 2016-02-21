@@ -65,26 +65,52 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
     print('position=',position,'sys_score=',sys_score,'is_sys_risk=',is_sys_risk)
     return position,sys_score,is_sys_risk
 
-def position_control(sys_risk_anlyse_position,recent_30d_great_dropdown,max_position=0.85):
+def revised_position(sys_risk_anlyse_position,recent_100d_great_dropdown,recent_100d_great_increase,max_position=0.85):
+    """ 
+    when recent_100d_great_dropdown less then 2.0*permit_great_dropdown, will be linearly increased by recent_100d_great_dropdown
+    """
+    """
+    :param sys_risk_anlyse_position: float type, position value from sys_risk_anlyse()
+    :param recent_100d_great_dropdown: float type,
+    :param recent_100d_great_increase: float type,
+    :param max_position: float type,
+    :return: final_position
+    """
     final_position=0.0
     permit_great_dropdown=-0.15
-    if sys_risk_anlyse_position>0.3:
-        if recent_30d_great_dropdown>permit_great_dropdown: # great_dropdown>-0.15
+    max_revise_drowdown_coefficient=1.5
+    max_revise_increase_coefficient=max(2*permit_great_dropdown,-1)
+    great_increase=0.618
+    extream_increase=1.5
+    print('sys_risk_anlyse_position=',sys_risk_anlyse_position,'recent_100d_great_dropdown=',recent_100d_great_dropdown,'recent_100d_great_increase=',recent_100d_great_increase)
+    if sys_risk_anlyse_position>0.8*max_position:
+        if recent_100d_great_increase<=great_increase: 
             final_position=sys_risk_anlyse_position
-        elif recent_30d_great_dropdown>2.0*permit_great_dropdown:
+        elif recent_100d_great_increase>great_increase and recent_100d_great_increase<extream_increase:
+            revise_coefficient=max_revise_increase_coefficient/(extream_increase-great_increase)*(recent_100d_great_increase-great_increase)
+            print('recent_100d_great_increase=',recent_100d_great_increase,'revise_coefficient=',revise_coefficient)
+            revise_posistion=round(sys_risk_anlyse_position*(1+revise_coefficient),2)
+            print('revise_posistion=',revise_posistion)
+            final_position=revise_posistion
+        else:
+            final_position=round(sys_risk_anlyse_position*(1+max_revise_increase_coefficient),2)
+    elif sys_risk_anlyse_position>0.3:
+        if recent_100d_great_dropdown>2.0*permit_great_dropdown: # great_dropdown>-0.15
+            final_position=sys_risk_anlyse_position
+        elif recent_100d_great_dropdown<2.0*permit_great_dropdown and recent_100d_great_dropdown>=5.0*permit_great_dropdown:
             # great_dropdown>-0.3 and great_dropdown<-0.15, 最大1.5倍position
-            revise_posistion=round(sys_risk_anlyse_position*(1+(permit_great_dropdown-recent_30d_great_dropdown)/abs(2*permit_great_dropdown)),2)
-            final_position=max(sys_risk_anlyse_position,revise_posistion,max_position)
-        elif recent_30d_great_dropdown>3.0*permit_great_dropdown:
-            # great_dropdown>-0.45 and great_dropdown<-0.3, 最大1.5倍position到2.0倍position
-            revise_posistion=round(sys_risk_anlyse_position*(1.5+(2*permit_great_dropdown-recent_30d_great_dropdown)/abs(2*permit_great_dropdown)),2)
-            final_position=max(sys_risk_anlyse_position,revise_posistion,max_position)
-        elif recent_30d_great_dropdown>3.0*permit_great_dropdown:
-            revise_posistion=round(sys_risk_anlyse_position*(1+(permit_great_dropdown-recent_30d_great_dropdown)/abs(permit_great_dropdown)),2)
-            final_position=max(sys_risk_anlyse_position,revise_posistion,max_position)
+            revise_coefficient=max_revise_drowdown_coefficient/3.0*(recent_100d_great_dropdown/permit_great_dropdown-2.0)
+            print('recent_100d_great_dropdown=',recent_100d_great_dropdown,'revise_coefficient=',revise_coefficient)
+            revise_posistion=round(sys_risk_anlyse_position*(1+revise_coefficient),2)
+            print('revise_posistion=',revise_posistion)
+            final_position=min(max(sys_risk_anlyse_position,revise_posistion),max_position)
         else:
             final_position=max_position
-    return
+    
+    else:
+        pass
+    print('final_position=',final_position)
+    return final_position
 
 def stock_risk():
     return
@@ -106,4 +132,21 @@ def test():
 def tes1t():
     position,sys_score,is_sys_risk=sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25)
     
-tes1t()
+#tes1t()
+
+revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.16,recent_100d_great_increase=0.3,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.3,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.35,recent_100d_great_increase=0.3,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.3,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.70,recent_100d_great_increase=0.3,max_position=0.85)
+
+print('------------------------------')
+
+revised_position(sys_risk_anlyse_position=0.50,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.5,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.7,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=0.9,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.0,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.2,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.4,max_position=0.85)
+revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=2.4,max_position=0.85)
+    
