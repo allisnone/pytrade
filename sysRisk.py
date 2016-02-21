@@ -146,4 +146,6 @@ def revised_position_test():
     revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=1.4,max_position=0.85)
     revised_position(sys_risk_anlyse_position=0.80,recent_100d_great_dropdown=-0.25,recent_100d_great_increase=2.4,max_position=0.85)
 #revised_position_test()
+
+
    
