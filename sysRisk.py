@@ -117,7 +117,6 @@ def stock_risk():
 def exit_all():
     sys_risk=True
     
-    
 def test():
     #hushen_score=-5
     #chye_score=-5
