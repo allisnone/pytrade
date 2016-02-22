@@ -97,6 +97,64 @@ def buyX_multi_choice_utilization(code_list,fund_total):
         final_buy_amount_dict[code]=final_buy_dict[code]*100*get_code_price(code)
     return utilization,final_buy_dict,final_buy_amount_dict
 
+def get_effective_fund(total_fund,raw_divid_num):
+    print('total_fund=',total_fund,'raw_divid_num=',raw_divid_num)
+    sub_total=total_fund
+    effective_fund=16600.0
+    wucha=0.3
+    effective_fund_l=effective_fund*(1-wucha)
+    effective_fund_h=effective_fund*(1+wucha)
+    divid_num=0
+    
+    divid_num=int(total_fund/effective_fund)
+    #divid_num=round(total_fund/effective_fund)
+    if divid_num==0:
+        sub_total=total_fund
+        divid_num=1
+    elif divid_num==1:
+        if total_fund<effective_fund_h:
+            sub_total=total_fund
+            divid_num=1
+        else:
+            divid_num=2
+            sub_total=total_fund/divid_num
+    else:
+        if raw_divid_num<=divid_num:
+            sub_total=total_fund/raw_divid_num
+            divid_num=raw_divid_num
+        else:
+            remain_fund=total_fund%effective_fund
+            sub_total=effective_fund+remain_fund/divid_num
+    sub_total=round(sub_total,2)
+    """
+    if divid_num==0:
+        sub_total=total_fund
+        divid_num=1
+    else:
+        remain_fund=total_fund%effective_fund
+        if remain_fund<effective_fund_l:
+            sub_total=round(total_fund/divid_num)
+    
+    
+    if raw_divid_num:
+        if total_fund<effective_fund_l:
+            sub_total=total_fund
+            divid_num=1
+        else:
+            divid_num=min(raw_divid_num,round(total_fund/effective_fund_l))
+            print('divid_num=',divid_num)
+            sub_total=total_fund/divid_num
+            print('sub_total0=',sub_total)
+            while sub_total<effective_fund_l:
+                divid_num=divid_num-1
+                print('divid_num_1=',divid_num)
+                sub_total=total_fund/divid_num
+                print('sub_total=',sub_total)
+                if sub_total>effective_fund_l:
+                    break
+    """
+    print('sub_total=',sub_total,'divid_num=',divid_num)
+    return sub_total,divid_num
 
 def test():
     fund_total=60000.0
@@ -108,4 +166,24 @@ def test():
     max_utilization,final_buy_dict,final_buy_amount_dict=buyX_multi_choice_utilization(code_list, fund_total)
     print(max_utilization,final_buy_dict)
     print(final_buy_amount_dict)
-test()
+#test()
+def get_effective_fund_test():
+    divid_num=20
+    get_effective_fund(total_fund=15000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=25000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=35000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=40000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=60000,raw_divid_num=divid_num)
+    
+    get_effective_fund(total_fund=70000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=80000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=90000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=100000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=120000,raw_divid_num=divid_num)
+    
+    get_effective_fund(total_fund=140000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=150000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=170000,raw_divid_num=divid_num)
+    get_effective_fund(total_fund=190000,raw_divid_num=divid_num)
+    
+get_effective_fund_test()
