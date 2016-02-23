@@ -710,6 +710,22 @@ class Stockhistory:
         #self.average_high=0
         #self.average_low=0
         #print self.h_df
+    def is_great_drop_then_high_open(self):
+        great_drop_rate=-3.0
+        if self.temp_hist_df.empty:
+            return 0.0
+        temp_df=self.temp_hist_df.tail(2)
+        ma5_0=temp_df.tail(1).iloc[0].ma5
+        ma10_0=temp_df.tail(1).iloc[0].ma10
+        ma20_0=temp_df.tail(1).iloc[0].ma20
+        last_change=temp_df.tail(1).iloc[0].p_change
+        ma5_1=temp_df.tail(1).iloc[1].ma5
+        ma10_1=temp_df.tail(1).iloc[1].ma10
+        ma20_1=temp_df.tail(1).iloc[1].ma20
+        change=temp_df.tail(1).iloc[1].p_change
+        close=temp_df.tail(1).iloc[1].close
+        open=temp_df.tail(1).iloc[1].open
+        return 0.0
     
     def get_market_score(self):
         ma_score_l=self.get_market_ma_score(period_type='long_turn')
@@ -726,6 +742,20 @@ class Stockhistory:
             market_score=max(market_score,-5.0)
         print('market_score=',market_score)
         return market_score
+    
+    def get_price_score(self):
+        if self.temp_hist_df.empty:
+            return 0.0
+        temp_df=self.temp_hist_df.tail(2)
+        ma5_0=temp_df.tail(1).iloc[0].ma5
+        ma10_0=temp_df.tail(1).iloc[0].ma10
+        ma20_0=temp_df.tail(1).iloc[0].ma20
+        ma5_1=temp_df.tail(1).iloc[1].ma5
+        ma10_1=temp_df.tail(1).iloc[1].ma10
+        ma20_1=temp_df.tail(1).iloc[1].ma20
+        close=temp_df.tail(1).iloc[1].close
+        open=temp_df.tail(1).iloc[1].open
+        return 0.0
     
     def get_ma_score(self):
         ma_type='ma5'
