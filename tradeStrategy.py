@@ -709,7 +709,7 @@ class Stockhistory:
         self.temp_hist_df=self._form_temp_df()
         #self.average_high=0
         #self.average_low=0
-        #print self.h_df
+       
     def is_great_drop_then_high_open(self):
         great_drop_rate=-3.0
         if self.temp_hist_df.empty:
