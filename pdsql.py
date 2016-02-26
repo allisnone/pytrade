@@ -74,29 +74,6 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
     # print('%s_sql=%s'%(oper_type,sql))
     return sql
 
-def get_raw_hist_df0(code_str,latest_count=None):
-    file_type='csv'
-    file_name=RAW_HIST_DIR+code_str+'.'+file_type
-    raw_column_list=['date','open','high','low','close','volume','rmb']
-    #print('file_name=',file_name)
-    df_0=pd.DataFrame({},columns=raw_column_list)
-    try:
-        df_0=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
-    except (OSError,PermissionError) as e:
-        print(e)
-        return df_0
-    #print df_0
-    #delete column 'rmb' and delete the last row
-    #del df_0['rmb']
-    df=df_0.ix[0:(len(df_0)-2)]  #to delete '通达信‘
-    #print df
-    df= df.set_index('date')
-    df.to_csv(file_name,encoding='utf-8')
-    #column_list=['date','open','high','low','close','volume']
-    column_list=['date','open','high','low','close','volume','rmb']
-    df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8')
-    return df
-
 
 def get_raw_hist_df(code_str,latest_count=None):
     file_type='csv'
@@ -168,7 +145,7 @@ def update_one_hist(code_str,stock_sql_obj,histdata_last_df,update_db=True):
     #last_date=histdata_last_df.loc[date[-1],'date']
     #update_date= 2015-11-20 <class 'str'>
     #print('update_date=',update_date,type(update_date))
-    stock_sql_obj.update_last_db_date(code_str,last_db_date_str,update_date,histdata_last_df)
+    stock_sql_obj.update_last_db_date(code_str,last_db_date_str,update_date)
     return len(df)
 
 #get the all file source data in certain DIR
@@ -190,12 +167,7 @@ def update_all_hist_data(codes,update_db=True):
     :return: 
     """
     starttime=datetime.datetime.now()
-    #all_code=get_all_code(RAW_HIST_DIR)
-    #pd.DataFrame.to_sql()
     stock_sql_obj=StockSQL()
-    #stock_sql_test()
-    #code_str='000987'
-    #code_str='002678'
     print('histdata_last_df1',datetime.datetime.now())
     histdata_last_df=stock_sql_obj.query_data(table='histdata_last')
     print('histdata_last_df2',datetime.datetime.now())
@@ -205,18 +177,7 @@ def update_all_hist_data(codes,update_db=True):
     print('update duration=',deltatime.days*24*3600+deltatime.seconds)
     print('update completed')
         
-def is_trade_time_now():
-    except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
-    now_timestamp=time.time()
-    this_time=datetime.datetime.now()
-    this_date=this_time.strftime('%Y-%m-%d')
-    hour=this_time.hour
-    minute=this_time.minute
-    is_trade_time=((hour>=9 and minute>=30) and (hour<=11 and minute<=30)) or (hour>=13 and hour<=15)
-    is_working_date=this_time.isoweekday()<6 and (this_date not in except_trade_day_list)
-    return is_trade_time and is_working_date
-
-
+        
 class StockSQL(object):
     def __init__(self):
         self.engine = create_engine('mysql+pymysql://emsadmin:Ems4you@112.74.101.126/stock?charset=utf8')#,encoding='utf-8',echo=True,convert_unicode=True)
@@ -310,12 +271,11 @@ class StockSQL(object):
                 #print('KeyError:',e)
                 return None
             
-    def update_last_db_date(self,code_str,last_date,update_date,histdata_last_df):
+    def update_last_db_date(self,code_str,last_date,update_date):
         """
         :param code_str: string type, code_name
         :param last_date: string type, last db date
         :param update_date: string type, this date 
-        :param histdata_last_df: dataframe type, df from table histdata
         :return: 
         """
         if last_date:
@@ -329,8 +289,6 @@ class StockSQL(object):
                 #print('firstly update: last_db_time',update_date)
             else:
                 pass
-    
-    
     #for chunk_df in pd.read_sql_query("SELECT * FROM today_stock", engine, chunksize=5):
     #    print(chunk_df)
 

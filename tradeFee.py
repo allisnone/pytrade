@@ -22,7 +22,7 @@ def get_transfer_fee(trade_total,stock_symbol): #both sell and buy
     :param stock_symbol: str type.
     :return: float, stock commission fee
     """
-    TRANSFER_FEE_SH=0.0000202  #buy and sell SH stock
+    TRANSFER_FEE_SH=0.00002  #buy and sell SH stock
     transfer_fee=0.0
     if stock_symbol>'600000':
         transfer_fee=round(trade_total*TRANSFER_FEE_SH,2)

@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 import code
 
 import pdsql as ps
+import tradeTime
 
 
 ISOTIMEFORMAT='%Y-%m-%d %X'
@@ -162,97 +163,6 @@ def f_code_2sybol(code_f):
     #print 'code_str=',code_str
     return code_str
 
-#to get the latest trade day
-def get_latest_trade_date(this_date=None):
-    except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
-    this_day=datetime.datetime.now()
-    #if this_day.hour>=0 and this_day.hour<=9:
-    #    this_day=this_day+datetime.timedelta(days=-1)
-    if this_date!=None:
-            this_day=this_date
-    open_str=' 09:31:00'
-    this_str=this_day.strftime('%Y-%m-%d %X')
-    if this_str<this_str[:10]+open_str and (this_day.hour>=0 and this_day.hour<=9):
-        this_day=datetime.datetime.strptime(this_str,'%Y-%m-%d %X')+datetime.timedelta(days=-1)
-        this_str=this_day.strftime('%Y-%m-%d')  
-    latest_day_str=''
-    this_str=this_str[:10]
-    while this_str>='2010-01-01':
-        if this_day.isoweekday()<6 and (this_str not in except_trade_day_list):
-            latest_day_str = this_str
-            break
-        else:
-            this_day=this_day+datetime.timedelta(days=-1)
-            this_str=this_day.strftime('%Y-%m-%d')  
-    return latest_day_str
-
-#to get the latest trade day
-def get_last_trade_date(given_latest_datetime=None):
-    latest_datetime=datetime.datetime.now()
-    if given_latest_datetime:
-        latest_datetime=given_latest_datetime
-        if isinstance(latest_datetime, str):
-            latest_datetime_str=latest_datetime+' 10:00:00'
-            try:
-                latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
-            except:
-                latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y/%m/%d %X')
-    else:
-        latest_day_str=get_latest_trade_date()
-        print('latest_day_str=',latest_day_str)
-        latest_datetime_str=latest_day_str+' 10:00:00'
-        try:
-            latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
-        except:
-            latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y/%m/%d %X')
-    print(type(latest_datetime))
-    last_datetime=latest_datetime+datetime.timedelta(days=-1)
-    last_date_str=get_latest_trade_date(last_datetime)
-    print('last_date_str=',last_date_str)
-    return last_date_str
-
-def is_trade_time(latest_trade_date):
-    this_time=datetime.datetime.now()
-    this_str=this_time.strftime('%Y-%m-%d %X')
-    #latest_trade_date=get_latest_trade_date()
-    return this_str>=(latest_trade_date+ ' 09:31:00') and this_str <= (latest_trade_date + ' 15:00:00')
-
-def is_trade_time_now():
-    except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
-    now_timestamp=time.time()
-    this_time=datetime.datetime.now()
-    hour=this_time.hours
-    minute=this_time.minutes
-    is_trade_time=((hour>=9 and minute>=30) and (hour<=11 and minute<=30)) or (hour>=13 and hour<=15)
-    is_working_date=this_time.isoweekday()<6 and (this_date not in except_trade_day_list)
-    return is_trade_time and is_working_date
-
-def get_pass_time():
-    """
-    提取已开市时间比例
-    :param this_time: ，string
-    :return:,float 
-    """
-    pass_second=0.0
-    if not is_trade_time_now():
-        return pass_second
-    this_time=datetime.datetime.now()
-    hour=this_time.hour
-    minute=this_time.minute
-    second=this_time.second
-    total_second=4*60*60
-    if hour<9 or (hour==9 and minute<=30):
-        pass
-    elif hour<11 or (hour==11 and minute<=30):
-        pass_second=(hour*3600+minute*60+second)-(9*3600+30*60)
-    elif hour<13:
-        pass_second=2*60*60
-    elif hour<15:
-        pass_second=2*60*60+(hour*3600+minute*60+second)-13*3600
-    else:
-        pass_second=total_second
-    return round(round(pass_second/total_second,2),2)
-
     #is_trade_time=now_timestamp>start_timestamp and 
 def get_ma_list(close_list,ma_num):
     ma_list=[]
@@ -335,11 +245,11 @@ def get_today_df():
     this_time=datetime.datetime.now()
     this_time_str=this_time.strftime('%Y-%m-%d %X')
     """
-    latest_trade_day=get_latest_trade_date()
+    latest_trade_day=tradeTime.get_latest_trade_date()
     latest_trade_end=latest_trade_day + ' 15:00:00'
     latest_trade_before_start=latest_trade_day + ' 09:15:00'
     """
-    latest_trade_day_str=get_latest_trade_date()
+    latest_trade_day_str=tradeTime.get_latest_trade_date()
     latest_trade_time_str=latest_trade_day_str + ' 15:00:00'
     pre_name='all'
     #if profix_name != None:
@@ -350,7 +260,7 @@ def get_today_df():
     data={}
     column_list=['code','changepercent','trade','open','high','low','settlement','volume','turnoverratio']
     today_df=pd.DataFrame(data,columns=column_list)#,index=['
-    if not is_trade_time(get_latest_trade_date()):
+    if not tradeTime.is_trade_time_now0(tradeTime.get_latest_trade_date()):
         if file_time_str:
             #if file_time_str>=latest_trade_day_str+' 13:00:00':
             #print '---------------1'
@@ -383,7 +293,7 @@ def get_today_df():
     return today_df,this_time_str
 
 def write_today_df(file_name,today_df):
-    #latest_trade_day_str=get_latest_trade_date()
+    #latest_trade_day_str=tradeTime.get_latest_trade_date()
     #today_df=ts.get_today_all()
     #del today_df['name']
     #today_df1=today_df.set_index('code')
@@ -420,7 +330,7 @@ def read_today_df(file_name):
     return df
 
 def update_one_hist(code_sybol,today_df,today_df_update_time):
-    #latest_trade_day_str=get_latest_trade_date()
+    #latest_trade_day_str=tradeTime.get_latest_trade_date()
     #print latest_trade_day_str
     #today_df_update_time=today_df.index.name
     #print 'today_df_update_time=',today_df_update_time
@@ -479,7 +389,7 @@ def update_one_hist(code_sybol,today_df,today_df_update_time):
         update_file_name=ROOT_DIR+'/update/%s.csv'% code_sybol
         hist_df.to_csv(update_file_name)
         hist_file_name=ROOT_DIR+'/hist/%s.csv'% code_sybol
-        if is_trade_time(get_latest_trade_date()):
+        if tradeTime.is_trade_time_now0(tradeTime.get_latest_trade_date()):
             pass
         else:
             hist_df.to_csv(hist_file_name)
@@ -491,7 +401,7 @@ def update_all_hist(today_df,today_df_update_time):
     #print 'update_all_hist:',hist_all_code
     all_codes=today_df.index.values.tolist()
     #for code_sybol in hist_all_code:
-    latest_trade_date=get_latest_trade_date()
+    latest_trade_date=tradeTime.get_latest_trade_date()
     #all_codes=['000001']
     #hist_all_code=['000001']
     print('update_all_hist,all_codes=', all_codes)
@@ -504,7 +414,7 @@ def update_all_hist(today_df,today_df_update_time):
             file_name=ROOT_DIR+'/update/%s.csv'% code_sybol
             hist_file_name=ROOT_DIR+'/hist/%s.csv'% code_sybol
             #updated_df.to_csv(file_name) #,encoding='GB18030')
-            if is_trade_time(latest_trade_date):
+            if tradeTime.is_trade_time_now0(latest_trade_date):
                 pass
             else:
                 #updated_df.to_csv(hist_file_name)
@@ -590,7 +500,7 @@ def send_mail(alarm_list):
 def get_interval(interval):
     this_time=datetime.datetime.now()
     this_time_str=this_time.strftime('%Y-%m-%d %X')
-    latest_trade_day=get_latest_trade_date()
+    latest_trade_day=tradeTime.get_latest_trade_date()
     morning_time0=datetime.datetime.strptime(latest_trade_day+' 09:30:00','%Y-%m-%d %X')
     morning_time1=datetime.datetime.strptime(latest_trade_day+' 11:30:00','%Y-%m-%d %X')
     noon_time0=datetime.datetime.strptime(latest_trade_day+' 13:00:00','%Y-%m-%d %X')
@@ -663,7 +573,7 @@ def filter_df_by_date(raw_df,from_date_str,to_date_str):  #index of df should no
     return df
 def market_analyze_today():
     #init_all_hist_from_export()
-    latest_trade_day=get_latest_trade_date()
+    latest_trade_day=tradeTime.get_latest_trade_date()
     today_df,df_time_stamp=get_today_df()
     out_file_name=ROOT_DIR+'/result/result-' + latest_trade_day + '.txt'
     output=open(out_file_name,'w')
@@ -921,9 +831,9 @@ class Stockhistory:
                 tatol_inscrease_num=len(great_increase_df)
                 while tatol_inscrease_num-continue_increase_num>0:
                     temp_inscrease_df=great_increase_df.head(tatol_inscrease_num-continue_increase_num)
-                    if temp_inscrease_df.tail(1).iloc[0].date==get_last_trade_date(latest_great_increase_date):
+                    if temp_inscrease_df.tail(1).iloc[0].date==tradeTime.get_last_trade_date(latest_great_increase_date):
                         continue_increase_num+=1
-                        latest_great_increase_date=get_last_trade_date(latest_great_increase_date)
+                        latest_great_increase_date=tradeTime.get_last_trade_date(latest_great_increase_date)
                     else:
                         break
                 continue_trend_num=continue_increase_num
@@ -950,9 +860,9 @@ class Stockhistory:
                 tatol_decrease_num=len(great_decrease_df)
                 while tatol_decrease_num-continue_decrease_num>0:
                     temp_decrease_df=great_decrease_df.head(tatol_decrease_num-continue_decrease_num)
-                    if temp_decrease_df.tail(1).iloc[0].date==get_last_trade_date(latest_great_decrease_date):
+                    if temp_decrease_df.tail(1).iloc[0].date==tradeTime.get_last_trade_date(latest_great_decrease_date):
                         continue_decrease_num+=1
-                        latest_great_decrease_date=get_last_trade_date(latest_great_decrease_date)
+                        latest_great_decrease_date=tradeTime.get_last_trade_date(latest_great_decrease_date)
                     else:
                         break
                 continue_trend_num=-continue_decrease_num
@@ -1030,7 +940,7 @@ class Stockhistory:
         if self.h_df.empty:
             is_stopping=True
         else:
-            last_trade_date=get_latest_trade_date()
+            last_trade_date=tradeTime.get_latest_trade_date()
             last_df_date=self.h_df.tail(1).iloc[0].date
             #print(last_trade_date,last_df_date)
             is_stopping=last_df_date<last_trade_date
@@ -2140,7 +2050,7 @@ class Stockhistory:
         realtime_lt_mean_interval=0
         this_time=realtime_df.ix[0].time
         #print type(this_time)
-        this_date_time=get_latest_trade_date()+ ' '+this_time
+        this_date_time=tradeTime.get_latest_trade_date()+ ' '+this_time
         if realtime_df.ix[0].price>=realtime_mean_price:  #is_realtime_price_gte_mean
             self.realtime_stamp=get_timestamp(this_date_time)
         else:
@@ -2221,7 +2131,7 @@ class Stockhistory:
         high_change=round((high_price-pre_close_price)*100/pre_close_price,2)
         #this_time='13:35:47'
         this_time= realtime_df.ix[0].time
-        this_date_time=get_latest_trade_date()+' '+this_time
+        this_date_time=tradeTime.get_latest_trade_date()+' '+this_time
         this_timestamp=get_timestamp(this_date_time)
         print('%s  %s---------------------------------------------------------'% (self.code,this_date_time))
         #print this_timestamp
@@ -2376,7 +2286,7 @@ class Stockhistory:
     
     def realtime_monitor(self):
         state_confirm=False
-        if is_trade_time(get_latest_trade_date()):
+        if tradeTime.is_trade_time_now0(tradeTime.get_latest_trade_date()):
             #while is_valid_trade_time(now) :
             while True:
                 realtime_df=self.get_realtime_data()
@@ -2784,7 +2694,7 @@ class Market:
         return total_avrg,postive_rate
     
     def get_hist_cross_analyze(self):
-        latest_trade_day=get_latest_trade_date()
+        latest_trade_day=tradeTime.get_latest_trade_date()
         N=4
         for N in range(1,N):
             print('=============================')
@@ -2794,7 +2704,7 @@ class Market:
         return
     
     def get_realtime_cross_analyze(self):
-        latest_trade_day=get_latest_trade_date()
+        latest_trade_day=tradeTime.get_latest_trade_date()
         N=4
         for n in range(1,N):
             print('=============================')
@@ -2804,7 +2714,7 @@ class Market:
     
     def market_analyze_today(self):
         #init_all_hist_from_export()
-        latest_trade_day=get_latest_trade_date()
+        latest_trade_day=tradeTime.get_latest_trade_date()
         today_df,df_time_stamp=get_today_df()
         self.set_today_df(today_df)
         out_file_name=ROOT_DIR+'/result/result-' + latest_trade_day + '.txt'
@@ -2849,7 +2759,7 @@ class Monitor:
         self.DEBUG_ENABLED=debug
         
     def get_holding_statics(self):
-        latest_trade_day=get_latest_trade_date()
+        latest_trade_day=tradeTime.get_latest_trade_date()
         out_file_name=ROOT_DIR+'/result/static-' + latest_trade_day + '.txt'
         static_output=open(out_file_name,'w')
         sys.stdout=static_output
@@ -2872,13 +2782,13 @@ class Monitor:
         data={}
         column_list=['code','open','pre_close','price','high','low','bid','ask','volume','amount','time']
         my_df=pd.DataFrame(data,columns=column_list)#,index=['
-        latest_trade_day=get_latest_trade_date()
+        latest_trade_day=tradeTime.get_latest_trade_date()
         morning_time0=datetime.datetime.strptime(latest_trade_day+' 09:30:00','%Y-%m-%d %X')
         morning_time1=datetime.datetime.strptime(latest_trade_day+' 11:30:00','%Y-%m-%d %X')
         noon_time0=datetime.datetime.strptime(latest_trade_day+' 13:00:00','%Y-%m-%d %X')
         noon_time1=datetime.datetime.strptime(latest_trade_day+' 15:00:00','%Y-%m-%d %X')
         next_morning_time0=morning_time0+datetime.timedelta(days=1)
-        #while is_trade_time(latest_trade_day):
+        #while tradeTime.is_trade_time_now0(latest_trade_day):
         alarm_category_dict={}
         max_price_dict={}
         min_price_dict={}
@@ -2913,7 +2823,7 @@ class Monitor:
                         print('Market will start in next morning, sleep %s seconds...'%interval)
                     else:
                         if (this_time>=morning_time0 and this_time<=morning_time1)  or (this_time>=noon_time0 and this_time<=noon_time1):
-                            latest_trade_day=get_latest_trade_date()
+                            latest_trade_day=tradeTime.get_latest_trade_date()
                             my_df=pd.DataFrame(data,columns=column_list)        #empty df
                             for code in self.holding_stocks:
                                 out_file_name=ROOT_DIR+'/result/realtime_' +code +'_'+latest_trade_day + '.txt'
@@ -3084,7 +2994,7 @@ def update_test():
     
 def test2():
     #init_all_hist_from_export()
-    latest_trade_day=get_latest_trade_date()
+    latest_trade_day=tradeTime.get_latest_trade_date()
     today_df,df_time_stamp=get_today_df()
     out_file_name=ROOT_DIR+'/result/result-' + latest_trade_day + '.txt'
     output=open(out_file_name,'w')
@@ -3137,7 +3047,7 @@ def test3():
     print(len(potential_intersect_list))
 
 def test4():
-    print(get_latest_trade_date())
+    print(tradeTime.get_latest_trade_date())
     market=Market()
     star_rate=0.25
     star_df=market.get_star_df(star_rate)
@@ -3164,7 +3074,7 @@ def test4():
 
 
 def stock_test():
-    latest_trade_day=get_latest_trade_date()
+    latest_trade_day=tradeTime.get_latest_trade_date()
     out_file_name=ROOT_DIR+'/result/static-' + latest_trade_day + '.txt'
     output=open(out_file_name,'w')
     sys.stdout=output
@@ -3319,7 +3229,7 @@ def atr_market():
     latest_break_20_list=[]
     latest_break_55_list=[]
     top5_average_sum=0.0
-    latest_day_str=get_latest_trade_date()
+    latest_day_str=tradeTime.get_latest_trade_date()
     print('latest_day_str=',latest_day_str)
     if all_codes and latest_day_str:
         for code_str in all_codes:
@@ -3391,7 +3301,7 @@ def change_static_market():
     latest_break_20_list=[]
     latest_break_55_list=[]
     top5_average_sum=0.0
-    latest_day_str=get_latest_trade_date()
+    latest_day_str=tradeTime.get_latest_trade_date()
     #print 'latest_day_str=',latest_day_str
     for code in all_codes:
         stock=Stockhistory(code,'D')
@@ -3486,7 +3396,7 @@ def mini_atr_market():
     latest_break_20_list=[]
     latest_break_55_list=[]
     top5_average_sum=0.0
-    latest_day_str=get_latest_trade_date()
+    latest_day_str=tradeTime.get_latest_trade_date()
     #print 'latest_day_str=',latest_day_str
     atr_in_codes=[]
     atr_in_codes_last=[]
@@ -3519,7 +3429,7 @@ def mini_atr_market():
     return  atr_in_codes
 
 def back_test_atr():
-    last_day_str=get_last_trade_date()
+    last_day_str=tradeTime.get_last_trade_date()
     today_df,this_time_str=get_today_df()
     #print 'today_df=',today_df
     today_column_list= ['code','changepercent', 'trade', 'open', 'high', 'low', 'settlement', 'h_change', 'l_change', 'volume', 'turnoverratio']
@@ -3548,7 +3458,7 @@ def back_test_atr():
     print('latest_break_55_df_mean',latest_break_55_df_mean)
     print('latest_break_55_df_high_mean',latest_break_55_df_high_mean)
     
-    latest_day_str=get_latest_trade_date()
+    latest_day_str=tradeTime.get_latest_trade_date()
     latest_20_file_name=ROOT_DIR+'/result_temp/atr_break_20_%s.csv' % latest_day_str
     latest_break_20_df=pd.read_csv(latest_20_file_name)
     #print latest_break_20_df
