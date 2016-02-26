@@ -525,42 +525,6 @@ def pickCodeFromItems(items_info):
         stock_codes.append(item[0])
     return stock_codes
 
-
-# def getStockData(items_info):
-#     """
-#     获取股票实时数据
-#     :param items_info: 股票信息，没写的股票用空字符代替
-#     :return: 股票名称价格
-#     """
-#     global stock_codes
-#     code_name_price = []
-#     try:
-#         df = ts.get_realtime_quotes(stock_codes)
-#         df_len = len(df)
-#         for stock_code in stock_codes:
-#             is_found = False
-#             for i in range(df_len):
-#                 actual_code = df['code'][i]
-#                 if stock_code == actual_code:
-#                     actual_name = df['name'][i]
-#                     pre_close = float(df['pre_close'][i])
-#                     if 'ST' in actual_name:
-#                         highest = str(round(pre_close * 1.05, 2))
-#                         lowest = str(round(pre_close * 0.95, 2))
-#                         code_name_price.append((actual_code, actual_name, float(df['price'][i]), (highest, lowest)))
-#                     else:
-#                         highest = str(round(pre_close * 1.1, 2))
-#                         lowest = str(round(pre_close * 0.9, 2))
-#                         code_name_price.append((actual_code, actual_name, float(df['price'][i]), (highest, lowest)))
-#                     is_found = True
-#                     break
-#             if is_found is False:
-#                 code_name_price.append(('', '', '', ('', '')))
-#     except:
-#         code_name_price = [('', '', '', ('', ''))] * NUM_OF_STOCKS
-#     return code_name_price
-
-
 def get_limit_price(actual_name,pre_close):
     """
     提取股票涨停、跌停价
