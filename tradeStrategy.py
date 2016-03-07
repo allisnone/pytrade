@@ -907,6 +907,163 @@ class Stockhistory:
             pass
         return continue_trend_score_coefficient,recent_great_change_coefficient
     
+    'VSA-------spread=high-low---------------------------------'
+    def is_up_bar(self):
+        return this_close>=last_close*1.01
+    
+    def is_down_bar(self):
+        return this_close<=last_close*0.99
+    
+    def get_recent_extreme_factor(self):
+        recent_high=2.0
+        recent_low=1.0
+        this_high=3.0
+        trust_factor=0.0
+        if this_high>recent_high:
+            trust_factor=this_high/recent_high-1
+        elif this_low <recent_low:
+            trust_factor=this_low/recent_low-1
+        return trust_factor
+    
+    def get_wide_range_factor(self):
+        high=2.0
+        low=1.0
+        close=1.1
+        ma5_spread_range=1.0
+        max_range=1.8
+        min_range=0.8
+        trust_factor=0.0
+        spread_rate=(high-low)/ma5_spread_range
+        if spread_rate>max_range:   #is_wide_range_bar
+            trust_factor=spread_rate-max_range
+        elif spread_rate<min_range: #is_narrow_range_bar
+            trust_factor=spread_rate-min_range
+        else:
+            pass
+        return trust_factor
+    
+    def get_up_colse_factor(self):
+        high=2.0
+        low=1.0
+        close=1.1
+        high_rate=0.66
+        low_rate=0.33
+        trust_factor=0.0
+        close_coefficient=round((close-low)/(high-low),2)
+        if close_coefficient>high_rate: # is_up_colse
+            trust_factor=close_coefficient-high_rate
+        elif close_coefficient<low_rate:   #is_down_close
+            trust_factor=close_coefficient-low_rate
+        else:
+            pass
+        return trust_factor
+    
+    def get_high_volume_factor(self):
+        this_volume=100
+        ma5_volume=105
+        high_rate=1.5
+        low_rate=0.8
+        trust_factor=0.0
+        volume_coefficient=round(this_volume/ma5_volume,2)
+        if volume_coefficient>high_rate:
+            trust_factor=volume_coefficient-high_rate
+        elif volume_coefficient<low_rate:
+            trust_factor=volume_coefficient-high_rate
+        else:
+            pass
+        return trust_factor
+    
+    def is_up_down_trust(self): # 冲高回落，强弱势
+        trust_factor=0.0
+        range_factor=self.get_wide_range_factor()
+        close_factor=self.get_up_colse_factor()
+        volume_factor=self.get_high_volume_factor()
+        extreme_factor=self.get_recent_extreme_factor()
+        is_up_down=range_factor>0 and close_factor<0 and volume_factor>0 and extreme_factor>0
+        if is_up_down:
+            trust_factor=1.0+range_factor+abs(close_factor)+volume_factor+extreme_factor
+        return is_up_down,trust_factor
+    
+    def is_up_down_confirm(self):# 冲高回落 确认
+        is_last_up_down_trust=True
+        to_exit=False
+        if is_last_up_down_trust:
+            if  self.is_down_bar() and self.get_high_volume_factor()>=0: #第二天下降k线且放量
+                to_exit=True
+            else:
+                pass
+        return to_exit
+    
+    def is_no_demand(self):#买盘不足,弱势
+        trust_factor=0.0
+        range_factor=self.get_wide_range_factor()
+        close_factor=self.get_up_colse_factor()
+        volume_factor=self.get_high_volume_factor()
+        extreme_factor=self.get_recent_extreme_factor()
+        no_demand=range_factor<0 and close_factor==0 and volume_factor<0 and self.is_up_bar()
+        if no_demand:
+            trust_factor=1.0+abs(range_factor)+abs(volume_factor)
+        return no_demand,trust_factor
+    
+    def is_no_demand_confirm(self):# 冲高回落 确认
+        is_no_demand_trust=True
+        to_exit=False
+        if is_no_demand_trust:
+            if  self.is_down_bar():#and self.get_high_volume_factor()>=0: #第二天下降k线且放量
+                to_exit=True
+            else:
+                pass
+        return to_exit    
+        
+    def is_sell_pressure_test(self): #卖压测试，将拉升
+        has_the_first_increase=True
+        this_low_is_reach_last_high_volume_area=True
+        range_factor=self.get_wide_range_factor()
+        close_factor=self.get_up_colse_factor()
+        volume_factor=self.get_high_volume_factor()
+        extreme_factor=self.get_recent_extreme_factor()
+        sell_pressure_test=has_the_first_increase and this_low_is_reach_last_high_volume_area and close_factor>=0 and volume_factor==0
+        return sell_pressure_test
+    
+    def is_stop_volume(self): #止跌成交量，下跌将结束
+        is_down_trend=True
+        trust_factor=0.0
+        range_factor=self.get_wide_range_factor()
+        close_factor=self.get_up_colse_factor()
+        volume_factor=self.get_high_volume_factor()
+        extreme_factor=self.get_recent_extreme_factor()
+        stop_volume=is_down_trend and close_factor >0 and self.is_down_bar() and volume_factor>0
+        if stop_volume:
+            trust_factor=1.0+close_factor+volume_factor
+        return stop_volume,trust_factor
+    
+    def is_reverse_up_trust(self):
+        is_down_trend=True
+        trust_factor=0.0
+        range_factor=self.get_wide_range_factor()
+        close_factor=self.get_up_colse_factor()
+        volume_factor=self.get_high_volume_factor()
+        extreme_factor=self.get_recent_extreme_factor()
+        reverse_up_trust=is_down_trend and range_factor>0 and close_factor >0 and self.is_down_bar() and volume_factor>0 and extreme_factor<0
+        if reverse_up_trust:
+            trust_factor=1.0+close_factor+volume_factor+range_factor+abs(extreme_factor)
+        return reverse_up_trust,trust_factor
+    
+    def is_sell_no_supply(self): #卖盘不足，强势
+        is_down_trend=True
+        trust_factor=0.0
+        range_factor=self.get_wide_range_factor()
+        close_factor=self.get_up_colse_factor()
+        volume_factor=self.get_high_volume_factor()
+        extreme_factor=self.get_recent_extreme_factor()
+        sell_no_supply=range_factor<0 and close_factor<0 and volume_factor<0 and self.is_down_bar()
+        if sell_no_supply:
+            trust_factor=1.0+abs(range_factor)+abs(volume_factor)
+            if is_down_trend:
+                trust_factor+=0.5
+        return sell_no_supply,trust_factor
+        
+    'VSA-------spread=high-low---------------------------------'
     def set_hist_df_by_date(self,from_date_str, to_date_str,raw_df=None):  #from_date_str: '2015-05-16'
         h_df=self.h_df#.set_index('date')
         if raw_df!=None:
