@@ -16,6 +16,28 @@ def is_great_weak():
 def is_first_up():
     return
 
+def sys_level_exit(l_change,p_change,delay):
+    great_drop_exit_half=-2.0
+    great_drop_exit_all=-5.0
+    max_position=1.0
+    if l_change<=great_drop_exit_half:
+        max_position=0.25
+    elif l_change <=1.5*great_drop_exit_half:
+        max_position=0.50
+    elif l_change<great_drop_exit_half:
+        max_position=0.75
+    else:
+        pass
+    
+    if p_change<great_drop_exit_all:
+        max_position=max_position*0.50
+    elif p_change<great_drop_exit_half:
+        max_position=max_position*0.75
+    else:
+        pass
+    
+    return max_position
+
 def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,chy_score=None):
     """ 
     when less then -ultimate_coefficient*sys_risk_range, will be zero position; 
