@@ -619,7 +619,34 @@ class Stockhistory:
         self.temp_hist_df=self._form_temp_df()
         #self.average_high=0
         #self.average_low=0
-       
+    def get_last_k_data(self,last_num=None):
+        if self.temp_hist_df.empty:
+            return
+        last_n=1
+        if last_num!=None:
+            last_n=last_num
+        temp_hist_df_len=len(self.temp_hist_df)
+        last_df=self.temp_hist_df.head(temp_hist_df_len-last_n+1).tail(1)
+        ma5=last_df.iloc[0].ma5
+        ma10=last_df.iloc[0].ma10
+        ma20=last_df.iloc[0].ma20
+        ma30=last_df.iloc[0].ma30
+        ma60=last_df.iloc[0].ma60
+        ma120=last_df.iloc[0].ma120
+        change=last_df.iloc[0].p_change
+        open=last_df.iloc[0].open
+        close=last_df.iloc[0].close
+        high=last_df.iloc[0].high
+        low=last_df.iloc[0].low
+        volume=last_df.iloc[0].volume
+        atr=last_df.iloc[0].atr
+        score=last_df.iloc[0].score
+        v_ma5=last_df.iloc[0].v_ma5
+        v_ma10=last_df.iloc[0].v_ma10
+        v_ma30=last_df.iloc[0].v_ma30
+        v_ma60=last_df.iloc[0].v_ma60
+        return open,high,low,close,volume,change,ma5,ma10,ma30,ma60,ma120,v_ma5,v_ma10,v_ma30,v_ma60
+    
     def is_great_drop_then_high_open(self):
         great_drop_rate=-3.0
         if self.temp_hist_df.empty:
