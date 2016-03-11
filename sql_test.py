@@ -1,4 +1,4 @@
-from sqlbase import *
+from sqlBase import *
 
 mysql_obj=SqlOperation(host='112.74.101.126', port=3306, user='emsadmin', passwd='Ems4you', db='stock')#, charset='utf8')
 

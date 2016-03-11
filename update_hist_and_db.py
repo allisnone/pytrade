@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
-from pdsql import *
-from fileoperation import *
+from pdSql import *
+from fileOperation import *
 
 if __name__ == '__main__': 
     #removeFileInFirstDir(RAW_HIST_DIR)

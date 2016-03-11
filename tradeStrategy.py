@@ -12,10 +12,8 @@ import urllib.request, urllib.error, urllib.parse
 import datetime
 import threading
 import smtplib
-from email.mime.text import MIMEText
-import code
 
-import pdsql as ps
+import pdSql as ps
 import tradeTime
 
 
