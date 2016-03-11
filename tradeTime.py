@@ -172,10 +172,11 @@ def get_remain_time_to_trade():
     delta_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')-this_time
     delta_seconds=delta_time*24*3600+delta_time.seconds+0.000001*delta_time.microseconds
     return delta_seconds
-
+"""
 print(is_trade_date('2017-08-04'))
 print(get_pass_trade_time())
 print(get_latest_trade_date())
 print(get_last_trade_date())
 print(get_next_trade_date())
 print(get_remain_time_to_trade())
+"""
