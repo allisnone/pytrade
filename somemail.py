@@ -60,6 +60,7 @@ def form_mail_info(market_type,score,symbol=None, position_unit=None,give_conten
                 content='暂无系统风险，系统量化打分=%s (-5~5分),持仓待涨。' % score
             else:
                 content='系统多头强势，系统量化打分=%s (-5~5分),加仓%s%%。' %  (score,position_handle*100)
+                
     elif market_type=='stock' and symbol:
         sub='个股监测，股票：%s' % symbol
         if give_content!=None:
