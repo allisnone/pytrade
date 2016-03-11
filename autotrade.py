@@ -1,4 +1,10 @@
 # -*- coding:utf-8 -*-
+def get_open_data():
+    return
+
+def get_near_close_data():
+    return
+
 
 def get_strategy():
     return
@@ -37,4 +43,8 @@ def update_account():
     return
 
 def calculte_max_dropdown():
+    return
+
+
+def post_today_data_update():
     return
