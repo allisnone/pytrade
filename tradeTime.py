@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import datetime
+import datetime,time
 #to get the latest trade day
 except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06',\
                            '2015-10-07','2015-10-08', '2016-04-04','2016-05-02','2016-06-09','2016-06-10',\
@@ -172,6 +172,13 @@ def get_remain_time_to_trade():
     delta_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')-this_time
     delta_seconds=delta_time*24*3600+delta_time.seconds+0.000001*delta_time.microseconds
     return delta_seconds
+
+def get_timestamp(date_time_str=None):#获取时间戳
+    #date_time_str='2015-07-20 13:20:01'
+    if date_time_str==None:
+        return time.time()
+    else:
+        return time.mktime(time.strptime(date_time_str, '%Y-%m-%d %X'))
 """
 print(is_trade_date('2017-08-04'))
 print(get_pass_trade_time())
