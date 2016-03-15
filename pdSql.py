@@ -251,7 +251,7 @@ class StockSQL(object):
         :return: 
         """
         drop_sql='drop table %s' % table
-        sql.execute(delete_sql, self.engine)
+        sql.execute(drop_sql, self.engine)
     
     def get_last_db_date(self,code_str,histdata_last_df):
         """
