@@ -708,6 +708,8 @@ class Stockhistory:
             temp_df[ma_sum_name] = np.round(pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW), 2)
             del temp_df['c_o_ma']
             temp_df[ma_sum_name]=temp_df[ma_sum_name]+(temp_df[ma_sum_name]-temp_df[ma_sum_name].shift(1))
+        temp_df['ma_s_score']=0.2*temp_df['sum_o_ma5']+0.15*temp_df['sum_o_ma10']+0.15*temp_df['sum_o_ma20']+0.15*temp_df['sum_o_ma30']+0.15*temp_df['sum_o_ma60']+0.2*temp_df['sum_o_ma120']
+        #temp_df['ma_s_score']=0.1*temp_df['sum_o_ma5']+0.1*temp_df['sum_o_ma10']+0.1*temp_df['sum_o_ma20']+0.2*temp_df['sum_o_ma30']+0.2*temp_df['sum_o_ma60']+0.3*temp_df['sum_o_ma120']
         temp_df.to_csv('temp_df.csv')
         ma5_date_score=temp_df.tail(1).iloc[0].sum_o_ma5
         ma10_date_score=temp_df.tail(1).iloc[0].sum_o_ma10
