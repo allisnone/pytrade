@@ -35,7 +35,6 @@ def sys_level_exit(l_change,p_change,delay):
         max_position=max_position*0.75
     else:
         pass
-    
     return max_position
 
 def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,chy_score=None):
@@ -84,6 +83,7 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
     else:
         position=max_position
         is_sys_risk=False
+    print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
     print('position=',position,'sys_score=',sys_score,'is_sys_risk=',is_sys_risk)
     return position,sys_score,is_sys_risk
 
@@ -91,6 +91,7 @@ def get_recent_100d_great_dropdown():
     return
 def get_recent_100d_great_increase():
     return
+
 def revised_position(sys_risk_anlyse_position,recent_100d_great_dropdown,recent_100d_great_increase,max_position=0.85):
     """ 
     when recent_100d_great_dropdown less then 2.0*permit_great_dropdown, will be linearly increased by recent_100d_great_dropdown
@@ -153,7 +154,7 @@ def test():
 #test()
 def tes1t():
     position,sys_score,is_sys_risk=sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25)
-    revised_position(sys_risk_anlyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.3,max_position=0.85)
+    revised_position(sys_risk_anlyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.2,max_position=0.85)
     
 tes1t()
 

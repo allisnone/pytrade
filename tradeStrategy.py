@@ -707,6 +707,7 @@ class Stockhistory:
             ma_sum_name=ma_sum_name+ma_type
             temp_df[ma_sum_name] = np.round(pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW), 2)
             del temp_df['c_o_ma']
+        #print(temp_df)
         ma5_date_score=temp_df.tail(1).iloc[0].sum_o_ma5
         ma10_date_score=temp_df.tail(1).iloc[0].sum_o_ma10
         ma20_date_score=temp_df.tail(1).iloc[0].sum_o_ma20
@@ -751,6 +752,7 @@ class Stockhistory:
         if len(self.temp_hist_df)<2:
             return 0,0,0
         hist_df=self.temp_hist_df.tail(2)
+        ma_seq_score=0
         ma5_0=hist_df.iloc[0].ma5
         ma10_0=hist_df.iloc[0].ma10
         ma30_0=hist_df.iloc[0].ma30
@@ -759,16 +761,29 @@ class Stockhistory:
         ma10_1=hist_df.iloc[1].ma10
         ma30_1=hist_df.iloc[1].ma30
         ma60_1=hist_df.iloc[1].ma60
+        if ma5_1>=ma10_1:
+            ma_seq_score=ma_seq_score+1
+        else:
+            ma_seq_score=ma_seq_score-1
+        if ma10_1>=ma30_1:
+            ma_seq_score=ma_seq_score+1
+        else:
+            ma_seq_score=ma_seq_score-1
+        if ma30_1>=ma60_1:
+            ma_seq_score=ma_seq_score+1
+        else:
+            ma_seq_score=ma_seq_score-1
+            
         ma_5_10_cross=self.is_cross_point(ma5_0, ma5_1, ma10_0, ma10_1)
         ma_10_30_cross=self.is_cross_point(ma10_0, ma10_1, ma30_0, ma30_1)
         ma_30_60_cross=self.is_cross_point(ma30_0, ma30_1, ma60_0, ma60_1)
-        return ma_5_10_cross,ma_10_30_cross,ma_30_60_cross
+        return ma_5_10_cross,ma_10_30_cross,ma_30_60_cross,ma_seq_score
     
     def get_ma_trend_score(self):
         delta_score=0.5
         ma_trend_score=0.0
-        ma_5_10_cross,ma_10_30_cross,ma_30_60_cross=self.is_ma_cross_point()
-        ma_cross_num=ma_5_10_cross+ma_10_30_cross+ma_30_60_cross
+        ma_5_10_cross,ma_10_30_cross,ma_30_60_cross,ma_seq_score=self.is_ma_cross_point()
+        ma_cross_num=ma_5_10_cross+ma_10_30_cross+ma_30_60_cross+ma_seq_score
         if ma_cross_num>0:
             ma_trend_score=min(round(ma_cross_num*delta_score,2),1.5)
         else:
