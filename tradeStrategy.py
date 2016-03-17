@@ -707,7 +707,8 @@ class Stockhistory:
             ma_sum_name=ma_sum_name+ma_type
             temp_df[ma_sum_name] = np.round(pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW), 2)
             del temp_df['c_o_ma']
-        #print(temp_df)
+            temp_df[ma_sum_name]=temp_df[ma_sum_name]+(temp_df[ma_sum_name]-temp_df[ma_sum_name].shift(1))
+        temp_df.to_csv('temp_df.csv')
         ma5_date_score=temp_df.tail(1).iloc[0].sum_o_ma5
         ma10_date_score=temp_df.tail(1).iloc[0].sum_o_ma10
         ma20_date_score=temp_df.tail(1).iloc[0].sum_o_ma20
@@ -715,6 +716,8 @@ class Stockhistory:
         ma60_date_score=temp_df.tail(1).iloc[0].sum_o_ma60
         ma120_date_score=temp_df.tail(1).iloc[0].sum_o_ma120
         return ma5_date_score,ma10_date_score,ma20_date_score,ma30_date_score,ma60_date_score,ma120_date_score
+        #return 1,1,-1,-1,-1,-1
+        #return 5,5,5,5,5,5
     
     def get_market_ma_score(self,hist_ma_score=None,period_type=None):
         ma_score=0.0
@@ -766,28 +769,30 @@ class Stockhistory:
         else:
             ma_seq_score=ma_seq_score-1
         if ma10_1>=ma30_1:
-            ma_seq_score=ma_seq_score+1
+            ma_seq_score=ma_seq_score+0.75
         else:
-            ma_seq_score=ma_seq_score-1
+            ma_seq_score=ma_seq_score-0.75
         if ma30_1>=ma60_1:
-            ma_seq_score=ma_seq_score+1
+            ma_seq_score=ma_seq_score+0.5
         else:
-            ma_seq_score=ma_seq_score-1
+            ma_seq_score=ma_seq_score-0.5
             
         ma_5_10_cross=self.is_cross_point(ma5_0, ma5_1, ma10_0, ma10_1)
         ma_10_30_cross=self.is_cross_point(ma10_0, ma10_1, ma30_0, ma30_1)
         ma_30_60_cross=self.is_cross_point(ma30_0, ma30_1, ma60_0, ma60_1)
         return ma_5_10_cross,ma_10_30_cross,ma_30_60_cross,ma_seq_score
+        #return 1,1,-1,1
     
     def get_ma_trend_score(self):
         delta_score=0.5
         ma_trend_score=0.0
         ma_5_10_cross,ma_10_30_cross,ma_30_60_cross,ma_seq_score=self.is_ma_cross_point()
         ma_cross_num=ma_5_10_cross+ma_10_30_cross+ma_30_60_cross+ma_seq_score
+        print('ma_cross_num=',ma_cross_num)
         if ma_cross_num>0:
             ma_trend_score=min(round(ma_cross_num*delta_score,2),1.5)
         else:
-            ma_trend_score=max(round(ma_cross_num*delta_score*1.5,2),-2.25)
+            ma_trend_score=max(round(ma_cross_num*delta_score*1.2,2),-2.25)
         return ma_trend_score
     
     def get_trend_score(self,open_change=None,p_change=None):
