@@ -617,6 +617,10 @@ class Stockhistory:
         self.temp_hist_df=self._form_temp_df()
         #self.average_high=0
         #self.average_low=0
+    
+    def set_hist_df(self,df):
+        self.temp_hist_df=df
+    
     def get_last_k_data(self,last_num=None):
         if self.temp_hist_df.empty:
             return
@@ -662,22 +666,6 @@ class Stockhistory:
         open=temp_df.tail(1).iloc[1].open
         return 0.0
     
-    def get_market_score(self):
-        ma_score_l=self.get_market_ma_score(period_type='long_turn')
-        ma_score_s=self.get_market_ma_score(period_type='short_turn')
-        ma_score=(0.3*ma_score_l+0.7*ma_score_s)
-        #ma_score=ma_score_s
-        print('ma_score=',ma_score)
-        trend_score=self.get_trend_score()
-        print('trend_score=',trend_score)
-        market_score=round(ma_score+trend_score,2)
-        if market_score>=0:
-            market_score=min(market_score,5.0)
-        else:
-            market_score=max(market_score,-5.0)
-        print('market_score=',market_score)
-        return market_score
-    
     def get_price_score(self):
         if self.temp_hist_df.empty:
             return 0.0
@@ -692,7 +680,7 @@ class Stockhistory:
         open=temp_df.tail(1).iloc[1].open
         return 0.0
     
-    def get_ma_score(self):
+    def get_market_score(self,short_turn_weight=None):
         ma_type='ma5'
         temp_df=self.temp_hist_df
         if len(temp_df)<2:
@@ -700,6 +688,13 @@ class Stockhistory:
         ma_offset=0.002
         WINDOW=3
         ma_type_list=['ma5','ma10','ma20','ma30','ma60','ma120']
+        ma_weight=[0.3,0.2,0.2,0.1,0.1,0.1]
+        short_weight=0.7
+        ma_seq_score={'ma5_o_ma10':0.5,'ma10_o_ma30':0.3,'ma30_o_ma60':0.2}
+        ma_cross_score={'ma5_c_ma10':0.75,'ma10_c_ma30':0.5,'ma30_c_ma60':0.3}
+        if short_turn_weight!=None:
+            short_weight=short_turn_weight
+        """Get MA score next"""
         for ma_type in ma_type_list:
             ma_sum_name='sum_o_'
             temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
@@ -708,94 +703,119 @@ class Stockhistory:
             temp_df[ma_sum_name] = np.round(pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW), 2)
             del temp_df['c_o_ma']
             temp_df[ma_sum_name]=temp_df[ma_sum_name]+(temp_df[ma_sum_name]-temp_df[ma_sum_name].shift(1))
-        temp_df['ma_s_score']=0.2*temp_df['sum_o_ma5']+0.15*temp_df['sum_o_ma10']+0.15*temp_df['sum_o_ma20']+0.15*temp_df['sum_o_ma30']+0.15*temp_df['sum_o_ma60']+0.2*temp_df['sum_o_ma120']
-        #temp_df['ma_s_score']=0.1*temp_df['sum_o_ma5']+0.1*temp_df['sum_o_ma10']+0.1*temp_df['sum_o_ma20']+0.2*temp_df['sum_o_ma30']+0.2*temp_df['sum_o_ma60']+0.3*temp_df['sum_o_ma120']
-        temp_df.to_csv('temp_df.csv')
-        ma5_date_score=temp_df.tail(1).iloc[0].sum_o_ma5
-        ma10_date_score=temp_df.tail(1).iloc[0].sum_o_ma10
-        ma20_date_score=temp_df.tail(1).iloc[0].sum_o_ma20
-        ma30_date_score=temp_df.tail(1).iloc[0].sum_o_ma30
-        ma60_date_score=temp_df.tail(1).iloc[0].sum_o_ma60
-        ma120_date_score=temp_df.tail(1).iloc[0].sum_o_ma120
-        return ma5_date_score,ma10_date_score,ma20_date_score,ma30_date_score,ma60_date_score,ma120_date_score
-        #return 1,1,-1,-1,-1,-1
-        #return 5,5,5,5,5,5
-    
-    def get_market_ma_score(self,hist_ma_score=None,period_type=None):
-        ma_score=0.0
-        if hist_ma_score:
-            ma_score=hist_ma_score
-        else:
-            ma5_date_score,ma10_date_score,ma20_date_score,ma30_date_score,ma60_date_score,ma120_date_score=self.get_ma_score()
-            print(ma5_date_score,ma10_date_score,ma20_date_score,ma30_date_score,ma60_date_score,ma120_date_score)
-            if period_type=='long_turn':
-                ma_score=ma_score=0.1*ma5_date_score+0.2*ma10_date_score+0.3*ma30_date_score+0.5*ma60_date_score
-            elif period_type=='short_turn':
-                ma_score=ma_score=0.5*ma5_date_score+0.3*ma10_date_score+0.2*ma30_date_score+0.1*ma60_date_score
-            else:
-                pass
-        print('ma_score0=',ma_score)
-        ma_trend_score=self.get_ma_trend_score()
-        print('ma_trend_score=',ma_trend_score)
-        current_ma_score=round(ma_score+ma_trend_score,2)
-        if current_ma_score>0:
-            current_ma_score=min(current_ma_score,5.0)
-        else:
-            current_ma_score=max(current_ma_score,-5.0)
-        return current_ma_score
-    
-    def is_cross_point(self,last_short_ma,this_short_ma,last_long_ma,this_long_ma):
-        ma_cross_value=0
-        if last_long_ma>last_short_ma and this_short_ma>=this_long_ma:
-            ma_cross_value=1
-        elif last_long_ma<last_short_ma and this_short_ma<=this_long_ma:
-            ma_cross_value=-1
-        return ma_cross_value
-    
-    def is_ma_cross_point(self):
-        #temp_hist_df=self._form_temp_df()
-        if len(self.temp_hist_df)<2:
-            return 0,0,0
-        hist_df=self.temp_hist_df.tail(2)
-        ma_seq_score=0
-        ma5_0=hist_df.iloc[0].ma5
-        ma10_0=hist_df.iloc[0].ma10
-        ma30_0=hist_df.iloc[0].ma30
-        ma60_0=hist_df.iloc[0].ma60
-        ma5_1=hist_df.iloc[1].ma5
-        ma10_1=hist_df.iloc[1].ma10
-        ma30_1=hist_df.iloc[1].ma30
-        ma60_1=hist_df.iloc[1].ma60
-        if ma5_1>=ma10_1:
-            ma_seq_score=ma_seq_score+1
-        else:
-            ma_seq_score=ma_seq_score-1
-        if ma10_1>=ma30_1:
-            ma_seq_score=ma_seq_score+0.75
-        else:
-            ma_seq_score=ma_seq_score-0.75
-        if ma30_1>=ma60_1:
-            ma_seq_score=ma_seq_score+0.5
-        else:
-            ma_seq_score=ma_seq_score-0.5
             
-        ma_5_10_cross=self.is_cross_point(ma5_0, ma5_1, ma10_0, ma10_1)
-        ma_10_30_cross=self.is_cross_point(ma10_0, ma10_1, ma30_0, ma30_1)
-        ma_30_60_cross=self.is_cross_point(ma30_0, ma30_1, ma60_0, ma60_1)
-        return ma_5_10_cross,ma_10_30_cross,ma_30_60_cross,ma_seq_score
-        #return 1,1,-1,1
-    
-    def get_ma_trend_score(self):
-        delta_score=0.5
+        temp_df['ma_score0']=(short_weight*ma_weight[0]+(1-short_weight)*ma_weight[5])*temp_df['sum_o_ma5']\
+        +(short_weight*ma_weight[1]+(1-short_weight)*ma_weight[4])*temp_df['sum_o_ma10']\
+        +(short_weight*ma_weight[2]+(1-short_weight)*ma_weight[3])*temp_df['sum_o_ma20']\
+        +(short_weight*ma_weight[3]+(1-short_weight)*ma_weight[2])*temp_df['sum_o_ma30']\
+        +(short_weight*ma_weight[4]+(1-short_weight)*ma_weight[1])*temp_df['sum_o_ma60']\
+        +(short_weight*ma_weight[5]+(1-short_weight)*ma_weight[1])*temp_df['sum_o_ma120']
+        #temp_df['ma_s_score']=0.1*temp_df['sum_o_ma5']+0.1*temp_df['sum_o_ma10']+0.1*temp_df['sum_o_ma20']+0.2*temp_df['sum_o_ma30']+0.2*temp_df['sum_o_ma60']+0.3*temp_df['sum_o_ma120']
+        del temp_df['sum_o_ma5']
+        del temp_df['sum_o_ma10']
+        del temp_df['sum_o_ma20']
+        del temp_df['sum_o_ma30']
+        del temp_df['sum_o_ma60']
+        del temp_df['sum_o_ma120']
+        """Get MA trend score next"""
         ma_trend_score=0.0
-        ma_5_10_cross,ma_10_30_cross,ma_30_60_cross,ma_seq_score=self.is_ma_cross_point()
-        ma_cross_num=ma_5_10_cross+ma_10_30_cross+ma_30_60_cross+ma_seq_score
-        print('ma_cross_num=',ma_cross_num)
-        if ma_cross_num>0:
-            ma_trend_score=min(round(ma_cross_num*delta_score,2),1.5)
+        for ma_o_name in ma_seq_score.keys():
+            ma_name_list=ma_o_name.split('_')
+            s_ma_name=ma_name_list[0]
+            l_ma_name=ma_name_list[2]
+            ma_cross_name=ma_o_name.replace('o','c')
+            temp_df[ma_o_name]=np.where(temp_df[s_ma_name]>temp_df[l_ma_name],ma_seq_score[ma_o_name],-ma_seq_score[ma_o_name])
+            temp_df[ma_cross_name+'_d']=np.where((temp_df[s_ma_name]<=temp_df[l_ma_name]) & (temp_df[s_ma_name].shift(1)>temp_df[l_ma_name].shift(1)),-ma_cross_score[ma_cross_name],0)
+            temp_df[ma_cross_name+'_u']=np.where((temp_df[s_ma_name]>=temp_df[l_ma_name]) & (temp_df[s_ma_name].shift(1)<temp_df[l_ma_name].shift(1)),ma_cross_score[ma_cross_name],0)
+            temp_df[ma_cross_name]=temp_df[ma_cross_name+'_d']+temp_df[ma_cross_name+'_u']
+            del temp_df[ma_cross_name+'_d']
+            del temp_df[ma_cross_name+'_u']
+        ma_o_name_list=ma_seq_score.keys()
+        ma_c_name_list=ma_cross_score.keys()
+        temp_df['ma_trend_score']=temp_df['ma5_o_ma10']+temp_df['ma10_o_ma30']+temp_df['ma30_o_ma60']\
+        +temp_df['ma5_c_ma10']+temp_df['ma10_c_ma30']+temp_df['ma30_c_ma60']
+        temp_df['ma_score']=temp_df['ma_score0']+temp_df['ma_trend_score']
+        del temp_df['ma5_o_ma10']
+        del temp_df['ma10_o_ma30']
+        del temp_df['ma30_o_ma60']
+        """
+        del temp_df['ma5_c_ma10']
+        del temp_df['ma10_c_ma30']
+        del temp_df['ma30_c_ma60']
+        """
+        """Get K data trend score next"""
+        great_high_open_rate=1.0
+        great_low_open_rate=-1.5
+        temp_df['gt_o_h']=np.where(temp_df['o_change']>great_high_open_rate,(temp_df['o_change']/great_high_open_rate-1),0)
+        temp_df['gt_o_l']=np.where(temp_df['o_change']<great_low_open_rate,-(temp_df['o_change']/great_low_open_rate-1),0)
+        temp_df['gt_open']=temp_df['gt_o_h']+temp_df['gt_o_l']
+        del temp_df['gt_o_h']
+        del temp_df['gt_o_l']
+        
+        great_increase_rate=3.0
+        great_descrease_rate=-3.0
+        temp_df['gt_c_h']=np.where(temp_df['p_change']>great_increase_rate,(temp_df['p_change']/great_increase_rate-1),0)
+        temp_df['gt_c_l']=np.where(temp_df['p_change']<great_descrease_rate,-(temp_df['p_change']/great_descrease_rate-1),0)
+        temp_df['gt_close']=temp_df['gt_c_h']+temp_df['gt_c_l']
+        del temp_df['gt_c_h']
+        del temp_df['gt_c_l']
+        
+        great_v_rate=1.2
+        little_v_rate=0.8
+        temp_df['gt_v_r']=np.where(temp_df['rmb_rate']>great_v_rate,(temp_df['rmb_rate']/great_v_rate-1),0)
+        temp_df['lt_v_r']=np.where(temp_df['rmb_rate']<little_v_rate,-(little_v_rate/temp_df['rmb_rate']-1),0)
+        temp_df['great_v_rate']=temp_df['gt_v_r']+temp_df['lt_v_r']
+        del temp_df['gt_v_r']
+        del temp_df['lt_v_r']
+        
+        great_continue_increase_rate=great_increase_rate*0.75
+        great_continue_descrease_rate=great_descrease_rate*0.75
+        temp_df['gt_cc_h']=np.where((temp_df['p_change']>great_continue_increase_rate)\
+                                     & (temp_df['p_change'].shift(1)>great_continue_increase_rate),\
+                                     0.5*(0.5*(temp_df['p_change']+temp_df['p_change'].shift(1))/great_increase_rate-1),0)
+        temp_df['gt_cc_l']=np.where((temp_df['p_change']<great_continue_descrease_rate)\
+                                     & (temp_df['p_change'].shift(1)<great_continue_descrease_rate),\
+                                     -0.5*(0.5*(temp_df['p_change']+temp_df['p_change'].shift(1))/great_continue_descrease_rate-1),0)
+        temp_df['gt_cont_close']=temp_df['gt_cc_h']+temp_df['gt_cc_l']
+        del temp_df['gt_cc_h']
+        del temp_df['gt_cc_l']
+        
+        temp_df['k_trend']=temp_df['gt_open']*0.5 + temp_df['gt_close'] + temp_df['gt_cont_close'] \
+        + 2.0*temp_df['p_change']/abs(temp_df['p_change'])*temp_df['great_v_rate']
+        temp_df['k_score']=temp_df['ma_score'] + temp_df['k_trend']
+        self.set_hist_df(temp_df)
+        temp_df.to_csv('temp_df_%s.csv' % self.code)
+        #print(temp_df.tail(10))
+        ma_score=temp_df.tail(1).iloc[0].ma_score
+        k_score=temp_df.tail(1).iloc[0].k_score
+        """
+        if k_score>0:
+            k_score=min(k_score,5.0)
         else:
-            ma_trend_score=max(round(ma_cross_num*delta_score*1.2,2),-2.25)
-        return ma_trend_score
+            k_score=max(k_score,-5.0)
+        """
+        return ma_score,k_score
+    
+    def get_extreme_change(self,value_list,rate=None):
+        normal_rate=0.8
+        if rate != None:
+            normal_rate = rate
+        strong_v=0.0
+        weak_v=0.0
+        if value_list:   
+            filter_li=[]
+            for ele in value_list:
+                if ele not in filter_li and ele!='nan':
+                    filter_li.append(ele)
+                else:
+                    pass
+            sorted_li=sorted(filter_li,reverse=True)
+            strong_index=int(round(len(sorted_li)*(1-normal_rate)))
+            weak_index=int(round(len(sorted_li)*normal_rate))
+            print('sorted_li=',sorted_li,type(sorted_li[1]))
+            strong_v=sorted_li[strong_index]
+            weak_v=sorted_li[weak_index]
+        return strong_v,weak_v
     
     def get_trend_score(self,open_change=None,p_change=None):
         delta_score=0.5
@@ -826,6 +846,11 @@ class Stockhistory:
             score=max(score,-5.0)
         return score
     
+    
+    def update_trend_score(self):
+        temp_df=self.temp_hist_df
+        
+        return
     def get_open_score(self,open_rate):
         great_high_open_rate=1.0
         great_low_open_rate=-1.5
@@ -1224,6 +1249,11 @@ class Stockhistory:
         temp_df['ma120'] = np.round(pd.rolling_mean(temp_df['close'], window=120), 2)
         temp_df['v_ma5'] = np.round(pd.rolling_mean(temp_df['volume'], window=5), 2)
         temp_df['v_ma10'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
+        #temp_df['v_rate'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
+        temp_df.insert(17, 'v_rate', (temp_df['volume']/temp_df['v_ma5']).round(4))
+        temp_df['rmb_ma5'] = np.round(pd.rolling_mean(temp_df['rmb'], window=5), 2)
+        temp_df['rmb_ma10'] = np.round(pd.rolling_mean(temp_df['rmb'], window=10), 2)
+        temp_df.insert(17, 'rmb_rate', (temp_df['rmb']/temp_df['rmb_ma5']).round(4))
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(16, 'o_change', 100.00*((temp_df.open-temp_df.last_close)/temp_df.last_close).round(4))
