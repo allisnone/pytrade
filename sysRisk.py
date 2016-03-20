@@ -78,15 +78,16 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
     #shz_temp_df=shz_temp_df.fillna(0)
     #chy_temp_df=chy_temp_df.fillna(0)
     shz_temp_df['sys_score0']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
-    
     #chy_temp_df=chy_temp_df.fillna(0)
     shz_temp_df['sys_score']=np.where(shz_temp_df.index>=chy_first_date,shz_temp_df['sys_score0'],shz_temp_df['k_score'])
+    shz_temp_df['sys_score'] = np.round(pd.rolling_mean(shz_temp_df['sys_score'], window=3), 2)
     #shz_temp_df['position_risk']=np.where(shz_temp_df['sys_score']<-ultimate_coefficient*sys_risk_range,0,0)
     shz_temp_df['position_nor']=np.where((shz_temp_df['sys_score']>=-ultimate_coefficient*sys_risk_range) & \
                                          (shz_temp_df['sys_score']<=ultimate_coefficient*sys_risk_range),\
                                          0.5*max_position/sys_risk_range/ultimate_coefficient*shz_temp_df['sys_score']+0.5*max_position,0)
     shz_temp_df['position_full']=np.where(shz_temp_df['sys_score']>ultimate_coefficient*sys_risk_range,max_position,0)
     shz_temp_df['position']=  shz_temp_df['position_nor'] + shz_temp_df['position_full']# + shz_temp_df['position_risk']
+    del shz_temp_df['sys_score0']
     del shz_temp_df['position_nor']
     del shz_temp_df['position_full']
     shz_temp_df.to_csv('shz_temp_df.csv')

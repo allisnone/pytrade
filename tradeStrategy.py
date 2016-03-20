@@ -796,7 +796,7 @@ class Stockhistory:
         del temp_df['gt_cc_h']
         del temp_df['gt_cc_l']
         
-        temp_df['k_trend']=temp_df['gt_open']*0.5 + 0.5*temp_df['gt_close'] + temp_df['gt_cont_close'] \
+        temp_df['k_trend']=temp_df['gt_open']*0.5 + temp_df['gt_close'] + temp_df['gt_cont_close'] \
         + 2.0*temp_df['p_change']/abs(temp_df['p_change'])*temp_df['great_v_rate']
         temp_df['k_score0']=temp_df['ma_score'] + temp_df['k_trend']
         temp_df['k_score_g']=np.where(temp_df['k_score0']>5.0,5.0,0.0)
@@ -872,37 +872,6 @@ class Stockhistory:
         else:
             score=max(score,-5.0)
         return score
-    
-    
-    def update_trend_score(self):
-        temp_df=self.temp_hist_df
-        
-        return
-    def get_open_score(self,open_rate):
-        great_high_open_rate=1.0
-        great_low_open_rate=-1.5
-        open_score_coefficient=0.0
-        if open_rate>great_high_open_rate:
-            open_score_coefficient=round(open_rate/great_high_open_rate,2)
-        elif open_rate<great_low_open_rate:
-            open_score_coefficient=-round(open_rate/great_low_open_rate,2)
-        else:
-            pass
-        return open_score_coefficient
-    
-    def get_increase_score(self,increase_rate):
-        great_increase_rate=3.0
-        great_descrease_rate=-3.0
-        increase_score_coefficient=0.0
-        if increase_rate>great_increase_rate:
-            increase_score_coefficient=round(increase_rate/great_increase_rate,2)
-            increase_score_coefficient=max(2.0,increase_score_coefficient)
-        elif increase_rate<great_descrease_rate:
-            increase_score_coefficient=-round(increase_rate/great_descrease_rate,2)
-            #increase_score_coefficient=max(-2.0,increase_score_coefficient)
-        else:
-            pass
-        return increase_score_coefficient
     
     def get_continue_trend_num(self):
         if len(self.temp_hist_df)<2:
@@ -986,27 +955,8 @@ class Stockhistory:
             great_change_num=-great_descrease_num
         return continue_trend_num,great_change_num,volume_coefficient
     
-    def get_recent_trend_score(self,continue_trend_num,great_change_num):
-        #continue_trend_num,great_change_num,volume_coefficient=get_continue_trend_num(recent_10_hist_df)
-        continue_trend_score_coefficient=0.0
-        if continue_trend_num>2:
-            continue_trend_score_coefficient=round(continue_trend_num/2.0,2)
-            continue_trend_score_coefficient=max(3.0,open_score_coefficient)
-        elif continue_trend_num<-2:
-            continue_trend_score_coefficient=round(continue_trend_num/2.0,2)
-        else:
-            pass
-        recent_great_change_coefficient=0.0
-        if great_change_num>2:
-            recent_great_change_coefficient=round(great_change_num/2.0,2)
-            recent_great_change_coefficient=min(3.0,recent_great_change_coefficient)
-        elif great_change_num<-2:
-            recent_great_change_coefficient=round(great_change_num/2.0,2)
-        else:
-            pass
-        return continue_trend_score_coefficient,recent_great_change_coefficient
-    
     'VSA-------spread=high-low---------------------------------'
+    
     def is_up_bar(self):
         return this_close>=last_close*1.01
     
