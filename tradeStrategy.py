@@ -796,27 +796,27 @@ class Stockhistory:
         del temp_df['gt_cc_h']
         del temp_df['gt_cc_l']
         
-        temp_df['k_trend']=temp_df['gt_open']*0.5 + temp_df['gt_close'] + temp_df['gt_cont_close'] \
+        temp_df['k_trend']=temp_df['gt_open']*0.5 + 0.5*temp_df['gt_close'] + temp_df['gt_cont_close'] \
         + 2.0*temp_df['p_change']/abs(temp_df['p_change'])*temp_df['great_v_rate']
         temp_df['k_score0']=temp_df['ma_score'] + temp_df['k_trend']
         temp_df['k_score_g']=np.where(temp_df['k_score0']>5.0,5.0,0.0)
-        temp_df['k_score_g']=np.where((temp_df['k_score0']<=5.0) & (temp_df['k_score0']>=-5.0),temp_df['k_score0'],0.0)
+        temp_df['k_score_m']=np.where((temp_df['k_score0']<=5.0) & (temp_df['k_score0']>=-5.0),temp_df['k_score0'],0.0)
         temp_df['k_score_l']=np.where(temp_df['k_score0']<-5.0,-5.0,0.0)
-        temp_df['k_score']=temp_df['k_score_g'] + temp_df['k_score_l']
+        temp_df['k_score']=temp_df['k_score_g'] + temp_df['k_score_l'] + temp_df['k_score_m']
         del temp_df['k_score_g']
         del temp_df['k_score_l']
         self.set_hist_df(temp_df)
         temp_df.to_csv('temp_df_%s.csv' % self.code)
         #print(temp_df.tail(10))
         ma_score=temp_df.tail(1).iloc[0].ma_score
-        k_score=temp_df.tail(1).iloc[0].k_score
+        stock_score=temp_df.tail(1).iloc[0].k_score
         """
-        if k_score>0:
-            k_score=min(k_score,5.0)
+        if stock_score>0:
+            stock_score=min(stock_score,5.0)
         else:
-            k_score=max(k_score,-5.0)
+            stock_score=max(stock_score,-5.0)
         """
-        return ma_score,k_score
+        return ma_score,stock_score
     
     def get_extreme_change(self,value_list,rate=None,unique_v=False):
         normal_rate=0.8
