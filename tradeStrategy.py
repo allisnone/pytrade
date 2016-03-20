@@ -179,7 +179,76 @@ def get_ma_list(close_list,ma_num):
     #print ma_list,len(ma_list)
     return ma_list
 
-def find_boduan(data_list):
+def find_boduan(data_list,min_range_rate=0.10):
+    
+    count=len(data_list)
+    max=data_list[0]
+    min=data_list[0]
+    split_list=[]
+    #split_list.append(max)
+    indx=1
+    max_index=0
+    min_index=0
+    action=''
+    found_min=False
+    found_max=False
+    print(data_list)
+    while indx<(count-1) and indx>=1:
+        value=data_list[indx]
+        print(max,min,value)
+        up_bord=min*(1+min_range_rate)
+        if min<0:
+            up_bord=min*(1-min_range_rate)
+        down_bord=max*(1-min_range_rate)
+        if max<0:
+            down_bord=max*(1+min_range_rate)
+        print(up_bord,down_bord)
+        if value>up_bord:
+            action='find_max'
+            print(found_min)
+            if not found_min:
+                split_list.append(min)
+                min=value
+                found_min=True
+            else:
+                if value>max:
+                    max=value
+                    max_index=indx
+                    found_max=False
+                if value<min:
+                    min=value
+                    min_index=indx
+                    found_min=False
+        elif value<down_bord:
+            action='find_min'
+            if not found_max:
+                split_list.append(max)
+                max=value
+                found_max=True
+            else:
+                if value>max:
+                    max=value
+                    max_index=indx
+                    found_max=False
+                if value<min:
+                    min=value
+                    min_index=indx
+                    found_min=False
+        else:
+            if value>max:
+                max=value
+                max_index=indx
+                found_max=False
+            if value<min:
+                min=value
+                min_index=indx
+            found_min=False
+            found_max=False
+        indx=indx+1
+    #split_list.append(lst_value)
+    return split_list
+
+def find_boduan0(data_list):
     indx=0
     count=len(data_list)
     max=data_list[0]
@@ -1609,7 +1678,7 @@ class Stockhistory:
         temp_df.to_csv(ROOT_DIR+'/trade_temp/%s.csv'%self.code)
         return recent_sum
     
-    def ma_analyze(self):
+    def boduan_analyze(self):
         df=self._form_temp_df()
         #print df
         analyze_types=['close','ma5','ma10','ma30','ma60','ma120']
@@ -2981,7 +3050,7 @@ class Monitor:
             stock=Stockhistory(code,'D')
             print('code:', code)
             stock.hist_analyze(10)
-            stock.ma_analyze()
+            stock.boduan_analyze()
             print('---------------------------------------------------')
         
         sys.stdout=sys.__stdout__
@@ -3295,7 +3364,7 @@ def stock_test():
         stock=Stockhistory(code,'D')
         print('code:', code)
         stock.hist_analyze(10)
-        stock.ma_analyze()
+        stock.boduan_analyze()
         print('---------------------------------------------------')
     
     sys.stdout=sys.__stdout__
@@ -3341,7 +3410,7 @@ def stock_test1():
         #stock.get_weak_lt_interval(realtime_df,realtime_mean_price)
         permit_interval=60*5
         stock.get_weak_sell_price(realtime_df, realtime_mean_price,permit_interval)
-        #stock.ma_analyze()
+        #stock.boduan_analyze()
         """
         """
         df=stock._form_temp_df()
@@ -3703,7 +3772,7 @@ def back_test_atr():
     
     
 #test2()     
-#stock_test1()
+stock_test()
 #stock_realtime_monitor()
 #thread_test()
 #market_test()

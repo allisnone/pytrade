@@ -52,31 +52,30 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
     position=0
     shangzheng_score=0.0
     chuangye_score=0.0
-    is_sys_risk=False
+    #is_sys_risk=False
     if shzh_score!=None:
         shangzheng_score=shzh_score
     else:
         shz_code_str='999999'
         print(shz_code_str,'----------------------------------')
         shz_stock=Stockhistory(shz_code_str,'D')
-        shangzheng_ma_score,shangzheng_score=shz_stock.get_market_score()
+        shangzheng_ma_score,shangzheng_score,k_position=shz_stock.get_market_score()
     if chy_score!=None:
         chuangye_score=chy_score
     else:
         chy_code_str='399006'
         print(chy_code_str,'----------------------------------')
         chy_stock=Stockhistory(chy_code_str,'D')
-        chuangye_ma_score,chuangye_score=chy_stock.get_market_score()
+        chuangye_ma_score,chuangye_score,k_position=chy_stock.get_market_score()
     sys_risk_range=10.0 
-    sys_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
-    
+    #sys_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
     chy_first_date=chy_stock.temp_hist_df.head(1).iloc[0].date
     shz_temp_df=shz_stock.temp_hist_df.set_index('date')
     chy_temp_df=chy_stock.temp_hist_df.set_index('date')
     #shz_temp_df=shz_stock.temp_hist_df.tail(1000).set_index('date')
     #chy_temp_df=chy_stock.temp_hist_df.tail(1000).set_index('date')
-    #shz_temp_df=shz_temp_df.fillna(0)
-    #chy_temp_df=chy_temp_df.fillna(0)
+    shz_temp_df=shz_temp_df.fillna(0)
+    chy_temp_df=chy_temp_df.fillna(0)
     shz_temp_df['sys_score0']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
     #chy_temp_df=chy_temp_df.fillna(0)
     shz_temp_df['sys_score']=np.where(shz_temp_df.index>=chy_first_date,shz_temp_df['sys_score0'],shz_temp_df['k_score'])
@@ -98,16 +97,16 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
     position=sys_df.tail(1).iloc[0].position
     sys_df.to_csv('sys.csv')
     #"""
-    print(shz_temp_df.tail(20))
+    #print(shz_temp_df.tail(20))
     sys_df['sys_score']=(sys_df['sys_score']).round(1)
     sys_score_list=sys_df['sys_score'].values.tolist()
     strong_sys_score,weak_sys_score=chy_stock.get_extreme_change(sys_score_list,rate=0.9)#,unique_v=True)
-    print(strong_sys_score,weak_sys_score)
+    #print(strong_sys_score,weak_sys_score)
     
     sys_df['position']=(sys_df['position']).round(2)
     sys_score_list=sys_df['position'].values.tolist()
     strong_sys_score,weak_sys_score=chy_stock.get_extreme_change(sys_score_list,rate=0.8)#,unique_v=True)
-    print(strong_sys_score,weak_sys_score)
+    #print(strong_sys_score,weak_sys_score)
     #"""
     
     """
@@ -127,9 +126,9 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
         position=max_position
         is_sys_risk=False
     """
-    print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
-    print('position=',position,'sys_score=',sys_score,'is_sys_risk=',is_sys_risk)
-    print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
+    #print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
+    print('position=',position,'sys_score=',sys_score)
+    #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
     return position,sys_score
 
 def get_recent_100d_great_dropdown():
@@ -197,11 +196,11 @@ def test():
             print('hushen_score=',hushen_score,'chye_score=',chye_score)
             position,sys_score,is_sys_risk=sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=hushen_score,chy_score=chye_score)  
 #test()
-def tes1t():
+def sys_position_test():
     position,sys_score=sys_risk_anlyse(max_position=1.0,ultimate_coefficient=0.25)
     revised_position(sys_risk_anlyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.2,max_position=0.85)
     
-tes1t()
+sys_position_test()
 
 def revised_position_test():
     revised_position(sys_risk_anlyse_position=0.35,recent_100d_great_dropdown=-0.16,recent_100d_great_increase=0.3,max_position=0.85)
