@@ -185,7 +185,6 @@ def find_boduan(data_list,min_range_rate=0.10):
     max=data_list[0]
     min=data_list[0]
     split_list=[]
-    #split_list.append(max)
     indx=1
     max_index=0
     min_index=0
