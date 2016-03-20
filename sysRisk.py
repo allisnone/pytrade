@@ -69,9 +69,18 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
         chuangye_ma_score,chuangye_score=chy_stock.get_market_score()
     sys_risk_range=10.0 
     sys_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
-    shz_temp_df=shz_stock.temp_hist_df.tail(500).set_index('date')
-    chy_temp_df=chy_stock.temp_hist_df.tail(500).set_index('date')
-    shz_temp_df['sys_score']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
+    
+    chy_first_date=chy_stock.temp_hist_df.head(1).iloc[0].date
+    shz_temp_df=shz_stock.temp_hist_df.set_index('date')
+    chy_temp_df=chy_stock.temp_hist_df.set_index('date')
+    #shz_temp_df=shz_stock.temp_hist_df.tail(1000).set_index('date')
+    #chy_temp_df=chy_stock.temp_hist_df.tail(1000).set_index('date')
+    #shz_temp_df=shz_temp_df.fillna(0)
+    #chy_temp_df=chy_temp_df.fillna(0)
+    shz_temp_df['sys_score0']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
+    
+    #chy_temp_df=chy_temp_df.fillna(0)
+    shz_temp_df['sys_score']=np.where(shz_temp_df.index>=chy_first_date,shz_temp_df['sys_score0'],shz_temp_df['k_score'])
     #shz_temp_df['position_risk']=np.where(shz_temp_df['sys_score']<-ultimate_coefficient*sys_risk_range,0,0)
     shz_temp_df['position_nor']=np.where((shz_temp_df['sys_score']>=-ultimate_coefficient*sys_risk_range) & \
                                          (shz_temp_df['sys_score']<=ultimate_coefficient*sys_risk_range),\
@@ -80,16 +89,25 @@ def sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,
     shz_temp_df['position']=  shz_temp_df['position_nor'] + shz_temp_df['position_full']# + shz_temp_df['position_risk']
     del shz_temp_df['position_nor']
     del shz_temp_df['position_full']
-    
-    sys_df=shz_temp_df[['sys_score','position']]
+    shz_temp_df.to_csv('shz_temp_df.csv')
+    sys_df=shz_temp_df[['sys_score','position']].round(3)
+    sys_df.is_copy=False
+    sys_df=sys_df.fillna(0)
     sys_score=sys_df.tail(1).iloc[0].sys_score
     position=sys_df.tail(1).iloc[0].position
-    shz_temp_df.to_csv('sys.csv')
+    sys_df.to_csv('sys.csv')
+    #"""
     print(shz_temp_df.tail(20))
-    sys_df['sys_score1']=(sys_df['sys_score']).round(1)
-    score_list=sys_df['sys_score1'].values.tolist()
-    strong_v,weak_v=chy_stock.get_extreme_change(score_list,rate=0.75)
-    print(strong_v,weak_v)
+    sys_df['sys_score']=(sys_df['sys_score']).round(1)
+    sys_score_list=sys_df['sys_score'].values.tolist()
+    strong_sys_score,weak_sys_score=chy_stock.get_extreme_change(sys_score_list,rate=0.9)#,unique_v=True)
+    print(strong_sys_score,weak_sys_score)
+    
+    sys_df['position']=(sys_df['position']).round(2)
+    sys_score_list=sys_df['position'].values.tolist()
+    strong_sys_score,weak_sys_score=chy_stock.get_extreme_change(sys_score_list,rate=0.8)#,unique_v=True)
+    print(strong_sys_score,weak_sys_score)
+    #"""
     
     """
     if sys_score<-ultimate_coefficient*sys_risk_range:
@@ -179,7 +197,7 @@ def test():
             position,sys_score,is_sys_risk=sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=hushen_score,chy_score=chye_score)  
 #test()
 def tes1t():
-    position,sys_score=sys_risk_anlyse(max_position=0.85,ultimate_coefficient=0.25)
+    position,sys_score=sys_risk_anlyse(max_position=1.0,ultimate_coefficient=0.25)
     revised_position(sys_risk_anlyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.2,max_position=0.85)
     
 tes1t()

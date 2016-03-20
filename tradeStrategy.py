@@ -683,8 +683,8 @@ class Stockhistory:
     def get_market_score(self,short_turn_weight=None):
         ma_type='ma5'
         temp_df=self.temp_hist_df
-        if len(temp_df)<2:
-            return 0,0,0,0,0,0
+        if len(temp_df)<5:
+            return 0.0,0.0
         ma_offset=0.002
         WINDOW=3
         ma_type_list=['ma5','ma10','ma20','ma30','ma60','ma120']
@@ -746,6 +746,12 @@ class Stockhistory:
         """Get K data trend score next"""
         great_high_open_rate=1.0
         great_low_open_rate=-1.5
+        temp_df1=temp_df#.tail(700).fillna(0)
+        temp_df1['o_change']=(temp_df1['o_change']).round(1)
+        score_list=temp_df1['o_change'].values.tolist()
+        great_high_open_rate,great_low_open_rate=self.get_extreme_change(score_list,rate=0.9)
+        print('great_high_open_rate=%s,great_low_open_rate=%s' %(great_high_open_rate,great_low_open_rate))
+        
         temp_df['gt_o_h']=np.where(temp_df['o_change']>great_high_open_rate,(temp_df['o_change']/great_high_open_rate-1),0)
         temp_df['gt_o_l']=np.where(temp_df['o_change']<great_low_open_rate,-(temp_df['o_change']/great_low_open_rate-1),0)
         temp_df['gt_open']=temp_df['gt_o_h']+temp_df['gt_o_l']
@@ -754,6 +760,11 @@ class Stockhistory:
         
         great_increase_rate=3.0
         great_descrease_rate=-3.0
+        temp_df1['p_change']=(temp_df1['p_change']).round(1)
+        score_list=temp_df1['p_change'].values.tolist()
+        great_increase_rate,great_descrease_rate=self.get_extreme_change(score_list,rate=0.9)
+        print('great_increase_rate=%s,great_descrease_rate=%s' %(great_increase_rate,great_descrease_rate))
+        
         temp_df['gt_c_h']=np.where(temp_df['p_change']>great_increase_rate,(temp_df['p_change']/great_increase_rate-1),0)
         temp_df['gt_c_l']=np.where(temp_df['p_change']<great_descrease_rate,-(temp_df['p_change']/great_descrease_rate-1),0)
         temp_df['gt_close']=temp_df['gt_c_h']+temp_df['gt_c_l']
@@ -762,6 +773,11 @@ class Stockhistory:
         
         great_v_rate=1.2
         little_v_rate=0.8
+        temp_df1['rmb_rate']=(temp_df1['rmb_rate']).round(2)
+        score_list=temp_df1['rmb_rate'].values.tolist()
+        great_v_rate,little_v_rate=self.get_extreme_change(score_list,rate=0.9)
+        print('great_v_rate=%s,little_v_rate=%s' %(great_v_rate,little_v_rate))
+        
         temp_df['gt_v_r']=np.where(temp_df['rmb_rate']>great_v_rate,(temp_df['rmb_rate']/great_v_rate-1),0)
         temp_df['lt_v_r']=np.where(temp_df['rmb_rate']<little_v_rate,-(little_v_rate/temp_df['rmb_rate']-1),0)
         temp_df['great_v_rate']=temp_df['gt_v_r']+temp_df['lt_v_r']
@@ -782,7 +798,13 @@ class Stockhistory:
         
         temp_df['k_trend']=temp_df['gt_open']*0.5 + temp_df['gt_close'] + temp_df['gt_cont_close'] \
         + 2.0*temp_df['p_change']/abs(temp_df['p_change'])*temp_df['great_v_rate']
-        temp_df['k_score']=temp_df['ma_score'] + temp_df['k_trend']
+        temp_df['k_score0']=temp_df['ma_score'] + temp_df['k_trend']
+        temp_df['k_score_g']=np.where(temp_df['k_score0']>5.0,5.0,0.0)
+        temp_df['k_score_g']=np.where((temp_df['k_score0']<=5.0) & (temp_df['k_score0']>=-5.0),temp_df['k_score0'],0.0)
+        temp_df['k_score_l']=np.where(temp_df['k_score0']<-5.0,-5.0,0.0)
+        temp_df['k_score']=temp_df['k_score_g'] + temp_df['k_score_l']
+        del temp_df['k_score_g']
+        del temp_df['k_score_l']
         self.set_hist_df(temp_df)
         temp_df.to_csv('temp_df_%s.csv' % self.code)
         #print(temp_df.tail(10))
@@ -796,20 +818,25 @@ class Stockhistory:
         """
         return ma_score,k_score
     
-    def get_extreme_change(self,value_list,rate=None):
+    def get_extreme_change(self,value_list,rate=None,unique_v=False):
         normal_rate=0.8
         if rate != None:
             normal_rate = rate
         strong_v=0.0
         weak_v=0.0
-        if value_list:   
-            filter_li=[]
-            for ele in value_list:
-                if ele not in filter_li and ele!='nan':
-                    filter_li.append(ele)
-                else:
-                    pass
-            sorted_li=sorted(filter_li,reverse=True)
+        if value_list:
+            if unique_v:   
+                filter_li=[]
+                for ele in value_list:
+                    if ele not in filter_li and ele!=np.nan:
+                        filter_li.append(ele)
+                    else:
+                        pass
+                value_list=filter_li
+            #sorted_li=sorted(filter_li,reverse=True)
+            value_list.pop(0)
+            value_list.pop(len(value_list)-2)
+            sorted_li=sorted(value_list,reverse=True)
             strong_index=int(round(len(sorted_li)*(1-normal_rate)))
             weak_index=int(round(len(sorted_li)*normal_rate))
             print('sorted_li=',sorted_li,type(sorted_li[1]))
