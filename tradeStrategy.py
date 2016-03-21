@@ -209,6 +209,7 @@ def find_boduan(data_list,min_range_rate=0.10):
                 split_list.append(min)
                 min=value
                 found_min=True
+                found_max=False
             else:
                 if value>max:
                     max=value
@@ -224,6 +225,7 @@ def find_boduan(data_list,min_range_rate=0.10):
                 split_list.append(max)
                 max=value
                 found_max=True
+                found_min=False
             else:
                 if value>max:
                     max=value
@@ -241,8 +243,8 @@ def find_boduan(data_list,min_range_rate=0.10):
             if value<min:
                 min=value
                 min_index=indx
-            found_min=False
-            found_max=False
+            #found_min=False
+            #found_max=False
         indx=indx+1
     #split_list.append(lst_value)
     return split_list
