@@ -816,7 +816,7 @@ class Stockhistory:
         """Get K data trend score next"""
         great_high_open_rate=1.0
         great_low_open_rate=-1.5
-        temp_df1=temp_df#.tail(700).fillna(0)
+        temp_df1=temp_df.fillna(0)
         temp_df1['o_change']=(temp_df1['o_change']).round(1)
         score_list=temp_df1['o_change'].values.tolist()
         great_high_open_rate,great_low_open_rate=self.get_extreme_change(score_list,rate=0.9)
@@ -872,147 +872,191 @@ class Stockhistory:
         temp_df['k_score_g']=np.where(temp_df['k_score0']>5.0,5.0,0.0)
         temp_df['k_score_m']=np.where((temp_df['k_score0']<=5.0) & (temp_df['k_score0']>=-5.0),temp_df['k_score0'],0.0)
         temp_df['k_score_l']=np.where(temp_df['k_score0']<-5.0,-5.0,0.0)
-        temp_df['k_score']=temp_df['k_score_g'] + temp_df['k_score_l'] + temp_df['k_score_m']
+        temp_df['k_score'] =temp_df['k_score_g'] + temp_df['k_score_l'] + temp_df['k_score_m']
         del temp_df['k_score_g']
         del temp_df['k_score_l']
+        
+        sys_risk_range = 10.0
+        ultimate_coefficient = 0.25
+        max_position=1.0
+        temp_df['position_nor'] = np.where((temp_df['k_score']>=-ultimate_coefficient*sys_risk_range) & \
+                                         (temp_df['k_score']<=ultimate_coefficient*sys_risk_range),\
+                                         0.5*max_position/sys_risk_range/ultimate_coefficient*temp_df['k_score']+0.5*max_position,0)
+        temp_df['position_full'] = np.where(temp_df['k_score']>ultimate_coefficient*sys_risk_range,max_position,0)
+        temp_df['position']=  temp_df['position_nor'] + temp_df['position_full']
+        del temp_df['position_nor']
+        del temp_df['position_full']
+        
         self.set_hist_df(temp_df)
         temp_df.to_csv('temp_df_%s.csv' % self.code)
         #print(temp_df.tail(10))
-        ma_score=temp_df.tail(1).iloc[0].ma_score
-        stock_score=temp_df.tail(1).iloc[0].k_score
+        p_change = temp_df.tail(1).iloc[0].p_change
+        close = temp_df.tail(1).iloc[0].close
+        ma5 = temp_df.tail(1).iloc[0].ma5
+        ma10 = temp_df.tail(1).iloc[0].ma10
+        rmb_rate = temp_df.tail(1).iloc[0].rmb_rate
+        atr = temp_df.tail(1).iloc[0].atr
+        atr_ma5 = temp_df.tail(1).iloc[0].atr
+        atr_in = temp_df.tail(1).iloc[0].atr_in
+        ma_score = temp_df.tail(1).iloc[0].ma_score
+        stock_score = temp_df.tail(1).iloc[0].k_score
+        position = temp_df.tail(1).iloc[0].position
+        
         """
         if stock_score>0:
-            stock_score=min(stock_score,5.0)
+            stock_score = min(stock_score,5.0)
         else:
-            stock_score=max(stock_score,-5.0)
+            stock_score = max(stock_score,-5.0)
         """
-        return ma_score,stock_score
+        latest_k_data = temp_df.tail(1)
+        
+        return ma_score,stock_score,position
+    
+    def get_exit_loss(self, tolerate_loss=-0.06, new_buy=False, cost=None):
+        highest_day5 = 10
+        lowest_day5 = 5
+        ma5 = 1.0
+        ma10 = 2.0
+        atr5 = 2.0
+        exit_0 = 0.0   #第一道防线
+        cost = 1.2
+        exit1 = cost*(1+tolerate_loss*1.01)    #第二道防线
+        if new_buy:
+            exit_0 = max(ma5-atr5,cost*(1+tolerate_loss))
+        else:
+            if is_most_over_ma5:
+                exit_0 = max(ma10,min(ma5,highest_day5-2*atr5))
+            else:
+                exit_0 = max(lowest_day5,ma5-0.5*atr5)
+        exit_0 = max(exit_0,exit1)
+        return exit_0, exit1
+    
     
     def get_extreme_change(self,value_list,rate=None,unique_v=False):
-        normal_rate=0.8
+        normal_rate = 0.8
         if rate != None:
             normal_rate = rate
-        strong_v=0.0
-        weak_v=0.0
+        strong_v = 0.0
+        weak_v = 0.0
         if value_list:
             if unique_v:   
-                filter_li=[]
+                filter_li = []
                 for ele in value_list:
                     if ele not in filter_li and ele!=np.nan:
                         filter_li.append(ele)
                     else:
                         pass
-                value_list=filter_li
-            #sorted_li=sorted(filter_li,reverse=True)
+                value_list = filter_li
+            #sorted_li = sorted(filter_li,reverse=True)
             value_list.pop(0)
             value_list.pop(len(value_list)-2)
-            sorted_li=sorted(value_list,reverse=True)
-            strong_index=int(round(len(sorted_li)*(1-normal_rate)))
-            weak_index=int(round(len(sorted_li)*normal_rate))
-            print('sorted_li=',sorted_li,type(sorted_li[1]))
-            strong_v=sorted_li[strong_index]
-            weak_v=sorted_li[weak_index]
+            sorted_li = sorted(value_list,reverse=True)
+            strong_index = int(round(len(sorted_li)*(1-normal_rate)))
+            weak_index = int(round(len(sorted_li)*normal_rate))
+            #print('sorted_li=',sorted_li,type(sorted_li[1]))
+            strong_v = sorted_li[strong_index]
+            weak_v = sorted_li[weak_index]
         return strong_v,weak_v
     
     def get_trend_score(self,open_change=None,p_change=None):
-        delta_score=0.5
-        open_rate=0.0
-        increase_rate=0.0
+        delta_score = 0.5
+        open_rate = 0.0
+        increase_rate = 0.0
         if open_change:
-            open_rate=open_change
+            open_rate = open_change
         else:
             if self.temp_hist_df.empty:
                 return 0.0
             else:
-                open_rate=self.temp_hist_df.iloc[1].o_change
+                open_rate = self.temp_hist_df.iloc[1].o_change
         if p_change:
-            increase_rate=p_change
+            increase_rate = p_change
         else:
             if self.temp_hist_df.empty:
                 return 0.0
             else:
-                increase_rate=self.temp_hist_df.iloc[1].p_change
-        open_score_coefficient=self.get_open_score(open_rate)
-        increase_score_coefficient=self.get_increase_score(increase_rate)
-        continue_trend_num,great_change_num,volume_coefficient=self.get_continue_trend_num()
-        continue_trend_score_coefficient,recent_great_change_coefficient=self.get_recent_trend_score(continue_trend_num,great_change_num)
-        score=(open_score_coefficient+increase_score_coefficient+continue_trend_score_coefficient+recent_great_change_coefficient+volume_coefficient)*0.5
+                increase_rate = self.temp_hist_df.iloc[1].p_change
+        open_score_coefficient = self.get_open_score(open_rate)
+        increase_score_coefficient = self.get_increase_score(increase_rate)
+        continue_trend_num,great_change_num,volume_coefficient = self.get_continue_trend_num()
+        continue_trend_score_coefficient,recent_great_change_coefficient = self.get_recent_trend_score(continue_trend_num,great_change_num)
+        score = (open_score_coefficient+increase_score_coefficient+continue_trend_score_coefficient+recent_great_change_coefficient+volume_coefficient)*0.5
         if score>0:
-            score=min(score,5.0)
+            score = min(score,5.0)
         else:
-            score=max(score,-5.0)
+            score = max(score,-5.0)
         return score
     
     def get_continue_trend_num(self):
         if len(self.temp_hist_df)<2:
             return 0,0,0.0
-        recent_10_hist_df=self.temp_hist_df.tail(min(10,len(self.temp_hist_df)))
-        great_increase_rate=3.0
-        great_descrease_rate=-3.0
-        great_change_num=0
-        great_increase_num=0
-        great_descrease_num=0
-        great_continue_increase_rate=2.0
-        great_continue_descrease_rate=-2.0
-        continue_trend_num=0
-        continue_increase_num=0
-        continue_decrease_num=0
-        latest_trade_date=recent_10_hist_df.tail(1).iloc[0].date
-        great_increase_df=recent_10_hist_df[recent_10_hist_df.p_change>great_continue_increase_rate]
-        volume_coefficient=0.0
+        recent_10_hist_df = self.temp_hist_df.tail(min(10,len(self.temp_hist_df)))
+        great_increase_rate = 3.0
+        great_descrease_rate = -3.0
+        great_change_num = 0
+        great_increase_num = 0
+        great_descrease_num = 0
+        great_continue_increase_rate = 2.0
+        great_continue_descrease_rate = -2.0
+        continue_trend_num = 0
+        continue_increase_num = 0
+        continue_decrease_num = 0
+        latest_trade_date = recent_10_hist_df.tail(1).iloc[0].date
+        great_increase_df = recent_10_hist_df[recent_10_hist_df.p_change>great_continue_increase_rate]
+        volume_coefficient = 0.0
         if great_increase_df.empty:
             pass
         else:
-            latest_great_increase_date=great_increase_df.tail(1).iloc[0].date
+            latest_great_increase_date = great_increase_df.tail(1).iloc[0].date
             if latest_trade_date==latest_great_increase_date:
-                continue_increase_num=1
+                continue_increase_num = 1
                 tatol_inscrease_num=len(great_increase_df)
                 while tatol_inscrease_num-continue_increase_num>0:
-                    temp_inscrease_df=great_increase_df.head(tatol_inscrease_num-continue_increase_num)
+                    temp_inscrease_df = great_increase_df.head(tatol_inscrease_num-continue_increase_num)
                     if temp_inscrease_df.tail(1).iloc[0].date==tradeTime.get_last_trade_date(latest_great_increase_date):
-                        continue_increase_num+=1
-                        latest_great_increase_date=tradeTime.get_last_trade_date(latest_great_increase_date)
+                        continue_increase_num += 1
+                        latest_great_increase_date = tradeTime.get_last_trade_date(latest_great_increase_date)
                     else:
                         break
                 continue_trend_num=continue_increase_num
             else:
-                great_change_df=recent_10_hist_df[recent_10_hist_df.p_change>great_increase_rate]
-                great_increase_num=len(great_change_df)
+                great_change_df = recent_10_hist_df[recent_10_hist_df.p_change>great_increase_rate]
+                great_increase_num = len(great_change_df)
                 
             if continue_increase_num>=2:
-                volume0=great_increase_df.tail(2).iloc[0].volume
-                volume1=great_increase_df.tail(2).iloc[1].volume
+                volume0 = great_increase_df.tail(2).iloc[0].volume
+                volume1 = great_increase_df.tail(2).iloc[1].volume
                 if volume1>volume0 and volume0:
-                    volume_coefficient=min(round(volume1/volume0,2),3.0)
+                    volume_coefficient = min(round(volume1/volume0,2),3.0)
                 else:
                     pass
             else:
                 pass
-        great_decrease_df=recent_10_hist_df[recent_10_hist_df.p_change<great_continue_descrease_rate]
+        great_decrease_df = recent_10_hist_df[recent_10_hist_df.p_change<great_continue_descrease_rate]
         if great_decrease_df.empty:
             pass
         else:
-            latest_great_decrease_date=great_decrease_df.tail(1).iloc[0].date
+            latest_great_decrease_date = great_decrease_df.tail(1).iloc[0].date
             if latest_trade_date==latest_great_decrease_date:
-                continue_decrease_num=1
-                tatol_decrease_num=len(great_decrease_df)
+                continue_decrease_num = 1
+                tatol_decrease_num = len(great_decrease_df)
                 while tatol_decrease_num-continue_decrease_num>0:
-                    temp_decrease_df=great_decrease_df.head(tatol_decrease_num-continue_decrease_num)
+                    temp_decrease_df = great_decrease_df.head(tatol_decrease_num-continue_decrease_num)
                     if temp_decrease_df.tail(1).iloc[0].date==tradeTime.get_last_trade_date(latest_great_decrease_date):
-                        continue_decrease_num+=1
-                        latest_great_decrease_date=tradeTime.get_last_trade_date(latest_great_decrease_date)
+                        continue_decrease_num += 1
+                        latest_great_decrease_date = tradeTime.get_last_trade_date(latest_great_decrease_date)
                     else:
                         break
-                continue_trend_num=-continue_decrease_num
+                continue_trend_num = -continue_decrease_num
             else:
-                great_change_df=recent_10_hist_df[recent_10_hist_df.p_change<great_descrease_rate]
-                great_descrease_num=len(great_change_df)
+                great_change_df = recent_10_hist_df[recent_10_hist_df.p_change<great_descrease_rate]
+                great_descrease_num = len(great_change_df)
             
             if continue_decrease_num>=2:
-                volume0=great_decrease_df.tail(2).iloc[0].volume
-                volume1=great_decrease_df.tail(2).iloc[1].volume
+                volume0 = great_decrease_df.tail(2).iloc[0].volume
+                volume1 = great_decrease_df.tail(2).iloc[1].volume
                 if volume1>volume0 and volume0:
-                    volume_coefficient=max(-round(volume1/volume0,2),-3.0)
+                    volume_coefficient = max(-round(volume1/volume0,2),-3.0)
                 else:
                     pass
             else:
@@ -1020,9 +1064,9 @@ class Stockhistory:
         if great_increase_num==great_descrease_num:
             pass
         elif great_increase_num>great_descrease_num:
-            great_change_num=great_increase_num
+            great_change_num = great_increase_num
         else:
-            great_change_num=-great_descrease_num
+            great_change_num = -great_descrease_num
         return continue_trend_num,great_change_num,volume_coefficient
     
     'VSA-------spread=high-low---------------------------------'
