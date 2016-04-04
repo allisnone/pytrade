@@ -37,7 +37,7 @@ def get_latest_trade_date(this_date=None):
             this_day=this_date
     open_str=' 09:25:00'
     this_str=this_day.strftime('%Y-%m-%d %X')
-    if (this_day.hour>=0 and this_day.hour<9) or (this_day.hour==9 and this_date.minute<15):
+    if (this_day.hour>=0 and this_day.hour<9) or (this_day.hour==9 and this_day.minute<15):
         this_day=datetime.datetime.strptime(this_str,'%Y-%m-%d %X')+datetime.timedelta(days=-1)
         this_str=this_day.strftime('%Y-%m-%d')  
     latest_day_str=''

@@ -750,9 +750,12 @@ class Stockhistory:
         open=temp_df.tail(1).iloc[1].open
         return 0.0
     
-    def get_market_score(self,short_turn_weight=None):
+    def get_market_score(self,short_turn_weight=None,k_data=None):
         ma_type='ma5'
         temp_df=self.temp_hist_df
+        if k_data!=None:
+            update_one_hist(code_sybol, today_df, today_df_update_time)
+            temp_df=self._form_temp_df()
         if len(temp_df)<5:
             return 0.0,0.0
         ma_offset=0.002
@@ -795,8 +798,10 @@ class Stockhistory:
             l_ma_name=ma_name_list[2]
             ma_cross_name=ma_o_name.replace('o','c')
             temp_df[ma_o_name]=np.where(temp_df[s_ma_name]>temp_df[l_ma_name],ma_seq_score[ma_o_name],-ma_seq_score[ma_o_name])
-            temp_df[ma_cross_name+'_d']=np.where((temp_df[s_ma_name]<=temp_df[l_ma_name]) & (temp_df[s_ma_name].shift(1)>temp_df[l_ma_name].shift(1)),-ma_cross_score[ma_cross_name],0)
-            temp_df[ma_cross_name+'_u']=np.where((temp_df[s_ma_name]>=temp_df[l_ma_name]) & (temp_df[s_ma_name].shift(1)<temp_df[l_ma_name].shift(1)),ma_cross_score[ma_cross_name],0)
+            temp_df[ma_cross_name+'_d']=np.where((temp_df[s_ma_name]<=temp_df[l_ma_name]) & 
+                                                 (temp_df[s_ma_name].shift(1)>temp_df[l_ma_name].shift(1)),-ma_cross_score[ma_cross_name],0)
+            temp_df[ma_cross_name+'_u']=np.where((temp_df[s_ma_name]>=temp_df[l_ma_name]) &
+                                                  (temp_df[s_ma_name].shift(1)<temp_df[l_ma_name].shift(1)),ma_cross_score[ma_cross_name],0)
             temp_df[ma_cross_name]=temp_df[ma_cross_name+'_d']+temp_df[ma_cross_name+'_u']
             del temp_df[ma_cross_name+'_d']
             del temp_df[ma_cross_name+'_u']

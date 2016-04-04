@@ -37,6 +37,7 @@ def sys_level_exit(l_change,p_change,delay):
         pass
     return max_position
 
+        
 def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None,chy_score=None):
     """ 
     when less then -ultimate_coefficient*sys_risk_range, will be zero position; 
@@ -60,6 +61,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         print(shz_code_str,'----------------------------------')
         shz_stock=Stockhistory(shz_code_str,'D')
         shangzheng_ma_score,shangzheng_score,k_position=shz_stock.get_market_score()
+        print(shangzheng_ma_score,shangzheng_score,k_position)
     if chy_score!=None:
         chuangye_score=chy_score
     else:
@@ -67,6 +69,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         print(chy_code_str,'----------------------------------')
         chy_stock=Stockhistory(chy_code_str,'D')
         chuangye_ma_score,chuangye_score,k_position=chy_stock.get_market_score()
+        print(chuangye_ma_score,chuangye_score,k_position)
     sys_risk_range=10.0 
     #sys_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
     chy_first_date=chy_stock.temp_hist_df.head(1).iloc[0].date
