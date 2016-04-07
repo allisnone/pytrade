@@ -113,7 +113,7 @@ def is_trade_time_now():
     this_time=datetime.datetime.now()
     hour=this_time.hour
     minute=this_time.minute
-    is_trade_time=((hour>=9 and minute>=15) and (hour<=11 and minute<=30)) or (hour>=13 and hour<=15)
+    is_trade_time=((hour==9 and minute>=15) or hour==10 or (hour==11 and minute<=30) or (hour>=13 and hour<15))
     return is_trade_time
 
 def get_pass_trade_time():
@@ -152,6 +152,7 @@ def get_remain_time_to_trade():
     remain_time=0.0
     if is_trade_date():
         if is_trade_time_now():
+            print('00')
             return 0.0
         else:
             this_time_str=this_time.strftime('%Y-%m-%d')
@@ -160,17 +161,24 @@ def get_remain_time_to_trade():
             second=this_time.second
             if hour<=9:
                 next_trade_str=this_time_str + ' 9:15:00'
-            elif hour<13:
+                print('01')
+            elif (hour==11 and minute>30) or hour==12:
                 next_trade_str=this_time_str + ' 13:00:00'
-            else:
+                print('02')
+            elif hour>=15:
+                print('03')
                 next_date_str=get_next_trade_date()
                 next_trade_str=next_date_str + ' 9:15:00'
+            else:
+                print('03')
+                return 0.0
     else:
+        print('10')
         next_date_str=get_latest_trade_date()
         next_trade_str=next_date_str + ' 9:15:00'
     next_trade_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')
     delta_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')-this_time
-    delta_seconds=delta_time*24*3600+delta_time.seconds+0.000001*delta_time.microseconds
+    delta_seconds=delta_time.days*24*3600+delta_time.seconds+0.000001*delta_time.microseconds
     return delta_seconds
 
 def get_timestamp(date_time_str=None):#获取时间戳
