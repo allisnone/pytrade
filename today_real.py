@@ -5,14 +5,30 @@ import time
 
 #remain_time_to_trade=tt.get_remain_time_to_trade()
 #print(remain_time_to_trade)
-interval=30
+interval=60
+is_fist_run=True
 while True:
+    #"""
     remain_time_to_trade=tt.get_remain_time_to_trade()
     if remain_time_to_trade>=interval:
         time.sleep(remain_time_to_trade)
     else:
-        df=ts.get_today_all()
-        print(df)
-        df_1=df[(df.trade<df.open*0.99) & (df.changepercent>1.5)]
-        print(df_1)
-        time.sleep(max(interval))
+        if is_fist_run:
+            time.sleep(60-time.time()%60)
+            is_fist_run=False
+        else:
+            print(time.ctime())
+            try:
+                df=ts.get_today_all()
+            except:
+                continue
+            print(df)
+            if df.empty:
+                time.sleep(interval)
+                continue
+            df_1=df[(df.trade<df.open*0.99) & (df.changepercent>1.5)]
+            print(df_1)
+            print(time.ctime())
+            time.sleep(interval)
+    #"""
+ 

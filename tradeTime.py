@@ -152,28 +152,28 @@ def get_remain_time_to_trade():
     remain_time=0.0
     if is_trade_date():
         if is_trade_time_now():
-            print('00')
+            #print('00')
             return 0.0
         else:
             this_time_str=this_time.strftime('%Y-%m-%d')
             hour=this_time.hour
             minute=this_time.minute
             second=this_time.second
-            if hour<=9:
+            if hour<9 or (hour==9 and minute<15):
                 next_trade_str=this_time_str + ' 9:15:00'
-                print('01')
+                #print('01')
             elif (hour==11 and minute>30) or hour==12:
                 next_trade_str=this_time_str + ' 13:00:00'
-                print('02')
+                #print('02')
             elif hour>=15:
-                print('03')
+                #print('03')
                 next_date_str=get_next_trade_date()
                 next_trade_str=next_date_str + ' 9:15:00'
-            else:
-                print('03')
+            else:#trade time
+                #print('04')
                 return 0.0
     else:
-        print('10')
+        #print('10')
         next_date_str=get_latest_trade_date()
         next_trade_str=next_date_str + ' 9:15:00'
     next_trade_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')

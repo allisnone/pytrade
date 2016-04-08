@@ -2,13 +2,13 @@
 from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
-import os,sys,time
+import os,sys,time,platform
 
 import tushare as ts
 import json
 import string
 
-import urllib.request, urllib.error, urllib.parse
+#import urllib.request, urllib.error, urllib.parse
 import datetime
 import threading
 import smtplib
@@ -773,7 +773,11 @@ class Stockhistory:
             temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
             temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])<-ma_offset*temp_df['close'].shift(1),-1,temp_df['c_o_ma']) #-1 for bellow ma
             ma_sum_name=ma_sum_name+ma_type
-            temp_df[ma_sum_name] = np.round(pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW), 2)
+            #temp_df[ma_sum_name] = pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW).round(2)
+            if '3.5' in platform.python_version():
+                temp_df[ma_sum_name] = temp_df['c_o_ma'].rolling(window=5,center=False).mean().round(2)
+            else:
+                temp_df[ma_sum_name] = np.round(pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW), 2)
             del temp_df['c_o_ma']
             temp_df[ma_sum_name]=temp_df[ma_sum_name]+(temp_df[ma_sum_name]-temp_df[ma_sum_name].shift(1))
             
@@ -1337,6 +1341,26 @@ class Stockhistory:
         temp_df.insert(6, 'p_change', 100.00*((temp_df.close-temp_df.last_close)/temp_df.last_close).round(4))
         
         temp_df.is_copy=False
+        if '3.5' in platform.python_version():
+            temp_df['ma5'] = temp_df['close'].rolling(window=5,center=False).mean().round(2)
+            temp_df['ma10'] = temp_df['close'].rolling(window=10,center=False).mean().round(2)
+            temp_df['ma20'] = temp_df['close'].rolling(window=20,center=False).mean().round(2)
+            temp_df['ma30'] = temp_df['close'].rolling(window=30,center=False).mean().round(2)
+            temp_df['ma60'] = temp_df['close'].rolling(window=60,center=False).mean().round(2)
+            temp_df['ma120'] = temp_df['close'].rolling(window=120,center=False).mean().round(2)
+            temp_df['v_ma5'] = temp_df['volume'].rolling(window=5,center=False).mean().round(2)
+            temp_df['v_ma10'] = temp_df['volume'].rolling(window=10,center=False).mean().round(2)
+        else:#elif '3.4' in platform.python_version():
+            temp_df['ma5'] = pd.rolling_mean(temp_df['close'], window=5).round(2)
+            temp_df['ma10'] = pd.rolling_mean(temp_df['close'], window=10).round(2)
+            temp_df['ma20'] = pd.rolling_mean(temp_df['close'], window=20).round(2)
+            temp_df['ma30'] = pd.rolling_mean(temp_df['close'], window=30).round(2)
+            temp_df['ma60'] = pd.rolling_mean(temp_df['close'], window=60).round(2)
+            temp_df['ma120'] = pd.rolling_mean(temp_df['close'], window=120).round(2)
+            temp_df['v_ma5'] = pd.rolling_mean(temp_df['volume'], window=5).round(2)
+            temp_df['v_ma10'] = pd.rolling_mean(temp_df['volume'], window=10).round(2)
+        
+        """py2.7 or 3.4
         temp_df['ma5'] = np.round(pd.rolling_mean(temp_df['close'], window=5), 2)
         temp_df['ma10'] = np.round(pd.rolling_mean(temp_df['close'], window=10), 2)
         temp_df['ma20'] = np.round(pd.rolling_mean(temp_df['close'], window=20), 2)
@@ -1345,10 +1369,17 @@ class Stockhistory:
         temp_df['ma120'] = np.round(pd.rolling_mean(temp_df['close'], window=120), 2)
         temp_df['v_ma5'] = np.round(pd.rolling_mean(temp_df['volume'], window=5), 2)
         temp_df['v_ma10'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
+        """
         #temp_df['v_rate'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
         temp_df.insert(17, 'v_rate', (temp_df['volume']/temp_df['v_ma5']).round(4))
-        temp_df['rmb_ma5'] = np.round(pd.rolling_mean(temp_df['rmb'], window=5), 2)
-        temp_df['rmb_ma10'] = np.round(pd.rolling_mean(temp_df['rmb'], window=10), 2)
+        if '3.5' in platform.python_version():
+            temp_df['rmb_ma5'] = temp_df['rmb'].rolling(center=False,window=5).mean().round(2)
+            temp_df['rmb_ma10'] = temp_df['rmb'].rolling(center=False,window=10).mean().round(2)
+        else:#elif '3.4' in platform.python_version():
+            temp_df['rmb_ma5'] = pd.rolling_mean(temp_df['rmb'], window=5).round(2)
+            temp_df['rmb_ma10'] = pd.rolling_mean(temp_df['rmb'], window=10).round(2)
+        #temp_df['rmb_ma5'] = np.round(pd.rolling_mean(temp_df['rmb'], window=5), 2)
+        #temp_df['rmb_ma10'] = np.round(pd.rolling_mean(temp_df['rmb'], window=10), 2)
         temp_df.insert(17, 'rmb_rate', (temp_df['rmb']/temp_df['rmb_ma5']).round(4))
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
@@ -1357,16 +1388,25 @@ class Stockhistory:
         temp_df['atr']=np.where(temp_df['atr']<temp_df['close'].shift(1)-temp_df['low'],temp_df['close'].shift(1)-temp_df['low'],temp_df['atr'])
         short_num=5
         long_num=10
-        temp_df['atr_ma%s'%short_num] = np.round(pd.rolling_mean(temp_df['atr'], window=short_num), 2)
-        temp_df['atr_%s_rate'%short_num]=(temp_df['atr_ma%s'%short_num]/temp_df['atr']).round(2)
-        temp_df['atr_%s_max_r'%short_num]=np.round(pd.rolling_max(temp_df['atr_%s_rate'%short_num], window=short_num), 2)
-        temp_df['atr_ma%s'%long_num] = np.round(pd.rolling_mean(temp_df['atr'], window=long_num), 2)
-        temp_df['atr_%s_rate'%long_num]=(temp_df['atr_ma%s'%long_num]/temp_df['atr']).round(2)
-        temp_df['atr_%s_max_r'%long_num]=np.round(pd.rolling_max(temp_df['atr_%s_rate'%long_num], window=long_num), 2)
+        if '3.5' in platform.python_version():
+            temp_df['atr_ma%s'%short_num] = temp_df['atr'].rolling(center=False,window=short_num).mean().round(2)
+            temp_df['atr_ma%s'%long_num] = temp_df['atr'].rolling(center=False,window=long_num).mean().round(2)
+            temp_df['atr_%s_rate'%short_num]=(temp_df['atr_ma%s'%short_num]/temp_df['atr']).round(2)
+            temp_df['atr_%s_max_r'%short_num]=temp_df['atr_%s_rate'%short_num].rolling(window=short_num,center=False).max().round(2)
+            temp_df['atr_%s_rate'%long_num]=(temp_df['atr_ma%s'%long_num]/temp_df['atr']).round(2)
+            temp_df['atr_%s_max_r'%long_num]=temp_df['atr_%s_rate'%long_num].rolling(window=long_num,center=False).max().round(2)
+        else:#elif '3.4' in platform.python_version():
+            temp_df['atr_ma%s'%short_num] = pd.rolling_mean(temp_df['atr'], window=short_num).round(2)
+            temp_df['atr_ma%s'%long_num] = pd.rolling_mean(temp_df['atr'], window=long_num).round(2)
+            temp_df['atr_%s_rate'%short_num]=(temp_df['atr_ma%s'%short_num]/temp_df['atr']).round(2)
+            temp_df['atr_%s_max_r'%short_num]=pd.rolling_max(temp_df['atr_%s_rate'%short_num], window=short_num).round(2)
+            temp_df['atr_%s_rate'%long_num]=(temp_df['atr_ma%s'%long_num]/temp_df['atr']).round(2)
+            temp_df['atr_%s_max_r'%long_num]=pd.rolling_max(temp_df['atr_%s_rate'%long_num], window=long_num).round(2)
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
         temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
         #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
+        #print(temp_df)
         return temp_df
     
     def _form_temp_df1(self):
