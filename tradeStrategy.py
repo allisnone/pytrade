@@ -328,7 +328,7 @@ def get_today_df():
     data={}
     column_list=['code','changepercent','trade','open','high','low','settlement','volume','turnoverratio']
     today_df=pd.DataFrame(data,columns=column_list)#,index=['
-    if not tradeTime.is_trade_time_now0(tradeTime.get_latest_trade_date()):
+    if not tradeTime.is_trade_time_now():
         if file_time_str:
             #if file_time_str>=latest_trade_day_str+' 13:00:00':
             #print '---------------1'
@@ -3445,7 +3445,8 @@ def test4():
 
 def stock_test():
     latest_trade_day=tradeTime.get_latest_trade_date()
-    out_file_name=ROOT_DIR+'/result/static-' + latest_trade_day + '.txt'
+    #out_file_name=ROOT_DIR+'/result/static-' + latest_trade_day + '.txt'
+    out_file_name='static-' + latest_trade_day + '.txt'
     output=open(out_file_name,'w')
     sys.stdout=output
     code_list=['600031','603988','603158','601018','002282','002556','600673','002678','000998','601088','600398']
@@ -3862,7 +3863,7 @@ def back_test_atr():
     
     
 #test2()     
-stock_test()
+#stock_test()
 #stock_realtime_monitor()
 #thread_test()
 #market_test()
