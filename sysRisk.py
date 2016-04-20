@@ -144,7 +144,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     #print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
     print('position=',position,'sys_score=',sys_score,'operation=',operation)
     #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
-    sendto_list=['104450966@qq.com','jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
+    sendto_list=['104450966@qq.com']#,'jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
     sub,content=se.form_mail_info('system', score=sys_score,position_unit=position)#,give_content=give_content)
     sub = sub + ' ' + latest_day
     if operation<-0.3 or operation>0.3:
