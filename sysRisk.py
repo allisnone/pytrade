@@ -109,7 +109,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     sys_score=sys_df.tail(1).iloc[0].sys_score
     position=sys_df.tail(1).iloc[0].position
     operation=sys_df.tail(1).iloc[0].operation
-    latest_day=sys_df.tail(1).iloc[0].date
+    latest_day=sys_df.tail(1).index.values.tolist()[0]
     sys_df.to_csv('sys.csv')
     #"""
     #print(shz_temp_df.tail(20))
