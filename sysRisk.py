@@ -79,6 +79,9 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     #chy_temp_df=chy_stock.temp_hist_df.tail(1000).set_index('date')
     shz_temp_df=shz_temp_df.fillna(0)
     chy_temp_df=chy_temp_df.fillna(0)
+    shz_temp_df['sys_score']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
+    shz_temp_df['position']=shzh_weight*shz_temp_df['position']+(1-shzh_weight)*chy_temp_df['position']
+    """
     shz_temp_df['sys_score0']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
     #chy_temp_df=chy_temp_df.fillna(0)
     shz_temp_df['sys_score']=np.where(shz_temp_df.index>=chy_first_date,shz_temp_df['sys_score0'],shz_temp_df['k_score'])
@@ -96,6 +99,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     del shz_temp_df['sys_score0']
     del shz_temp_df['position_nor']
     del shz_temp_df['position_full']
+    """
     shz_temp_df.to_csv('shz_temp_df.csv')
     sys_df=shz_temp_df[['sys_score','position']].round(3)
     sys_df.is_copy=False
