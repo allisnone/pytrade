@@ -155,7 +155,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         alert_content = alert_content + sugestion
         content = content + alert_content
         print('Take action absolutely, operation=',operation)
-
+    content = content + '\n' + '%s'% sys_df.tail(5)
     print(content)
     se.send_mail(sub,content,sendto_list)
     return position,sys_score
