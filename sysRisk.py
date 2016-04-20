@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from tradeStrategy import *
+import sendEmail as se
 def quick_drop_down(test_interval_minutes=5,drop_rate=-3.0):
     return
 
@@ -142,8 +143,18 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     #print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
     print('position=',position,'sys_score=',sys_score,'operation=',operation)
     #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
+    sendto_list=['104450966@qq.com','3151173548@qq.com']
+    sub,content=se.form_mail_info('system', score=sys_score,position_unit=position)#,give_content=give_content)
     if operation<-0.3 or operation>0.3:
+        sub = '[alert]' + sub
+        alert_content = '\n'
+        alert_content = alert_content + 'Take action absolutely, operation=',operation
+        content = content + alert_content
         print('Take action absolutely, operation=',operation)
+
+    print(content)
+    se.send_mail(sub,content,sendto_list)
+    
     return position,sys_score
 
 def get_recent_100d_great_dropdown():
