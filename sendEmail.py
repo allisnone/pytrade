@@ -77,6 +77,38 @@ def form_mail_info(market_type,score,symbol=None, position_unit=None,give_conten
     else:
         pass
     return  sub,content
+
+def get_additional_content(sub,position, operation):
+    additional_content = '\n'
+    if position>0.6:
+        pass
+    elif position>0.3:
+        sub = '[alarm]' + sub
+        suggest_pos = position*100
+        sugestion = '建议轻仓操作,持仓不超过  %s%%的仓位' % suggest_pos
+        additional_content = additional_content + sugestion
+    else:
+        sub = '[alert]' + sub
+        suggest_pos = position*100
+        sugestion = '建议空仓,持仓最多不超过  %s%%的仓位' % suggest_pos
+        additional_content = additional_content + sugestion
+    if operation<-0.3 or operation>0.3:
+        if '[alarm]' in sub:
+            sub = '[alert]' + sub[6:]
+        elif '[alert]' in sub:
+            pass
+        else:
+            pass
+        operation = operation*100
+        oper='减仓'
+        if operation>0:
+            oper='加仓'
+        sugestion = '\n!!!!!\n系统反向激烈波动，建议'+ oper + '%s%% 至 %s%%的仓位 。' % (operation,position*100)
+        additional_content = additional_content + sugestion
+    else:
+        pass
+    return sub,additional_content
+    
 """
 if __name__ == '__main__':  
     #send_info=[['104450966@qq.com','sub1','content1'],['3151173548@qq.com','sub2','content2'] ]

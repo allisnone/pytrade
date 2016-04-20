@@ -148,6 +148,8 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     sendto_list=['104450966@qq.com']#,'40406275@qq.com']#,'jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
     sub,content=se.form_mail_info('system', score=sys_score,position_unit=position)#,give_content=give_content)
     sub = sub + ' ' + latest_day
+    sub,additional_content=se.get_additional_content(sub,position, operation)
+    """
     additional_content = '\n'
     if position>0.6:
         pass
@@ -176,6 +178,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         additional_content = additional_content + sugestion
     else:
         pass
+    """
     content = content + additional_content
     content = content + '\n' + '近10天系统风险和仓位量化： \n' + '%s'% sys_df.tail(10)
     #print(content)
