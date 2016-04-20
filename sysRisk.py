@@ -109,6 +109,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     sys_score=sys_df.tail(1).iloc[0].sys_score
     position=sys_df.tail(1).iloc[0].position
     operation=sys_df.tail(1).iloc[0].operation
+    latest_day=sys_df.tail(1).iloc[0].date
     sys_df.to_csv('sys.csv')
     #"""
     #print(shz_temp_df.tail(20))
@@ -145,10 +146,11 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
     sendto_list=['104450966@qq.com','3151173548@qq.com']
     sub,content=se.form_mail_info('system', score=sys_score,position_unit=position)#,give_content=give_content)
+    sub = sub + ' ' + latest_day
     if operation<-0.3 or operation>0.3:
         sub = '[alert]' + sub
         alert_content = '\n'
-        alert_content = alert_content + 'Take action absolutely, operation=' % operation
+        alert_content = alert_content + 'Take action absolutely, position change by operation=%s' % operation
         content = content + alert_content
         print('Take action absolutely, operation=',operation)
 
