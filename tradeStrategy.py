@@ -700,7 +700,7 @@ class Stockhistory:
         if k_data and len(k_data)>=7:
             column_list=['date','open','high','low','close','volume','rmb']
             this_k_data={'date': [k_data[0]],'open': [k_data[1]],'high': [k_data[2]],'low': [k_data[3]],'close': [k_data[4]],'volume': [k_data[5]],'rmb': [k_data[6]]}
-            this_k_df=pd.DataFrame(data=this_k_data,columns=column_list,ignore_index=True)
+            this_k_df=pd.DataFrame(data=this_k_data,columns=column_list)
             print(this_k_df)
             if k_data[0]>latest_day:
                 pass
@@ -708,7 +708,7 @@ class Stockhistory:
                 self.h_df=self.h_df.head(len(self.h_df)-1)
             else:
                 return
-            self.h_df=self.h_df.append(this_k_data)
+            self.h_df=self.h_df.append(this_k_data,ignore_index=True)
         return
     
     def get_last_k_data(self,last_num=None):
