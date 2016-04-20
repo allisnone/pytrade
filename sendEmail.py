@@ -41,7 +41,7 @@ def send_mail(sub,content,mail_to_list=None):
         return False
 #"""
 
-def form_mail_info(market_type,score,symbol=None, position_unit=None,give_content=None):
+def get_score_content(market_type,score,symbol=None, position_unit=None,give_content=None):
     sub=''
     content=''
     position_handle=0.33
@@ -78,7 +78,7 @@ def form_mail_info(market_type,score,symbol=None, position_unit=None,give_conten
         pass
     return  sub,content
 
-def get_additional_content(sub,position, operation):
+def get_position_content(sub,position, operation):
     additional_content = '\n'
     if position>0.6:
         pass

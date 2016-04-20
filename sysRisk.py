@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from tradeStrategy import *
+import tradeStrategy as tds
 import sendEmail as se
 
 def quick_drop_down(test_interval_minutes=5,drop_rate=-3.0):
@@ -61,7 +61,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     else:
         shz_code_str='999999'
         print(shz_code_str,'----------------------------------')
-        shz_stock=Stockhistory(shz_code_str,'D')
+        shz_stock=tds.Stockhistory(shz_code_str,'D')
         shangzheng_ma_score,shangzheng_score,k_position=shz_stock.get_market_score()
         print(shangzheng_ma_score,shangzheng_score,k_position)
     if chy_score!=None:
@@ -69,7 +69,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     else:
         chy_code_str='399006'
         print(chy_code_str,'----------------------------------')
-        chy_stock=Stockhistory(chy_code_str,'D')
+        chy_stock=tds.Stockhistory(chy_code_str,'D')
         chuangye_ma_score,chuangye_score,k_position=chy_stock.get_market_score()
         print(chuangye_ma_score,chuangye_score,k_position)
     sys_risk_range=10.0 
@@ -124,61 +124,13 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     strong_sys_score,weak_sys_score=chy_stock.get_extreme_change(sys_score_list,rate=0.8)#,unique_v=True)
     #print(strong_sys_score,weak_sys_score)
     #"""
-    
-    """
-    if sys_score<-ultimate_coefficient*sys_risk_range:
-        is_sys_risk=True
-        position=0.0
-    elif sys_score < ultimate_coefficient*sys_risk_range:
-        position=round(0.5*max_position/sys_risk_range/ultimate_coefficient*sys_score+0.5*max_position,2)
-        if shangzheng_score<=-4 or chuangye_score<=-4:
-            position=min(0.10*max_position,position)
-        if shangzheng_score*chuangye_score<0:
-            position=min(0.40*max_position,position)
-        if shangzheng_score<=1 or chuangye_score<=1:
-            position=min(0.70*max_position,position)
-        is_sys_risk=False
-    else:
-        position=max_position
-        is_sys_risk=False
-    """
     #print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
     #print('position=',position,'sys_score=',sys_score,'operation=',operation)
     #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
     sendto_list=['104450966@qq.com']#,'40406275@qq.com']#,'jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
-    sub,content=se.form_mail_info('system', score=sys_score,position_unit=position)#,give_content=give_content)
+    sub,content=se.get_score_content('system', score=sys_score,position_unit=position)#,give_content=give_content)
     sub = sub + ' ' + latest_day
-    sub,additional_content=se.get_additional_content(sub,position, operation)
-    """
-    additional_content = '\n'
-    if position>0.6:
-        pass
-    elif position>0.3:
-        sub = '[alarm]' + sub
-        suggest_pos = position*100
-        sugestion = '建议轻仓操作,持仓不超过  %s%%的仓位' % suggest_pos
-        additional_content = additional_content + sugestion
-    else:
-        sub = '[alert]' + sub
-        suggest_pos = position*100
-        sugestion = '建议空仓,持仓最多不超过  %s%%的仓位' % suggest_pos
-        additional_content = additional_content + sugestion
-    if operation<-0.3 or operation>0.3:
-        if '[alarm]' in sub:
-            sub = '[alert]' + sub[6:]
-        elif '[alert]' in sub:
-            pass
-        else:
-            pass
-        operation = operation*100
-        oper='减仓'
-        if operation>0:
-            oper='加仓'
-        sugestion = '\n!!!!!\n系统反向激烈波动，建议'+ oper + '%s%% 至 %s%%的仓位 。' % (operation,position*100)
-        additional_content = additional_content + sugestion
-    else:
-        pass
-    """
+    sub,additional_content=se.get_position_content(sub,position, operation)
     content = content + additional_content
     content = content + '\n' + '近10天系统风险和仓位量化： \n' + '%s'% sys_df.tail(10)
     #print(content)
