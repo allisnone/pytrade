@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from tradeStrategy import *
 import sendEmail as se
+
 def quick_drop_down(test_interval_minutes=5,drop_rate=-3.0):
     return
 
@@ -151,11 +152,14 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         sub = '[alert]' + sub
         alert_content = '\n'
         operation = operation*100
-        sugestion = '建议调整仓位：%s%%' % (operation)
+        oper='减仓'
+        if operation>0:
+            oper='加仓'
+        sugestion = '建议调整仓位：'+ oper + '%s%% 至 %s%%的仓位 。' % (operation,position*100)
         alert_content = alert_content + sugestion
         content = content + alert_content
         print('Take action absolutely, operation=',operation)
-    content = content + '\n' + '%s'% sys_df.tail(5)
+    content = content + '\n' + '%s'% sys_df.tail(10)
     print(content)
     se.send_mail(sub,content,sendto_list)
     return position,sys_score
