@@ -693,10 +693,20 @@ class Stockhistory:
         
     def update_hist_df(self,k_data):
         #k_data=[date,open,high,low,close,volume,rmb]
+        if self.h_df.empty:
+            return
+        latest_day=self.h_df.tail(1)[date].values.tolist()[0]
+        print('latest_day=',latest_day)
         if k_data and len(k_data)>=7:
             column_list=['date','open','high','low','close','volume','rmb']
             this_k_data={'date': [k_data[0]],'open': [k_data[1]],'high': [k_data[2]],'low': [k_data[3]],'close': [k_data[4]],'volume': [k_data[5]],'rmb': [k_data[6]]}
             this_k_df=pd.DataFrame(data=this_k_data,columns=column_list)
+            if k_data[0]>latest_day:
+                pass
+            elif k_data[0]==latest_day:
+                self.h_df=self.h_df.head(len(self.h_df)-1)
+            else:
+                return
             self.h_df=self.h_df.append(this_k_data)
         return
     
