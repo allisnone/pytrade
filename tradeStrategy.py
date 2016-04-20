@@ -690,6 +690,15 @@ class Stockhistory:
     
     def set_hist_df(self,df):
         self.temp_hist_df=df
+        
+    def update_hist_df(self,k_data):
+        #k_data=[date,open,high,low,close,volume,rmb]
+        if k_data and len(k_data)>=7:
+            column_list=['date','open','high','low','close','volume','rmb']
+            this_k_data={'date': [k_data[0]],'open': [k_data[1]],'high': [k_data[2]],'low': [k_data[3]],'close': [k_data[4]],'volume': [k_data[5]],'rmb': [k_data[6]]}
+            this_k_df=pd.DataFrame(data=this_k_data,columns=column_list)
+            self.h_df=self.h_df.append(this_k_data)
+        return
     
     def get_last_k_data(self,last_num=None):
         if self.temp_hist_df.empty:
