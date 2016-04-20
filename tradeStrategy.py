@@ -695,7 +695,7 @@ class Stockhistory:
         #k_data=[date,open,high,low,close,volume,rmb]
         if self.h_df.empty:
             return
-        latest_day=self.h_df.tail(1)[date].values.tolist()[0]
+        latest_day=self.h_df.tail(1)['date'].values.tolist()[0]
         print('latest_day=',latest_day)
         if k_data and len(k_data)>=7:
             column_list=['date','open','high','low','close','volume','rmb']
