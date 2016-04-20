@@ -150,7 +150,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     if operation<-0.3 or operation>0.3:
         sub = '[alert]' + sub
         alert_content = '\n'
-        alert_content = alert_content + 'Take action absolutely, position change by operation=%s' % operation
+        alert_content = alert_content + '建议调整仓位：%s%%' % operation*100
         content = content + alert_content
         print('Take action absolutely, operation=',operation)
 
