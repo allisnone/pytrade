@@ -81,6 +81,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     chy_temp_df=chy_temp_df.fillna(0)
     shz_temp_df['sys_score']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
     shz_temp_df['position']=shzh_weight*shz_temp_df['position']+(1-shzh_weight)*chy_temp_df['position']
+    shz_temp_df['operation']=shz_temp_df['position']-shz_temp_df['position'].shift(1)
     """
     shz_temp_df['sys_score0']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
     #chy_temp_df=chy_temp_df.fillna(0)
@@ -106,6 +107,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     sys_df=sys_df.fillna(0)
     sys_score=sys_df.tail(1).iloc[0].sys_score
     position=sys_df.tail(1).iloc[0].position
+    operation=sys_df.tail(1).iloc[0].operation
     sys_df.to_csv('sys.csv')
     #"""
     #print(shz_temp_df.tail(20))
@@ -138,8 +140,10 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         is_sys_risk=False
     """
     #print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
-    print('position=',position,'sys_score=',sys_score)
+    print('position=',position,'sys_score=',sys_score,'operation=',operation)
     #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
+    if operation<-0.3:
+        print('Take action absolutely, operation=',operation)
     return position,sys_score
 
 def get_recent_100d_great_dropdown():
