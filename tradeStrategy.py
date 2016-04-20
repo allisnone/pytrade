@@ -696,11 +696,12 @@ class Stockhistory:
         if self.h_df.empty:
             return
         latest_day=self.h_df.tail(1)['date'].values.tolist()[0]
+        latest_index=self.h_df.tail(1).index.values.tolist()[0]
         print('latest_day=',latest_day)
         if k_data and len(k_data)>=7:
             column_list=['date','open','high','low','close','volume','rmb']
             this_k_data={'date': k_data[0],'open': k_data[1],'high': k_data[2],'low': k_data[3],'close': k_data[4],'volume': k_data[5],'rmb': k_data[6]}
-            this_k_df=pd.DataFrame(data=this_k_data,columns=column_list)
+            this_k_df=pd.DataFrame(data=this_k_data,columns=column_list,index=latest_index+1)
             print(this_k_df)
             if k_data[0]>latest_day:
                 pass
