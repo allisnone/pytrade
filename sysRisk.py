@@ -143,7 +143,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         is_sys_risk=False
     """
     #print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
-    print('position=',position,'sys_score=',sys_score,'operation=',operation)
+    #print('position=',position,'sys_score=',sys_score,'operation=',operation)
     #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
     sendto_list=['104450966@qq.com']#,'40406275@qq.com']#,'jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
     sub,content=se.form_mail_info('system', score=sys_score,position_unit=position)#,give_content=give_content)
@@ -157,17 +157,22 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         sugestion = '建议轻仓操作,持仓不超过  %s%%的仓位' % suggest_pos
         additional_content = additional_content + sugestion
     else:
-        sub = '[alarm]' + sub
+        sub = '[alert]' + sub
         suggest_pos = position*100
         sugestion = '建议空仓,持仓最多不超过  %s%%的仓位' % suggest_pos
         additional_content = additional_content + sugestion
     if operation<-0.3 or operation>0.3:
-        sub = '[alert]' + sub
+        if '[alarm]' in sub:
+            sub = '[alert]' + sub[6:]
+        elif '[alert]' in sub:
+            pass
+        else:
+            pass
         operation = operation*100
         oper='减仓'
         if operation>0:
             oper='加仓'
-        sugestion = '\n!!!!!\n系统反向激烈波动，建议调整仓位：'+ oper + '%s%% 至 %s%%的仓位 。' % (operation,position*100)
+        sugestion = '\n!!!!!\n系统反向激烈波动，建议'+ oper + '%s%% 至 %s%%的仓位 。' % (operation,position*100)
         additional_content = additional_content + sugestion
     else:
         pass
