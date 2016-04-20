@@ -156,7 +156,6 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
 
     print(content)
     se.send_mail(sub,content,sendto_list)
-    
     return position,sys_score
 
 def get_recent_100d_great_dropdown():

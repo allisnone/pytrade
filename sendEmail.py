@@ -48,7 +48,7 @@ def form_mail_info(market_type,score,symbol=None, position_unit=None,give_conten
     if position_unit!=None:
         position_handle=position_unit
     if market_type=='system':
-        sub='系统监测'
+        sub='A股系统风险监测'
         if give_content!=None:
             content=give_content
         else:
@@ -77,7 +77,7 @@ def form_mail_info(market_type,score,symbol=None, position_unit=None,give_conten
     else:
         pass
     return  sub,content
-#"""
+"""
 if __name__ == '__main__':  
     #send_info=[['104450966@qq.com','sub1','content1'],['3151173548@qq.com','sub2','content2'] ]
     market_type='system'
@@ -89,5 +89,5 @@ if __name__ == '__main__':
     sub,content=form_mail_info(market_type, score)#,give_content=give_content)
     print(content)
     send_mail(sub,content,sendto_list)
-#"""
+"""
     
