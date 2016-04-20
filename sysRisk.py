@@ -102,7 +102,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     del shz_temp_df['position_full']
     """
     shz_temp_df.to_csv('shz_temp_df.csv')
-    sys_df=shz_temp_df[['sys_score','position']].round(3)
+    sys_df=shz_temp_df[['sys_score','position','operation']].round(3)
     sys_df.is_copy=False
     sys_df=sys_df.fillna(0)
     sys_score=sys_df.tail(1).iloc[0].sys_score
@@ -142,7 +142,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     #print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
     print('position=',position,'sys_score=',sys_score,'operation=',operation)
     #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
-    if operation<-0.3:
+    if operation<-0.3 or operation>0.3:
         print('Take action absolutely, operation=',operation)
     return position,sys_score
 
