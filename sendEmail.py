@@ -3,9 +3,13 @@ import smtplib
 from email.mime import text
 from email.mime.text import MIMEText
 
-def send_position_mail(score,position,operation,position_df,symbol=None):
+def send_position_mail(position_df,symbol=None):
+    sys_score=position_df.tail(1).iloc[0].sys_score
+    position=position_df.tail(1).iloc[0].position
+    operation=position_df.tail(1).iloc[0].operation
+    latest_day=position_df.tail(1).index.values.tolist()[0]
     sendto_list=['104450966@qq.com']#,'40406275@qq.com']#,'jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
-    sub,content=get_score_content(score=score,position_unit=position,symbol=symbol)#,give_content=give_content)
+    sub,content=get_score_content(score=sys_score,position_unit=position,symbol=symbol)#,give_content=give_content)
     sub = sub + ' ' + latest_day
     sub,additional_content=get_position_content(sub,position, operation)
     content = content + additional_content
