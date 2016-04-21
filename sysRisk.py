@@ -88,61 +88,21 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
     shz_temp_df['sys_score']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
     shz_temp_df['position']=shzh_weight*shz_temp_df['position']+(1-shzh_weight)*chy_temp_df['position']
     shz_temp_df['operation']=shz_temp_df['position']-shz_temp_df['position'].shift(1)
-    """
-    shz_temp_df['sys_score0']=shzh_weight*shz_temp_df['k_score']+(1-shzh_weight)*chy_temp_df['k_score']
-    #chy_temp_df=chy_temp_df.fillna(0)
-    shz_temp_df['sys_score']=np.where(shz_temp_df.index>=chy_first_date,shz_temp_df['sys_score0'],shz_temp_df['k_score'])
-    if '3.5' in platform.python_version():
-       shz_temp_df['sys_score'] = shz_temp_df['sys_score'].rolling( window=3,center=False).mean().round(2)
-    else:
-       shz_temp_df['sys_score'] = pd.rolling_mean(shz_temp_df['sys_score'], window=3).round(2)
-    #shz_temp_df['sys_score'] = np.round(pd.rolling_mean(shz_temp_df['sys_score'], window=3), 2)
-    #shz_temp_df['position_risk']=np.where(shz_temp_df['sys_score']<-ultimate_coefficient*sys_risk_range,0,0)
-    shz_temp_df['position_nor']=np.where((shz_temp_df['sys_score']>=-ultimate_coefficient*sys_risk_range) & \
-                                         (shz_temp_df['sys_score']<=ultimate_coefficient*sys_risk_range),\
-                                         0.5*max_position/sys_risk_range/ultimate_coefficient*shz_temp_df['sys_score']+0.5*max_position,0)
-    shz_temp_df['position_full']=np.where(shz_temp_df['sys_score']>ultimate_coefficient*sys_risk_range,max_position,0)
-    shz_temp_df['position']=  shz_temp_df['position_nor'] + shz_temp_df['position_full']# + shz_temp_df['position_risk']
-    del shz_temp_df['sys_score0']
-    del shz_temp_df['position_nor']
-    del shz_temp_df['position_full']
-    """
     shz_temp_df.to_csv('shz_temp_df.csv')
     sys_df=shz_temp_df[['sys_score','position','operation']].round(3)
+    sys_df.to_csv('sys.csv')
+    return sys_df
+
+def get_sys_risk_info(sys_df):
+    if sys_df.empty:
+        return 0,0,''
     sys_df.is_copy=False
     sys_df=sys_df.fillna(0)
     sys_score=sys_df.tail(1).iloc[0].sys_score
     position=sys_df.tail(1).iloc[0].position
     operation=sys_df.tail(1).iloc[0].operation
     latest_day=sys_df.tail(1).index.values.tolist()[0]
-    sys_df.to_csv('sys.csv')
-    #"""
-    #print(shz_temp_df.tail(20))
-    sys_df['sys_score']=(sys_df['sys_score']).round(1)
-    sys_score_list=sys_df['sys_score'].values.tolist()
-    strong_sys_score,weak_sys_score=chy_stock.get_extreme_change(sys_score_list,rate=0.9)#,unique_v=True)
-    #print(strong_sys_score,weak_sys_score)
-    
-    sys_df['position']=(sys_df['position']).round(2)
-    sys_score_list=sys_df['position'].values.tolist()
-    strong_sys_score,weak_sys_score=chy_stock.get_extreme_change(sys_score_list,rate=0.8)#,unique_v=True)
-    #print(strong_sys_score,weak_sys_score)
-    #"""
-    #print('shangzheng_score=%s,chuangye_score=%s' %(shangzheng_score,chuangye_score))
-    #print('position=',position,'sys_score=',sys_score,'operation=',operation)
-    #print(len(shz_stock.temp_hist_df[shz_stock.temp_hist_df.date>'2010/6/3']))
-    se.send_position_mail(position_df=sys_df,symbol=None)
-    """
-    sendto_list=['104450966@qq.com']#,'40406275@qq.com']#,'jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
-    sub,content=se.get_score_content('system', score=sys_score,position_unit=position)#,give_content=give_content)
-    sub = sub + ' ' + latest_day
-    sub,additional_content=se.get_position_content(sub,position, operation)
-    content = content + additional_content
-    content = content + '\n' + '近10天系统风险和仓位量化： \n' + '%s'% sys_df.tail(10)
-    #print(content)
-    se.send_mail(sub,content,sendto_list)
-    """
-    return position,sys_score
+    return sys_score,position,operation,latest_day
 
 def get_recent_100d_great_dropdown():
     return
@@ -210,7 +170,9 @@ def test():
             position,sys_score,is_sys_risk=sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=hushen_score,chy_score=chye_score)  
 #test()
 def sys_position_test():
-    position,sys_score=sys_risk_analyse(max_position=1.0,ultimate_coefficient=0.25)
+    sys_df=sys_risk_analyse(max_position=1.0,ultimate_coefficient=0.25)
+    sys_score,position,operation,latest_day=get_sys_risk_info(sys_df)
+    se.send_position_mail(position_df=sys_df,symbol=None)
     revised_position(sys_risk_analyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.2,max_position=0.85)
     
 sys_position_test()
