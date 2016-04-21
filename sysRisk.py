@@ -63,7 +63,7 @@ def sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=None
         print(shz_code_str,'----------------------------------')
         shz_stock=tds.Stockhistory(shz_code_str,'D')
         print(shz_stock.h_df.tail(10))
-        k_data=['2016/04/20',3050.38,3055.69,2905.05,2972.58,283000000,3.1115e+11]
+        k_data=['2016/04/21',2954.38,2990.69,2935.05,2962.58,189000000,2.1115e+11]
         shz_stock.update_hist_df(k_data)
         print(shz_stock.h_df.tail(10))
         shangzheng_ma_score,shangzheng_score,k_position=shz_stock.get_market_score()
