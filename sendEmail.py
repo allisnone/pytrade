@@ -5,13 +5,13 @@ from email.mime.text import MIMEText
 
 def send_position_mail(score,position,operation,position_df,symbol=None):
     sendto_list=['104450966@qq.com']#,'40406275@qq.com']#,'jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
-    sub,content=se.get_score_content(score=score,position_unit=position,symbol=symbol)#,give_content=give_content)
+    sub,content=get_score_content(score=score,position_unit=position,symbol=symbol)#,give_content=give_content)
     sub = sub + ' ' + latest_day
-    sub,additional_content=se.get_position_content(sub,position, operation)
+    sub,additional_content=get_position_content(sub,position, operation)
     content = content + additional_content
     content = content + '\n' + '近10天系统风险和仓位量化： \n' + '%s'% position_df.tail(10)
     #print(content)
-    se.send_mail(sub,content,sendto_list)
+    send_mail(sub,content,sendto_list)
 
 def send_mail(sub,content,mail_to_list=None):
     """
