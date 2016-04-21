@@ -3,6 +3,16 @@ import smtplib
 from email.mime import text
 from email.mime.text import MIMEText
 
+def send_position_mail(score,position,operation,position_df,symbol=None):
+    sendto_list=['104450966@qq.com']#,'40406275@qq.com']#,'jason.g.zhang@ericsson.com']#,'david.w.song@ericsson.com']#,'3151173548@qq.com']
+    sub,content=se.get_score_content(score=score,position_unit=position,symbol=symbol)#,give_content=give_content)
+    sub = sub + ' ' + latest_day
+    sub,additional_content=se.get_position_content(sub,position, operation)
+    content = content + additional_content
+    content = content + '\n' + '近10天系统风险和仓位量化： \n' + '%s'% position_df.tail(10)
+    #print(content)
+    se.send_mail(sub,content,sendto_list)
+
 def send_mail(sub,content,mail_to_list=None):
     """
     :param mailto_list: list type, receiver email address,like ['104450966@qq.com','3151173548@qq.com']
@@ -41,13 +51,13 @@ def send_mail(sub,content,mail_to_list=None):
         return False
 #"""
 
-def get_score_content(market_type,score,symbol=None, position_unit=None,give_content=None):
+def get_score_content(score,symbol=None, position_unit=None,give_content=None):
     sub=''
     content=''
     position_handle=0.33
     if position_unit!=None:
         position_handle=position_unit
-    if market_type=='system':
+    if symbol==None: #system risk
         sub='A股系统风险监测'
         if give_content!=None:
             content=give_content
@@ -61,7 +71,7 @@ def get_score_content(market_type,score,symbol=None, position_unit=None,give_con
             else:
                 content='系统多头强势，系统量化打分=%s (-5~5分),加仓%s%%。' %  (score,position_handle*100)
                 
-    elif market_type=='stock' and symbol:
+    else:
         sub='个股监测，股票：%s' % symbol
         if give_content!=None:
             content=give_content
@@ -74,8 +84,6 @@ def get_score_content(market_type,score,symbol=None, position_unit=None,give_con
                 content='股票: %s 量化打分=%s,短期看涨, 持仓待涨' % (symbol,score)
             else:
                 content='股票: %s 量化打分=%s,短期看涨, 加仓%s%%' % (symbol,score,position_handle*100)
-    else:
-        pass
     return  sub,content
 
 def get_position_content(sub,position, operation):
