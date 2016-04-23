@@ -14,8 +14,8 @@ import threading
 import smtplib
 
 import pdSql as ps
-import tradeTime
-
+import tradeTime as tt
+import easyquotation
 
 ISOTIMEFORMAT='%Y-%m-%d %X'
 #ISODATEFORMAT='%Y%m%d'
@@ -691,25 +691,56 @@ class Stockhistory:
     def set_hist_df(self,df):
         self.temp_hist_df=df
         
-    def update_hist_df(self,k_data):
+    def get_realtime_k_data(self):
+        #https://github.com/shidenggui/easyquotation
+        quotation=easyquotation.use('sina') # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
+        #quotation = easyquotation.use('lf') # ['leverfun', 'lf'] #免费十档行情
+        k_data=quotation.stocks(self.code)[self.code]
+        """
+        {'000680': {'bid4_volume': 19000, 'high': 5.76, 'bid2_volume': 119096, 'sell': 5.7, 'bid2': 5.68, 'volume': 202358001.01,
+                    'ask4_volume': 143800, 'ask5_volume': 153400, 'ask1': 5.7, 'bid1_volume': 110500, 'bid3_volume': 20817, 
+                    'ask3_volume': 337408, 'open': 5.41, 'ask3': 5.72, 'turnover': 36100590, 'ask2': 5.71, 'ask1_volume': 210213,
+                    'ask2_volume': 217367, 'bid4': 5.66, 'ask5': 5.74, 'date': '2016-04-22', 'low': 5.37, 'time': '15:05:56', 
+                    'bid3': 5.67, 'name': '山推股份', 'now': 5.69, 'ask4': 5.73, 'bid5': 5.65, 'buy': 5.69, 'bid1': 5.69, 
+                    'close': 5.44, 'bid5_volume': 31000}
+         }
+         """
+        return k_data   
+    
+    def update_hist_df(self,k_data=None):
+        """
+        实时更新当前K线到历史数据
+        """
         #k_data=[date,open,high,low,close,volume,rmb]
+        k_data = self.get_realtime_k_data()
+        #print(k_data)
         if self.h_df.empty:
             return
         latest_day=self.h_df.tail(1)['date'].values.tolist()[0]
         latest_index=self.h_df.tail(1).index.values.tolist()[0]
-        print('latest_day=',latest_day)
+        #print('latest_day=',latest_day)
+        #print(self.h_df.tail(10))
         if k_data and len(k_data)>=7:
+            this_trade_time =  k_data['date'] + ' ' +  k_data['time']
+            pass_time_rate = tt.get_pass_trade_time()
+            predict_volume_rate = 1.0
+            if pass_time_rate:
+                predict_volume_rate = pass_time_rate
             column_list=['date','open','high','low','close','volume','rmb']
-            this_k_data={'date': k_data[0],'open': k_data[1],'high': k_data[2],'low': k_data[3],'close': k_data[4],'volume': k_data[5],'rmb': k_data[6]}
+            #this_k_data={'date': k_data[0],'open': k_data[1],'high': k_data[2],'low': k_data[3],'close': k_data[4],'volume': k_data[5],'rmb': k_data[6]}
+            this_k_data={'date': k_data['date'],'open': k_data['open'],'high': k_data['high'],'low': k_data['low'],'close': k_data['now'],'volume': k_data['turnover']*predict_volume_rate,'rmb': k_data['volume']*predict_volume_rate}
             this_k_df=pd.DataFrame(data=this_k_data,columns=column_list,index=[latest_index+1])
-            print(this_k_df)
-            if k_data[0]>latest_day:
+            #print(this_k_df)
+            #print(k_data['date'])
+            if k_data['date']>latest_day:
                 pass
-            elif k_data[0]==latest_day:
+            elif k_data['date']==latest_day:
+                this_k_df=pd.DataFrame(data=this_k_data,columns=column_list,index=[latest_index])
                 self.h_df=self.h_df.head(len(self.h_df)-1)
             else:
                 return
             self.h_df=self.h_df.append(this_k_data,ignore_index=True)
+            #print(self.h_df.tail(10))
         return
     
     def get_last_k_data(self,last_num=None):
@@ -774,6 +805,8 @@ class Stockhistory:
     def get_market_score(self,short_turn_weight=None,k_data=None):
         ma_type='ma5'
         temp_df=self.temp_hist_df
+        if temp_df.empty:
+            return 0,0,0
         if k_data!=None:
             update_one_hist(code_sybol, today_df, today_df_update_time)
             temp_df=self._form_temp_df()

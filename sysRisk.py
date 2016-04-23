@@ -39,7 +39,7 @@ def sys_level_exit(l_change,p_change,delay):
         pass
     return max_position
 
-def get_real_stock_k(shz_code_str='999999'):
+def get_real_stock_k(code_str='999999'):
     return []
         
 def sys_risk_analyse(is_realtime_update=False):
@@ -66,7 +66,10 @@ def sys_risk_analyse(is_realtime_update=False):
     #print(shz_stock.h_df.tail(10))
     shangzheng_ma_score,shangzheng_score,k_position=shz_stock.get_market_score()
     print(shangzheng_ma_score,shangzheng_score,k_position)
+    scz_code_str='399001'
+    zxb_code_str='399005'
     chy_code_str='399006'
+    chy_code_str='300044'
     print(chy_code_str,'----------------------------------')
     chy_stock=tds.Stockhistory(chy_code_str,'D')
     if is_realtime_update:
@@ -89,6 +92,71 @@ def sys_risk_analyse(is_realtime_update=False):
     shz_temp_df.to_csv('shz_temp_df.csv')
     sys_df=shz_temp_df[['sys_score','position','operation']].round(3)
     sys_df.to_csv('sys.csv')
+    return sys_df
+
+def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weight=0.65):
+    """ 
+    when less then -ultimate_coefficient*sys_risk_range, will be zero position; 
+    when greater then ultimate_coefficient*sys_risk_range, will be max position; 
+    others, will be linearly increased by sys_score
+    """
+    """
+    :param stock_synbol: str type, 个股指数
+    :param is_realtime_update: bool type, 是否实时更新仓位
+    :param index_weight: float type, 指数仓位占的比重
+    :return: position,sys_score,is_sys_risk
+    """
+    refer_index='999999'    #参考指数
+    if stock_synbol<'000999':#深证指数
+        refer_index = '399001'
+    elif stock_synbol>'002000' and stock_synbol<'002999':#中小板指数
+        refer_index ='399005'
+    elif stock_synbol>'300000' and stock_synbol<'309999':#创业板指数
+        refer_index = '399006'
+    elif stock_synbol > '600000' and stock_synbol<'609999':#上证指数
+        refer_index = '999999'
+    else:#返回系统仓位
+        stock_synbol='399006'
+        pass
+    #index_weight=0.65#指数占的比重
+    #is_sys_risk=False
+    print('refer_index=%s' % refer_index,'----------------------------------')
+    index_stock=tds.Stockhistory(refer_index,'D')
+    #print(shz_stock.h_df.tail(10))
+    if is_realtime_update:
+        k_data=get_real_stock_k(code_str=refer_index)
+        k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
+        index_stock.update_hist_df()
+    #print(shz_stock.h_df.tail(10))
+    shangzheng_ma_score,shangzheng_score,k_position=index_stock.get_market_score()
+    print(shangzheng_ma_score,shangzheng_score,k_position)
+    print(stock_synbol,'----------------------------------')
+    s_stock=tds.Stockhistory(stock_synbol,'D')
+    if is_realtime_update:
+        k_data=get_real_stock_k(code_str=stock_synbol)
+        #k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
+        s_stock.update_hist_df()
+    chuangye_ma_score,chuangye_score,k_position=s_stock.get_market_score()
+    index_temp_df=index_stock.temp_hist_df.set_index('date')
+    if s_stock.temp_hist_df.empty:
+        index_temp_df['sys_score']=index_temp_df['k_score']
+        index_temp_df['position']=index_temp_df['position']
+        index_temp_df['operation']=index_temp_df['position']-index_temp_df['position'].shift(1)
+        return index_temp_df[['sys_score','position','operation']].round(3)
+    print(chuangye_ma_score,chuangye_score,k_position)
+    #sys_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
+    #stock_first_date=stock.temp_hist_df.head(1).iloc[0].date
+    stock_temp_df=s_stock.temp_hist_df.set_index('date')
+    #shz_temp_df=shz_stock.temp_hist_df.tail(1000).set_index('date')
+    #chy_temp_df=chy_stock.temp_hist_df.tail(1000).set_index('date')
+    i_temp_df=index_temp_df.fillna(0)
+    s_temp_df=stock_temp_df.fillna(0)
+    i_temp_df['sys_score']=index_weight*i_temp_df['k_score']+(1-index_weight)*s_temp_df['k_score']
+    i_temp_df['position']=index_weight*i_temp_df['position']+(1-index_weight)*s_temp_df['position']
+    i_temp_df['operation']=i_temp_df['position']-i_temp_df['position'].shift(1)
+    i_temp_df.to_csv('shz_temp_df.csv')
+    sys_df=i_temp_df[['sys_score','position','operation']].round(3)
+    #sys_df.to_csv('sys.csv')
     return sys_df
 
 def get_sys_risk_info(sys_df):
@@ -168,7 +236,8 @@ def test():
             position,sys_score,is_sys_risk=sys_risk_analyse(max_position=0.85,ultimate_coefficient=0.25,shzh_score=hushen_score,chy_score=chye_score)  
 #test()
 def sys_position_test():
-    sys_df=sys_risk_analyse()
+    #sys_df=sys_risk_analyse()
+    sys_df = get_stock_position(stock_synbol='000680',is_realtime_update=True)
     sys_score,position,operation,latest_day=get_sys_risk_info(sys_df)
     se.send_position_mail(position_df=sys_df,symbol=None)
     revised_position(sys_risk_analyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.2,max_position=0.85)
