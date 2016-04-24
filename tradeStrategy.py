@@ -707,7 +707,7 @@ class Stockhistory:
          """
         return k_data   
     
-    def update_hist_df(self,k_data=None):
+    def update_realtime_hist_df(self,k_data=None):
         """
         实时更新当前K线到历史数据
         """
@@ -1489,6 +1489,7 @@ class Stockhistory:
         temp_df['ma30'] = np.round(pd.rolling_mean(temp_df['close'], window=30), 2)
         temp_df['ma60'] = np.round(pd.rolling_mean(temp_df['close'], window=60), 2)
         temp_df['ma120'] = np.round(pd.rolling_mean(temp_df['close'], window=120), 2)
+        temp_df['ma250'] = np.round(pd.rolling_mean(temp_df['close'], window=250), 2)
         temp_df['v_ma5'] = np.round(pd.rolling_mean(temp_df['volume'], window=5), 2)
         temp_df['v_ma10'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
@@ -1823,9 +1824,32 @@ class Stockhistory:
         return recent_sum
     
     def boduan_analyze(self):
-        df=self._form_temp_df()
+        df=self.temp_hist_df
         #print df
-        analyze_types=['close','ma5','ma10','ma30','ma60','ma120']
+        boduan_list=[]
+        analyze_types=['close','ma5','ma10','ma20','ma30','ma60','ma120','ma250']
+        if df.empty:
+            return
+        df_num=len(df)
+        split_index=1
+        if df_num<5:
+            split_index=1
+        elif df_num<10:
+            split_index=2
+        elif df_num<20:
+            split_index=3
+        elif df_num<30:
+            split_index=4
+        elif df_num<60:
+            split_index=5
+        elif df_num<120:
+            split_index=6
+        elif df_num<250:
+            split_index=7
+        else:
+            split_index=8 
+        analyze_types=analyze_types[:split_index]
+        df.fillna(0)
         for analyze_type in analyze_types:
             analyze_list=df[analyze_type].values.tolist()
             boduan_list=find_boduan(analyze_list)
@@ -1944,11 +1968,11 @@ class Stockhistory:
         max_value=df[column_name].max()
         max_value=round(max_value,2)
         max_series=df.ix[max_idx]
-        #print type(max_series)
-        #max_value=max_series['volume']         #for other related values
-        #print 'max_series',max_series[column_name]
-        #print 'max_series',max_series.values
-        return max_series,max_value
+        min_idx=df[column_name].idxmin()
+        min_value=df[column_name].min()
+        min_value=round(min_value,2)
+        min_series=df.ix[min_idx]
+        return max_series,max_value,min_series,min_value
     
     #get min data of <latest_num> days
     def get_min(self,column_name='close',latest_num=None):

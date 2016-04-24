@@ -62,7 +62,7 @@ def sys_risk_analyse(is_realtime_update=False):
     if is_realtime_update:
         k_data=get_real_stock_k(shz_code_str='999999')
         k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
-        shz_stock.update_hist_df(k_data)
+        shz_stock.update_realtime_hist_df(k_data)
     #print(shz_stock.h_df.tail(10))
     shangzheng_ma_score,shangzheng_score,k_position=shz_stock.get_market_score()
     print(shangzheng_ma_score,shangzheng_score,k_position)
@@ -75,7 +75,7 @@ def sys_risk_analyse(is_realtime_update=False):
     if is_realtime_update:
         k_data=get_real_stock_k(shz_code_str='399006')
         #k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
-        shz_stock.update_hist_df(k_data)
+        shz_stock.update_realtime_hist_df(k_data)
     chuangye_ma_score,chuangye_score,k_position=chy_stock.get_market_score()
     print(chuangye_ma_score,chuangye_score,k_position)
     #sys_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
@@ -126,16 +126,23 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
     if is_realtime_update:
         k_data=get_real_stock_k(code_str=refer_index)
         k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
-        index_stock.update_hist_df()
+        index_stock.update_realtime_hist_df()
     #print(shz_stock.h_df.tail(10))
     shangzheng_ma_score,shangzheng_score,k_position=index_stock.get_market_score()
+    max_series,max_value,min_series,min_value=index_stock.get_max(column_name='close',latest_num=10)
+    print(max_series,max_value,min_series,min_value)
+    max_series,max_value,min_series,min_value=index_stock.get_max(column_name='close',latest_num=20)
+    print(max_series,max_value,min_series,min_value)
+    max_series,max_value,min_series,min_value=index_stock.get_max(column_name='close',latest_num=30)
+    #index_stock.boduan_analyze()
+    print(max_series,max_value,min_series,min_value)
     print(shangzheng_ma_score,shangzheng_score,k_position)
     print(stock_synbol,'----------------------------------')
     s_stock=tds.Stockhistory(stock_synbol,'D')
     if is_realtime_update:
         k_data=get_real_stock_k(code_str=stock_synbol)
         #k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
-        s_stock.update_hist_df()
+        s_stock.update_realtime_hist_df()
     chuangye_ma_score,chuangye_score,k_position=s_stock.get_market_score()
     index_temp_df=index_stock.temp_hist_df.set_index('date')
     if s_stock.temp_hist_df.empty:
@@ -239,7 +246,7 @@ def sys_position_test():
     #sys_df=sys_risk_analyse()
     sys_df = get_stock_position(stock_synbol='000680',is_realtime_update=True)
     sys_score,position,operation,latest_day=get_sys_risk_info(sys_df)
-    se.send_position_mail(position_df=sys_df,symbol=None)
+    #se.send_position_mail(position_df=sys_df,symbol=None)
     revised_position(sys_risk_analyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.2,max_position=0.85)
     
 sys_position_test()
