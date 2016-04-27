@@ -1458,7 +1458,12 @@ class Stockhistory:
             temp_df['atr_%s_max_r'%long_num]=pd.rolling_max(temp_df['atr_%s_rate'%long_num], window=long_num).round(2)
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
-        temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
+        temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]
+                                    ) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]
+                                         ),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
+        temp_df['star'] = ((temp_df['close']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(2)
+        temp_df['k_rate'] = ((temp_df['close']-temp_df['open'])/(temp_df['close'].shift(1)-temp_df['open'].shift(1))).round(2)
+        temp_df['p_rate'] = (temp_df['p_change']/temp_df['p_change'].shit(1)).round(2)
         #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
         #print(temp_df)
         return temp_df
@@ -2302,6 +2307,14 @@ class Stockhistory:
         except:
             return False
         
+    def is_10_fanzhuang(self):
+        if len(self.temp_hist_df)<2:
+            print('No enough history data for 101 verify!')
+            return False
+        df=self.temp_hist_df.tail(3)
+        
+        return  
+     
     def is_10(self,potential):
         if len(self.h_df)<2:
             print('No enough history data for 101 verify!')
