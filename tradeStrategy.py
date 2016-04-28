@@ -695,6 +695,7 @@ class Stockhistory:
         #https://github.com/shidenggui/easyquotation
         quotation=easyquotation.use('sina') # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
         #quotation = easyquotation.use('lf') # ['leverfun', 'lf'] #免费十档行情
+        print(quotation.stocks(self.code))
         k_data=quotation.stocks(self.code)[self.code]
         """
         {'000680': {'bid4_volume': 19000, 'high': 5.76, 'bid2_volume': 119096, 'sell': 5.7, 'bid2': 5.68, 'volume': 202358001.01,
