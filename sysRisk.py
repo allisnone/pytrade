@@ -244,6 +244,9 @@ def test():
 #test()
 def sys_position_test():
     #sys_df=sys_risk_analyse()
+    sys_df = get_stock_position(is_realtime_update=True)
+    sys_df = get_stock_position(stock_synbol='300162',is_realtime_update=True)
+    sys_df = get_stock_position(stock_synbol='002673',is_realtime_update=True)
     sys_df = get_stock_position(stock_synbol='000680',is_realtime_update=True)
     sys_score,position,operation,latest_day=get_sys_risk_info(sys_df)
     #se.send_position_mail(position_df=sys_df,symbol=None)
