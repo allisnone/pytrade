@@ -691,6 +691,24 @@ class Stockhistory:
     def set_hist_df(self,df):
         self.temp_hist_df=df
         
+    def is_island_reverse_up(self,gap_rate=0.005):
+        temp_df = self.temp_hist_df
+        print(temp_df)
+        open_crit = temp_df['open']>(1+gap_rate)*temp_df['close'].shift(1) and temp_df['open'].shift(1)<(1-gap_rate)*temp_df['close'].shift(2)
+        close_crit = temp_df['close']>temp_df['close'].shift(1) and temp_df['close'].shift(1)<temp_df['close'].shift(2)
+        great_drop_crit = (temp_df['c_max10']-temp_df['close'].shift(1))>3.0*temp_df['atr_ma10']
+        temp_df['is_island']=np.where(open_crit & close_crit & great_drop_crit,temp_df['o_change'],0 )
+        print(temp_df)
+        return 
+     
+    def is_island_reverse_down(self,gap_rate=0.005):
+        temp_df = self.temp_hist_df
+        open_crit = temp_df['open']<(1-gap_rate)*temp_df['close'].shift(1) and temp_df['open'].shift(1)>(1+gap_rate)*temp_df['close'].shift(2)
+        close_crit = temp_df['close']<temp_df['close'].shift(1) and temp_df['close'].shift(1)>temp_df['close'].shift(2)
+        great_drop_crit = (temp_df['close'].shift(1)-temp_df['c_min10'])>3.0*temp_df['atr_ma10']
+        temp_df['is_island']=np.where(open_crit & close_crit & great_drop_crit,temp_df['o_change'],0 )
+        return  
+    
     def get_realtime_k_data(self):
         #https://github.com/shidenggui/easyquotation
         quotation=easyquotation.use('sina') # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
@@ -1453,6 +1471,10 @@ class Stockhistory:
             temp_df['atr_%s_max_r'%short_num]=temp_df['atr_%s_rate'%short_num].rolling(window=short_num,center=False).max().round(2)
             temp_df['atr_%s_rate'%long_num]=(temp_df['atr_ma%s'%long_num]/temp_df['atr']).round(2)
             temp_df['atr_%s_max_r'%long_num]=temp_df['atr_%s_rate'%long_num].rolling(window=long_num,center=False).max().round(2)
+            temp_df['c_max10']=temp_df['close'].rolling(window=long_num,center=False).max().round(2)
+            temp_df['c_min10']=temp_df['close'].rolling(window=long_num,center=False).min().round(2)
+            temp_df['h_max10']=temp_df['high'].rolling(window=long_num,center=False).max().round(2)
+            temp_df['l_min10']=temp_df['low'].rolling(window=long_num,center=False).min().round(2)
         else:#elif '3.4' in platform.python_version():
             temp_df['atr_ma%s'%short_num] = pd.rolling_mean(temp_df['atr'], window=short_num).round(2)
             temp_df['atr_ma%s'%long_num] = pd.rolling_mean(temp_df['atr'], window=long_num).round(2)
@@ -1460,6 +1482,10 @@ class Stockhistory:
             temp_df['atr_%s_max_r'%short_num]=pd.rolling_max(temp_df['atr_%s_rate'%short_num], window=short_num).round(2)
             temp_df['atr_%s_rate'%long_num]=(temp_df['atr_ma%s'%long_num]/temp_df['atr']).round(2)
             temp_df['atr_%s_max_r'%long_num]=pd.rolling_max(temp_df['atr_%s_rate'%long_num], window=long_num).round(2)
+            temp_df['c_max10']=pd.rolling_max(temp_df['close'], window=long_num).round(2)
+            temp_df['c_min10']=pd.rolling_min(temp_df['close'], window=long_num).round(2)
+            temp_df['h_max10']=pd.rolling_max(temp_df['high'], window=long_num).round(2)
+            temp_df['l_min10']=pd.rolling_min(temp_df['low'], window=long_num).round(2)
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
         temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]

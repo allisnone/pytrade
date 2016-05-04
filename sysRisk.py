@@ -144,6 +144,7 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
         #k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
         s_stock.update_realtime_hist_df()
     chuangye_ma_score,chuangye_score,k_position=s_stock.get_market_score()
+    s_stock.is_island_reverse_up()
     index_temp_df=index_stock.temp_hist_df.set_index('date')
     if s_stock.temp_hist_df.empty:
         index_temp_df['sys_score']=index_temp_df['k_score']
