@@ -698,7 +698,7 @@ class Stockhistory:
         close_crit = (temp_df['close']>temp_df['close'].shift(1)) & (temp_df['close'].shift(1)<temp_df['close'].shift(2))
         great_drop_crit = (temp_df['c_max10']-temp_df['close'].shift(1))>(3.0*temp_df['atr_ma10'])
         temp_df['is_island']=np.where(open_crit & close_crit & great_drop_crit,temp_df['o_change'],0 )
-        print(temp_df)
+        print(temp_df[temp_df['is_island']>0])
         return 
      
     def is_island_reverse_down(self,gap_rate=0.005):
