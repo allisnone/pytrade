@@ -693,6 +693,10 @@ class Stockhistory:
         
     def is_island_reverse_up(self,gap_rate=0.005):
         temp_df = self.temp_hist_df
+        temp_df['jump_max']=np.where(temp_df['close']>temp_df['open'],temp_df['close'],temp_df['open'])
+        temp_df['jump_min']=np.where(temp_df['close']<temp_df['open'],temp_df['close'],temp_df['open'])
+        temp_df['jump_up']=np.where(temp_df['open']>temp_df['jump_max'].shift(1),1,0)
+        temp_df['jump_d']=np.where(temp_df['open']<temp_df['jump_min'].shift(1),1,0)
         #print(temp_df)
         open_crit = (temp_df['open']>(1+gap_rate)*min(temp_df['close'].shift(1),temp_df['open'].shift(1))) & (max(temp_df['open'].shift(1),temp_df['open'].shift(1))<((1-gap_rate)*temp_df['close'].shift(2)))
         close_crit = (temp_df['close']>temp_df['close'].shift(1)) & (temp_df['close'].shift(1)<temp_df['close'].shift(2))
