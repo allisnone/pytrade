@@ -1502,6 +1502,7 @@ class Stockhistory:
         temp_df['k_rate'] = ((temp_df['close']-temp_df['open'])/(temp_df['close'].shift(1)-temp_df['open'].shift(1))).round(2)
         temp_df['p_rate'] = (temp_df['p_change']/temp_df['p_change'].shift(1)).round(2)
         #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
+        
         print(temp_df.tail(10))
         return temp_df
     
