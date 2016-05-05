@@ -695,7 +695,7 @@ class Stockhistory:
         temp_df = self.temp_hist_df
         temp_df['jump_max']=np.where(temp_df['close']>temp_df['open'],temp_df['close'],temp_df['open'])
         temp_df['jump_min']=np.where(temp_df['close']<temp_df['open'],temp_df['close'],temp_df['open'])
-        temp_df['jump_up']=np.where(temp_df['jump_min']>(1+gap_rate)*temp_df['jump_max'].shift(1),temp_df['min']/temp_df['jump_max'].shift(1)-1,0)
+        temp_df['jump_up']=np.where(temp_df['jump_min']>(1+gap_rate)*temp_df['jump_max'].shift(1),temp_df['jump_min']/temp_df['jump_max'].shift(1)-1,0)
         temp_df['jump_down']=np.where(temp_df['jump_max']<(1-gap_rate)*temp_df['jump_min'].shift(1),1-temp_df['jump_min'].shift(1)/temp_df['jump_max'],0)
         temp_df['gap'] = temp_df['jump_up'] + temp_df['jump_down']
         print(temp_df[['gap','star']])
