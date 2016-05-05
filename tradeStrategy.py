@@ -1518,7 +1518,7 @@ class Stockhistory:
         """实体跨越多条k线"""
         cross_ma5_criteria = (temp_df['ma5']>=temp_df['jump_min']) & (temp_df['ma5']<=temp_df['jump_max'])
         cross_ma10_criteria = (temp_df['ma10']>=temp_df['jump_min']) & (temp_df['ma10']<=temp_df['jump_max'])
-        cross_ma30_criteria = (temp_df['ma30']>=temp_df['jump_min']) & (temp_df['ma30']<=temp_df['jump_max'])
+        cross_ma30_criteria = (temp_df['ma20']>=temp_df['jump_min']) & (temp_df['ma20']<=temp_df['jump_max'])
         cross_ma60_criteria = (temp_df['ma60']>=temp_df['jump_min']) & (temp_df['ma60']<=temp_df['jump_max'])
         temp_df['cross1'] = np.where(cross_ma5_criteria,temp_df['p_change'],0)
         temp_df['cross2'] = np.where(cross_ma5_criteria & cross_ma10_criteria,temp_df['p_change'],0)
