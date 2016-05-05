@@ -692,36 +692,26 @@ class Stockhistory:
         self.temp_hist_df=df
         
     def is_island_reverse_up(self,gap_rate=0.005):
+        """
         temp_df = self.temp_hist_df
         temp_df['jump_max']=np.where(temp_df['close']>temp_df['open'],temp_df['close'],temp_df['open'])
         temp_df['jump_min']=np.where(temp_df['close']<temp_df['open'],temp_df['close'],temp_df['open'])
-        temp_df['jump_up']=np.where(temp_df['jump_min']>(1+gap_rate)*temp_df['jump_max'].shift(1),temp_df['jump_min']/temp_df['jump_max'].shift(1)-1,0)
-        temp_df['jump_down']=np.where(temp_df['jump_max']<(1-gap_rate)*temp_df['jump_min'].shift(1),1-temp_df['jump_min'].shift(1)/temp_df['jump_max'],0)
+        temp_df['jump_up']=np.where(temp_df['jump_min']>(1+gap_rate)*temp_df['jump_max'].shift(1),
+                                    temp_df['jump_min']/temp_df['jump_max'].shift(1)-1,0)
+        temp_df['jump_down']=np.where(temp_df['jump_max']<(1-gap_rate)*temp_df['jump_min'].shift(1),
+                                      1-temp_df['jump_min'].shift(1)/temp_df['jump_max'],0)
         temp_df['gap'] = (temp_df['jump_up'] + temp_df['jump_down']).round(3)
         temp_df['island'] = np.where(temp_df['gap']*temp_df['gap'].shift(1)<0,temp_df['gap'],0)
-        island_df=temp_df[['date','gap','star','island']]
+        island_df=temp_df[['date','p_change','gap','star','island','atr_in']]
         print(island_df[island_df.island!=0])
-        print(temp_df[['date','gap','star','island']])
+        print(island_df.tail(50))
         del temp_df['jump_max']
         del temp_df['jump_min']
         del temp_df['jump_up']
         del temp_df['jump_down']
         """
-        open_crit = (temp_df['open']>(1+gap_rate)*min(temp_df['close'].shift(1),temp_df['open'].shift(1))) & (max(temp_df['open'].shift(1),temp_df['open'].shift(1))<((1-gap_rate)*temp_df['close'].shift(2)))
-        close_crit = (temp_df['close']>temp_df['close'].shift(1)) & (temp_df['close'].shift(1)<temp_df['close'].shift(2))
-        great_drop_crit = True#(temp_df['c_max10']-temp_df['close'].shift(1))>(3.0*temp_df['atr_ma10'])
-        temp_df['is_island']=np.where(open_crit & close_crit & great_drop_crit,temp_df['o_change'],0 )
-        print(temp_df[temp_df['is_island']>0])
-        """
         return 
-     
-    def is_island_reverse_down(self,gap_rate=0.005):
-        temp_df = self.temp_hist_df
-        open_crit = temp_df['open']<(1-gap_rate)*temp_df['close'].shift(1) and temp_df['open'].shift(1)>(1+gap_rate)*temp_df['close'].shift(2)
-        close_crit = temp_df['close']<temp_df['close'].shift(1) and temp_df['close'].shift(1)>temp_df['close'].shift(2)
-        great_drop_crit = (temp_df['close'].shift(1)-temp_df['c_min10'])>3.0*temp_df['atr_ma10']
-        temp_df['is_island']=np.where(open_crit & close_crit & great_drop_crit,temp_df['o_change'],0 )
-        return  
+    
     
     def get_realtime_k_data(self):
         #https://github.com/shidenggui/easyquotation
@@ -1505,12 +1495,45 @@ class Stockhistory:
         temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]
                                     ) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]
                                          ),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
-        temp_df['star'] = ((temp_df['close']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(2)
+        temp_df['star'] = ((temp_df['close']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(2) #k线实体比例
+        
+        """一日反转"""
         temp_df['k_rate'] = ((temp_df['close']-temp_df['open'])/(temp_df['close'].shift(1)-temp_df['open'].shift(1))).round(2)
+        great_rate=2.0
+        temp_df['reverse'] = np.where((temp_df['p_change'].shift(1).abs()>great_rate) & (temp_df['k_rate']<=-0.8),temp_df['k_rate'],0)
         temp_df['p_rate'] = (temp_df['p_change']/temp_df['p_change'].shift(1)).round(2)
         #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
         
-        print(temp_df.tail(10))
+        """岛型反转"""
+        gap_rate=0.005
+        temp_df['jump_max']=np.where(temp_df['close']>temp_df['open'],temp_df['close'],temp_df['open'])
+        temp_df['jump_min']=np.where(temp_df['close']<temp_df['open'],temp_df['close'],temp_df['open'])
+        temp_df['jump_up']=np.where(temp_df['jump_min']>(1+gap_rate)*temp_df['jump_max'].shift(1),
+                                    temp_df['jump_min']/temp_df['jump_max'].shift(1)-1,0)
+        temp_df['jump_down']=np.where(temp_df['jump_max']<(1-gap_rate)*temp_df['jump_min'].shift(1),
+                                      1-temp_df['jump_min'].shift(1)/temp_df['jump_max'],0)
+        temp_df['gap'] = (temp_df['jump_up'] + temp_df['jump_down']).round(3)
+        temp_df['island'] = np.where(temp_df['gap']*temp_df['gap'].shift(1)<0,temp_df['gap'],0)
+        
+        """实体跨越多条k线"""
+        cross_ma5_criteria = (temp_df['ma5']>=temp_df['jump_min']) & (temp_df['ma5']<=temp_df['jump_max'])
+        cross_ma10_criteria = (temp_df['ma10']>=temp_df['jump_min']) & (temp_df['ma10']<=temp_df['jump_max'])
+        cross_ma30_criteria = (temp_df['ma30']>=temp_df['jump_min']) & (temp_df['ma30']<=temp_df['jump_max'])
+        cross_ma60_criteria = (temp_df['ma60']>=temp_df['jump_min']) & (temp_df['ma60']<=temp_df['jump_max'])
+        temp_df['cross1'] = np.where(cross_ma5_criteria,temp_df['p_change'],0)
+        temp_df['cross2'] = np.where(cross_ma5_criteria & cross_ma10_criteria,temp_df['p_change'],0)
+        temp_df['cross3'] = np.where(cross_ma5_criteria & cross_ma10_criteria & cross_ma30_criteria,temp_df['p_change'],0)
+        temp_df['cross4'] = np.where(cross_ma5_criteria & cross_ma10_criteria & cross_ma30_criteria & cross_ma60_criteria,temp_df['p_change'],0)
+         
+        island_df=temp_df[['date','p_change','gap','star','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','cross4']]
+        print(island_df[island_df.island!=0])
+        print(island_df.tail(50))
+        del temp_df['jump_max']
+        del temp_df['jump_min']
+        del temp_df['jump_up']
+        del temp_df['jump_down']
+        
+        #print(temp_df.tail(10))
         return temp_df
     
     def _form_temp_df1(self):
