@@ -699,7 +699,9 @@ class Stockhistory:
         temp_df['jump_down']=np.where(temp_df['jump_max']<(1-gap_rate)*temp_df['jump_min'].shift(1),1-temp_df['jump_min'].shift(1)/temp_df['jump_max'],0)
         temp_df['gap'] = (temp_df['jump_up'] + temp_df['jump_down']).round(3)
         temp_df['island'] = np.where(temp_df['gap']*temp_df['gap'].shift(1)<0,temp_df['gap'],0)
-        print(temp_df[['date','gap','star']])
+        island_df=temp_df[['date','gap','star','island']]
+        print(island_df[island_df.island!=0])
+        print(temp_df[['date','gap','star','island']])
         del temp_df['jump_max']
         del temp_df['jump_min']
         del temp_df['jump_up']
