@@ -159,12 +159,12 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
     #chy_temp_df=chy_stock.temp_hist_df.tail(1000).set_index('date')
     i_temp_df=index_temp_df.fillna(0)
     s_temp_df=stock_temp_df.fillna(0)
-    i_temp_df['sys_score']=index_weight*i_temp_df['k_score']+(1-index_weight)*s_temp_df['k_score']
-    i_temp_df['position']=index_weight*i_temp_df['position']+(1-index_weight)*s_temp_df['position']
-    i_temp_df['operation']=i_temp_df['position']-i_temp_df['position'].shift(1)
-    i_temp_df.to_csv('shz_temp_df.csv')
-    select_columns=['p_change','gap','star','p_change1','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','sys_score','position','operation']
-    stock_df=i_temp_df[select_columns].round(3)
+    s_temp_df['sys_score']=index_weight*i_temp_df['k_score']+(1-index_weight)*s_temp_df['k_score']
+    s_temp_df['pos']=index_weight*i_temp_df['position']+(1-index_weight)*s_temp_df['position']
+    s_temp_df['oper']=i_temp_df['position']-i_temp_df['position'].shift(1)
+    s_temp_df.to_csv('%s.csv'%stock_synbol)
+    select_columns=['p_change','gap','star','change','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','sys_score','pos','oper']
+    stock_df=s_temp_df[select_columns].round(3)
     stock_df.to_csv('stock_%s.csv' % stock_synbol)
     print(stock_df.tail(20))
     return stock_df
@@ -175,8 +175,8 @@ def get_sys_risk_info(sys_df):
     sys_df.is_copy=False
     sys_df=sys_df.fillna(0)
     sys_score=sys_df.tail(1).iloc[0].sys_score
-    position=sys_df.tail(1).iloc[0].position
-    operation=sys_df.tail(1).iloc[0].operation
+    position=sys_df.tail(1).iloc[0].pos
+    operation=sys_df.tail(1).iloc[0].oper
     latest_day=sys_df.tail(1).index.values.tolist()[0]
     return sys_score,position,operation,latest_day
 
@@ -251,7 +251,7 @@ def sys_position_test():
     sys_df = get_stock_position(stock_synbol='300162')#,is_realtime_update=True)
     #sys_df = get_stock_position(stock_synbol='002673',is_realtime_update=True)
     #sys_df = get_stock_position(stock_synbol='000680')#,is_realtime_update=True)
-    #sys_score,position,operation,latest_day=get_sys_risk_info(sys_df)
+    sys_score,position,operation,latest_day=get_sys_risk_info(sys_df)
     #se.send_position_mail(position_df=sys_df,symbol=None)
     revised_position(sys_risk_analyse_position=position,recent_100d_great_dropdown=-0.48,recent_100d_great_increase=0.2,max_position=0.85)
     
