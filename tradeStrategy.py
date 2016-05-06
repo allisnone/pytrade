@@ -1525,9 +1525,9 @@ class Stockhistory:
         temp_df['cross3'] = np.where(cross_ma5_criteria & cross_ma10_criteria & cross_ma30_criteria,temp_df['p_change'],0)
         temp_df['cross4'] = np.where(cross_ma5_criteria & cross_ma10_criteria & cross_ma30_criteria & cross_ma60_criteria,temp_df['p_change'],0)
          
-        island_df=temp_df[['date','p_change','gap','star','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','cross4']]
-        print(island_df[island_df.island!=0])
-        print(island_df.tail(50))
+        island_df=temp_df[['date','p_change','gap','star','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3']]
+        #print(island_df[island_df.island!=0])
+        #print(island_df.tail(50))
         del temp_df['jump_max']
         del temp_df['jump_min']
         del temp_df['jump_up']
