@@ -166,6 +166,7 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
     select_columns=['p_change','gap','star','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','sys_score','position','operation']
     stock_df=i_temp_df[select_columns].round(3)
     stock_df.to_csv('stock_%s.csv' % stock_synbol)
+    print(stock_df.tail(20))
     return stock_df
 
 def get_sys_risk_info(sys_df):
