@@ -1,6 +1,7 @@
 # coding: utf-8
 from easytrader import *
 import easyquotation
+import time
 import pandas as pd
 log = helpers.get_logger(__file__)
 
@@ -67,8 +68,7 @@ class MyTrader(YHTrader):
         return position_dict
         """
         #print(pos_df)
-        return pos_df
-    
+        return pos_df 
         
     def sell_to_exit(self, stock_code, exit_price, last_close,realtime_price,exit_type=0,exit_rate=0,delay=0):
         """止损止盈 卖出股票
@@ -236,14 +236,13 @@ class MyTrader(YHTrader):
             pos_df = self.position.set_index(keys='证券代码')
             avl_pos = pos_df[pos_df['股份可用']>=100]
             if  stock_code not in pos_df.index.values.tolist():#不是持仓股票
-                log.debug('无该股 %s的持仓' % stock_code)
+                log.debug('1无该股 %s的持仓' % stock_code)
                 sell_amount = -1
             elif stock_code not in avl_pos.index.values.tolist():#不是持仓股票
                 log.debug('有该股 %s的持仓，但无可卖数量' % stock_code)
                 #sell_amount = -1
             else:
                 avl_amount=avl_pos.loc[stock_code,'股份可用']
-                print(type(avl_amount))
                 if sell_rate and sell_rate<1 and sell_rate>0:
                     sell_amount=int(avl_amount*sell_rate/100)*100
                 else:
@@ -273,12 +272,15 @@ class MyTrader(YHTrader):
                 bid2 = k_data['bid2']
                 lowest_price=round(last_close*0.9,2)
                 highest_price=round(last_close*1.1,2)
+                pre_holding_amount = self.get_position_info(stock_code, info_column='股份余额')
                 self.sell(stock_code, lowest_price, sell_amount, volume=0, entrust_prop=0)
                 #self.sell(stock_code, bid2, sell_amount, volume=0, entrust_prop=0)
                 if set_time==None: 
                     log.debug('即时卖出股票   %s, 数量%s股' % (stock_code,sell_amount))
                 else:
                     log.debug('定时于  %s 卖出股票  %s, 数量%s股' % (set_time,stock_code,sell_amount))
+                time.sleep(10)
+                trade_status = self.config_trade(stock_code, pre_holding_amount, trade_amount=sell_amount, trade_direct='S')
                 return 1
             else:
                 return 0
@@ -339,12 +341,15 @@ class MyTrader(YHTrader):
             highest_price = round(k_data['close']*1.1,2)
             ask5 = k_data['ask5']
             ask2 = k_data['ask2']
+            pre_holding_amount = self.get_position_info(stock_code, info_column='股份余额')
             self.buy(stock_code, highest_price, a_amount, volume=0, entrust_prop=0)
             #self.buy(stock_code, ask2, a_amount, volume=0, entrust_prop=0)
             if set_time==None: 
                 log.debug('即时买入股票  %s, 数量%s股' % (stock_code,a_amount))
             else:
                 log.debug('定时于 %s 买入股票  %s, 数量%s股' % (set_time,stock_code,a_amount))
+            time.sleep(10)
+            trade_status = self.config_trade(stock_code, pre_holding_amount, trade_amount=a_amount, trade_direct='B')
             return 1
         else:
             return 0
@@ -362,68 +367,85 @@ class MyTrader(YHTrader):
         sell_success = self.sell_stock_by_time(stock_to_sell, sell_rate, sell_time)
         buy_success = self.buy_stock_by_time(stock_to_buy, buy_rate, buy_time)
         if sell_success==1 and buy_success==1:
-            log.debug('换股成功，卖出股票 %s 买入股票  %s!!' % (stock_to_sell,stock_to_buy))
+            log.debug('换股尝试下单完成，卖出股票 %s 买入股票  %s!!' % (stock_to_sell,stock_to_buy))
         else: 
-            log.debug('换股失败，试图 卖出股票 %s 买入股票  %s!!' % (stock_to_sell,stock_to_buy))
+            log.debug('换股尝试下单失败，试图 卖出股票 %s 买入股票  %s!!' % (stock_to_sell,stock_to_buy))
         return 
-
+    
+    def get_position_info(self, stock_code,info_column):
+        """获取股份余额：剩余股份数
+        :param stock_code: 股票代码
+        :param info_column: 持仓列信息
+        """
+        column_list=['盈亏比例(%)', '参考市值', '证券名称', '买入冻结', '当前持仓', '卖出冻结', '股东代码', '交易市场', '参考市价', '证券代码', '股份可用', '参考成本价', '股份余额', '参考盈亏']
+        info_column_result = 0
+        if info_column not in column_list:
+            log.debug('请输入正确的持仓列关键字')
+            return -1
+        else:
+            if info_column in ['证券名称',  '股东代码', '交易市场',  '证券代码']:
+                info_column_result = ''
+            else:
+                pass
+            #print(self.position)
+            if self.position.empty:
+                log.debug('帐户空仓，无任何持仓股票')
+                return info_column_result
+            pos_df = self.position.set_index(keys='证券代码')
+            if  stock_code not in pos_df.index.values.tolist():#不是持仓股票
+                log.debug('2无该股 %s的持仓' % stock_code)
+                return  info_column_result
+            else:
+                return pos_df.loc[stock_code,info_column]
+        
     def config_trade(self,stock_code,pre_holding_amount,trade_amount,trade_direct='B'):
         """定时买入某只股票
         :param stock_code: 股票代码
         :param buy_rate: 买出比例，默认全买
         :param set_time: datetime type, 买入时间
-        :return trade_state: int type: 
+        :return trade_state: float type, -2 系统异常，-1 反向操作，0实质无成交，0.5部分成交，1按计划成交，2超额成交
         """
         trade_state = 0
         #print(self.position)
-        pos_holding_amount = 0
-        if self.position.empty:
+        pos_holding_amount = self.get_position_info(stock_code, info_column='股份余额')
+        if pos_holding_amount<0:
             log.debug('帐户空仓，无任何持仓股票')
             trade_state = -2
         else:
-            this_position = self.position.set_index(keys='证券代码')
-            if  stock_code not in this_position.index.values.tolist():#不是持仓股票
-                log.debug('无该股 %s的持仓' % stock_code)
-                trade_state = -2
-            else:
-                pos_holding_amount = this_position.loc[stock_code,'股份余额']
-                if pos_holding_amount>0:
-                    if trade_direct=='B':
-                        if pos_holding_amount<pre_holding_amount:
-                            log.debug('原计划买入 %s %s股，实质卖出%s股' % (stock_code,trade_amount,(pre_holding_amount-pos_holding_amount)))
-                            trade_state = -1
-                        elif pos_holding_amount==pre_holding_amount:
-                            log.debug('原计划买入 %s %s股，实质无任何买入' % (stock_code,trade_amount))
-                            trade_state = 0
-                        elif pos_holding_amount<(pre_holding_amount+trade_amount):
-                            log.debug('原计划买入 %s %s股，实质部分买入%s股' % (stock_code,trade_amount,(pos_holding_amount-pre_holding_amount)))
-                            trade_state = 0.5
-                        elif pos_holding_amount==(pre_holding_amount+trade_amount):
-                            log.debug('按原计划买入 %s %s股' % (stock_code,trade_amount))
-                            trade_state = 1
-                        else:
-                            log.debug('原计划买入 %s %s股，实质超额买入，共买入%s股' % (stock_code,trade_amount,(pos_holding_amount-pre_holding_amount)))
-                            trade_state = 2
-                    elif trade_direct=='S':
-                        if pos_holding_amount>pre_holding_amount:
-                            log.debug('原计划卖出 %s %s股，实质买入%s股' % (stock_code,trade_amount,(pos_holding_amount-pre_holding_amount)))
-                            trade_state = -1
-                        elif pos_holding_amount==pre_holding_amount:
-                            log.debug('原计划卖出 %s %s股，实质无任何卖出' % (stock_code,trade_amount))
-                            trade_state = 0
-                        elif pos_holding_amount>(pre_holding_amount-trade_amount):
-                            log.debug('原计划卖出 %s %s股，实质部分卖出%s股' % (stock_code,trade_amount,(pre_holding_amount-pos_holding_amount)))
-                            trade_state = 0.5
-                        elif pos_holding_amount==(pre_holding_amount-trade_amount):
-                            log.debug('按原计划卖出%s %s股' % (stock_code,trade_amount))
-                            trade_state = 1
-                        else:
-                            log.debug('原计划卖出 %s %s股，实质超额卖出，共卖出%s股' % (stock_code,trade_amount,(pre_holding_amount-pos_holding_amount)))
-                            trade_state = 2
-                    else:
-                        trade_state = -2
+            if trade_direct=='B':
+                if pos_holding_amount<pre_holding_amount:
+                    log.debug('原计划买入 %s %s股，实质卖出%s股' % (stock_code,trade_amount,(pre_holding_amount-pos_holding_amount)))
+                    trade_state = -1
+                elif pos_holding_amount==pre_holding_amount:
+                    log.debug('原计划买入 %s %s股，实质无任何买入' % (stock_code,trade_amount))
+                    trade_state = 0
+                elif pos_holding_amount<(pre_holding_amount+trade_amount):
+                    log.debug('原计划买入 %s %s股，实质部分买入%s股' % (stock_code,trade_amount,(pos_holding_amount-pre_holding_amount)))
+                    trade_state = 0.5
+                elif pos_holding_amount==(pre_holding_amount+trade_amount):
+                    log.debug('按原计划买入 %s %s股' % (stock_code,trade_amount))
+                    trade_state = 1
                 else:
-                    trade_state = -2
+                    log.debug('原计划买入 %s %s股，实质超额买入，共买入%s股' % (stock_code,trade_amount,(pos_holding_amount-pre_holding_amount)))
+                    trade_state = 2
+            elif trade_direct=='S':
+                if pos_holding_amount>pre_holding_amount:
+                    log.debug('原计划卖出 %s %s股，实质买入%s股' % (stock_code,trade_amount,(pos_holding_amount-pre_holding_amount)))
+                    trade_state = -1
+                elif pos_holding_amount==pre_holding_amount:
+                    log.debug('原计划卖出 %s %s股，实质无任何卖出' % (stock_code,trade_amount))
+                    trade_state = 0
+                elif pos_holding_amount>(pre_holding_amount-trade_amount):
+                    log.debug('原计划卖出 %s %s股，实质部分卖出%s股' % (stock_code,trade_amount,(pre_holding_amount-pos_holding_amount)))
+                    trade_state = 0.5
+                elif pos_holding_amount==(pre_holding_amount-trade_amount):
+                    log.debug('按原计划卖出%s %s股' % (stock_code,trade_amount))
+                    trade_state = 1
+                else:
+                    log.debug('原计划卖出 %s %s股，实质超额卖出，共卖出%s股' % (stock_code,trade_amount,(pre_holding_amount-pos_holding_amount)))
+                    trade_state = 2
+            else:
+                trade_state = -2
         return trade_state
     
     def get_realtime_k_data(self,symbol):
