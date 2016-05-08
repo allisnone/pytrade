@@ -163,7 +163,7 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
     s_temp_df['pos']=index_weight*i_temp_df['position']+(1-index_weight)*s_temp_df['position']
     s_temp_df['oper']=i_temp_df['position']-i_temp_df['position'].shift(1)
     s_temp_df.to_csv('%s.csv'%stock_synbol)
-    select_columns=['p_change','gap','star','change','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','sys_score','pos','oper']
+    select_columns=['close','p_change','gap','star','change','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','sys_score','pos','oper','std']
     stock_df=s_temp_df[select_columns].round(3)
     stock_df.to_csv('stock_%s.csv' % stock_synbol)
     print(stock_df.tail(20))

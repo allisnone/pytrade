@@ -720,8 +720,10 @@ class Stockhistory:
         index_code=['999999','399001','399002','399003','399005']
         print(quotation.stocks(self.code))
         k_data=quotation.stocks(self.code)
+        is_stop_trade = False
         if k_data:
             k_data=k_data[self.code]
+            is_stop_trade = not k_data['volume'] and not k_data['high']
         """
         {'000680': {'bid4_volume': 19000, 'high': 5.76, 'bid2_volume': 119096, 'sell': 5.7, 'bid2': 5.68, 'volume': 202358001.01,
                     'ask4_volume': 143800, 'ask5_volume': 153400, 'ask1': 5.7, 'bid1_volume': 110500, 'bid3_volume': 20817, 
@@ -1529,7 +1531,9 @@ class Stockhistory:
         temp_df['cross2'] = np.where(cross_ma5_criteria & cross_ma10_criteria,temp_df['p_change'],0)
         temp_df['cross3'] = np.where(cross_ma5_criteria & cross_ma10_criteria & cross_ma30_criteria,temp_df['p_change'],0)
         temp_df['cross4'] = np.where(cross_ma5_criteria & cross_ma10_criteria & cross_ma30_criteria & cross_ma60_criteria,temp_df['p_change'],0)
-         
+        
+        #temp_df['std'] =  temp_df['p_change'].rolling(window=10).std()
+        temp_df['std'] =  temp_df['close'].rolling(window=5).std()
         island_df=temp_df[['date','p_change','gap','star','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3']]
         #print(island_df[island_df.island!=0])
         #print(island_df.tail(50))
