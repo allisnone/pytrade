@@ -220,7 +220,6 @@ class MyTrader(YHTrader):
             pass
         return
     
-    
     def get_sell_amount(self,stock_code,sell_rate=0):
         """获取可以卖出的股份数
         :param stock_code: 股票代码
@@ -299,9 +298,12 @@ class MyTrader(YHTrader):
             a_fund=a_fund*buy_rate 
         #last_close,realtime_price,volume,highest,lowest=self.get_realtime_stock(stock_code)
         k_data,is_stop_trade = self.get_realtime_k_data(symbol=stock_code)
-        if is_stop_trade:
+        if is_stop_trade or not k_data:
             log.debug('股票   %s 停牌, 无法买入' % stock_code)
             return -2,k_data
+        if not k_data:
+            log.debug('未获得股票   %s 报价信息, 咱不买入' % stock_code)
+            return -1,k_data
         last_close = k_data['close']
         ask2 = k_data['ask2']#卖贰
         ask5 = k_data['ask5']#卖五
@@ -468,6 +470,7 @@ class MyTrader(YHTrader):
                     'close': 5.44, 'bid5_volume': 31000}
          }
          """
+        #print('k_data=',k_data)
         return k_data,is_stop_trade
     
     
@@ -493,7 +496,7 @@ def my_trade_test():
     print('time4: ', datetime.datetime.now())
     print(user.entrust)
     print('end: ', datetime.datetime.now())
-    user.exchange_stock(stock_to_sell='300162', stock_to_buy='300001')
+    user.exchange_stock(stock_to_sell='300162', stock_to_buy='000418')
     
     
 my_trade_test()
