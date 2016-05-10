@@ -688,8 +688,42 @@ class Stockhistory:
         #self.average_high=0
         #self.average_low=0
     
-    def set_hist_df(self,df):
-        self.temp_hist_df=df
+    def data_feed(self, code_str, data_type='hist', k_data=None):
+        self.code = code_str
+        if k_data:
+            if data_type=='hist':
+                self.h_df = k_data
+            elif data_type=='temp':
+                self.temp_hist_df = k_data
+            else:
+                pass
+        else:
+            self.h_df = ps.get_raw_hist_df(code_str)
+            if data_type=='temp':
+                self.temp_hist_df = self._form_temp_df()
+            else:
+                pass
+            
+            
+    def get_all_symbols(self):
+        return
+    
+    def get_all_on_trade_symbols(self):
+        return
+    
+    def filter(self, filter_type, symbols=None):
+        target_symbols=[]
+        if symbols and isinstance(symbols, str):
+            target_symboles = [symbols]
+        elif symbols and isinstance(symbols, str):
+            target_symboles = symbols
+        else:
+            target_symboles = self.get_all_symbols()
+        stock_hist_anlyse = tds.Stockhistory(code_str='000001',ktype='D')
+        for symbol in target_symboles:
+            pass    
+        
+        return
         
     def is_island_reverse_up(self,gap_rate=0.005):
         """
@@ -978,7 +1012,7 @@ class Stockhistory:
         del temp_df['position_nor']
         del temp_df['position_full']
         
-        self.set_hist_df(temp_df)
+        self.data_feed(temp_df)
         temp_df.to_csv('temp_df_%s.csv' % self.code)
         #print(temp_df.tail(10))
         p_change = temp_df.tail(1).iloc[0].p_change
@@ -1318,13 +1352,13 @@ class Stockhistory:
         return sell_no_supply,trust_factor
         
     'VSA-------spread=high-low---------------------------------'
-    def set_hist_df_by_date(self,from_date_str, to_date_str,raw_df=None):  #from_date_str: '2015-05-16'
+    def data_feed_by_date(self,from_date_str, to_date_str,raw_df=None):  #from_date_str: '2015-05-16'
         h_df=self.h_df#.set_index('date')
         if raw_df!=None:
             h_df=raw_df
         self.h_df=filter_df_by_date(h_df,from_date_str,to_date_str)
         
-    def set_hist_df_by_count(self,count):
+    def data_feed_by_count(self,count):
         if self.h_df.empty:
             pass
         else:
@@ -3651,9 +3685,9 @@ def stock_test1():
         df=df[df.h_change>0.5*h_change_mean]
         #df=df[df.l_change<-6.2]
         print(len(df))
-        #stock.set_hist_df_by_date(from_date_str='2015-05-08', to_date_str='2015-06-18')
-        #stock.set_hist_df_by_date(from_date_str='2015-06-19', to_date_str='2015-07-08')
-        #stock.set_hist_df_by_date(from_date_str='2015-07-09', to_date_str='2015-08-18')
+        #stock.data_feed_by_date(from_date_str='2015-05-08', to_date_str='2015-06-18')
+        #stock.data_feed_by_date(from_date_str='2015-06-19', to_date_str='2015-07-08')
+        #stock.data_feed_by_date(from_date_str='2015-07-09', to_date_str='2015-08-18')
         #print stock.h_df
         star_df=stock.get_star_df(rate=0.25,raw_df=temp_df)
         stock.get_next_df(temp_df, filter_df=star_df, next_num=1)
