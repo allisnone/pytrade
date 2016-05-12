@@ -688,21 +688,29 @@ class Stockhistory:
         #self.average_high=0
         #self.average_low=0
     
-    def data_feed(self, code_str, data_type='hist', k_data=None):
-        self.code = code_str
-        if k_data:
-            if data_type=='hist':
-                self.h_df = k_data
-            elif data_type=='temp':
-                self.temp_hist_df = k_data
-            else:
-                pass
+    def data_feed(self, k_data, feed_type='hist'):
+        if feed_type=='hist':
+            self.h_df = k_data
+        elif feed_type=='temp':
+            self.temp_hist_df = k_data
         else:
+            pass
+        
+        """
+        if k_data==None:
             self.h_df = ps.get_raw_hist_df(code_str)
-            if data_type=='temp':
+            if feed_type=='temp':
                 self.temp_hist_df = self._form_temp_df()
             else:
                 pass
+        else:
+            if feed_type=='hist':
+                self.h_df = k_data
+            elif feed_type=='temp':
+                self.temp_hist_df = k_data
+            else:
+                pass
+        """
             
             
     def get_all_symbols(self):
@@ -713,10 +721,13 @@ class Stockhistory:
     
     def filter(self, filter_type, symbols=None):
         target_symbols=[]
-        if symbols and isinstance(symbols, str):
-            target_symboles = [symbols]
-        elif symbols and isinstance(symbols, str):
-            target_symboles = symbols
+        if symbols:
+            if isinstance(symbols, str):
+                target_symboles = [symbols]
+            elif isinstance(symbols, str):
+                target_symboles = symbols
+            else:
+                pass
         else:
             target_symboles = self.get_all_symbols()
         stock_hist_anlyse = tds.Stockhistory(code_str='000001',ktype='D')
@@ -1011,8 +1022,7 @@ class Stockhistory:
         temp_df['position']=  temp_df['position_nor'] + temp_df['position_full']
         del temp_df['position_nor']
         del temp_df['position_full']
-        
-        self.data_feed(temp_df)
+        self.data_feed(k_data=temp_df, feed_type='temp')
         temp_df.to_csv('temp_df_%s.csv' % self.code)
         #print(temp_df.tail(10))
         p_change = temp_df.tail(1).iloc[0].p_change
@@ -1532,7 +1542,7 @@ class Stockhistory:
                                     ) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]
                                          ),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
         temp_df['star'] = ((temp_df['close']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(2) #k线实体比例
-        temp_df['change'] =temp_df['p_change']*temp_df['star']*temp_df['p_change']/temp_df['p_change'].abs()
+        temp_df['star_chg'] =temp_df['p_change']*(temp_df['star'].abs())
         
         """一日反转"""
         temp_df['k_rate'] = np.where((temp_df['close'].shift(1)-temp_df['open'].shift(1))!=0,
@@ -1575,6 +1585,9 @@ class Stockhistory:
         del temp_df['jump_min']
         del temp_df['jump_up']
         del temp_df['jump_down']
+        
+        temp_df['ma5_chg'] = np.where(temp_df['ma5']>0, (temp_df['close']/temp_df['ma5']-1).round(4),-10)
+        temp_df['ma10_chg'] = np.where(temp_df['ma10']>0, (temp_df['close']/temp_df['ma10']-1).round(4),-10)
         
         #print(temp_df.tail(10))
         return temp_df
