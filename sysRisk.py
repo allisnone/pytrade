@@ -167,7 +167,7 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
     select_columns=['close','p_change','gap','star','star_chg','ma5_chg','ma10_chg','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','sys_score','pos','oper','std']
     stock_df=s_temp_df[select_columns].round(3)
     stock_df.to_csv('stock_%s.csv' % stock_synbol)
-    print(stock_df.tail(50))
+    print(stock_df.tail(80))
     return stock_df
 
 def get_sys_risk_info(sys_df):
@@ -251,7 +251,7 @@ def sys_position_test():
     need_update=tt.is_trade_time_now()
     sys_df = sys_risk_analyse(is_realtime_update=need_update)
     print(sys_df.tail(10))
-    stock_df = get_stock_position(stock_synbol='300162')#,is_realtime_update=True)
+    stock_df = get_stock_position(stock_synbol='600103')#,is_realtime_update=True)
     #sys_df = get_stock_position(stock_synbol='002673',is_realtime_update=True)
     #sys_df = get_stock_position(stock_synbol='000680')#,is_realtime_update=True)
     sys_score,position,operation,latest_day=get_sys_risk_info(stock_df)
