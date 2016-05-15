@@ -145,8 +145,8 @@ def get_latest_temp_df(today_df_high_open=[]):
         empty_df = pd.DataFrame(data=empty_data,columns=column_list)
         return empty_df
 
-today_df_filter(today_df=None)    
-#get_latest_temp_df()
+#today_df_filter(today_df=None)    
+get_latest_temp_df()
 
 """
 from numba import jit, int32
