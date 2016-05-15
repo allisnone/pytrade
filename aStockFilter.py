@@ -159,7 +159,6 @@ def f(x, y):
 def f1(x, y):
     # A somewhat trivial example
     return x + y
-
 #getLastTempdfNamba = autojit(get_latest_temp_df)
 #%timeit getLastTempdfNamba(today_df_high_open=[])
 #timeit get_latest_temp_df()
