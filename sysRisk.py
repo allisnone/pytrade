@@ -65,7 +65,8 @@ def sys_risk_analyse(is_realtime_update=False):
         k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
         shz_stock.update_realtime_hist_df(k_data)
     #print(shz_stock.h_df.tail(10))
-    shangzheng_ma_score,shangzheng_score,k_position=shz_stock.get_market_score()
+    #shangzheng_ma_score,shangzheng_score,k_position=shz_stock.get_market_score()
+    shz_stock.form_temp_df(shz_code_str)
     #print(shangzheng_ma_score,shangzheng_score,k_position)
     scz_code_str='399001'
     zxb_code_str='399005'
@@ -77,7 +78,8 @@ def sys_risk_analyse(is_realtime_update=False):
         k_data=get_real_stock_k(shz_code_str='399006')
         #k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
         shz_stock.update_realtime_hist_df(k_data)
-    chuangye_ma_score,chuangye_score,k_position=chy_stock.get_market_score()
+    #chuangye_ma_score,chuangye_score,k_position=chy_stock.get_market_score()
+    chy_stock.form_temp_df(chy_code_str)
     #print(chuangye_ma_score,chuangye_score,k_position)
     #sys_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
     chy_first_date=chy_stock.temp_hist_df.head(1).iloc[0].date
@@ -129,7 +131,8 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
         k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
         index_stock.update_realtime_hist_df()
     #print(shz_stock.h_df.tail(10))
-    shangzheng_ma_score,shangzheng_score,k_position=index_stock.get_market_score()
+    #shangzheng_ma_score,shangzheng_score,k_position=index_stock.get_market_score()
+    index_stock.form_temp_df(refer_index)
     max_series,max_value,min_series,min_value=index_stock.get_max(column_name='close',latest_num=10)
     #print(max_series,max_value,min_series,min_value)
     max_series,max_value,min_series,min_value=index_stock.get_max(column_name='close',latest_num=20)
@@ -137,22 +140,23 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
     max_series,max_value,min_series,min_value=index_stock.get_max(column_name='close',latest_num=30)
     #index_stock.boduan_analyze()
     #print(max_series,max_value,min_series,min_value)
-    print(shangzheng_ma_score,shangzheng_score,k_position)
+    #print(shangzheng_ma_score,shangzheng_score,k_position)
     print(stock_synbol,'----------------------------------')
     s_stock=tds.Stockhistory(stock_synbol,'D')
     if is_realtime_update:
         k_data=get_real_stock_k(code_str=stock_synbol)
         #k_data=['2016/04/21',2954.38,2990.69,2935.05,3062.58,189000000,2.1115e+11]
         s_stock.update_realtime_hist_df()
-    chuangye_ma_score,chuangye_score,k_position=s_stock.get_market_score()
+    #chuangye_ma_score,chuangye_score,k_position=s_stock.get_market_score()
     s_stock.is_island_reverse_up()
+    s_stock.form_temp_df(stock_synbol)
     index_temp_df=index_stock.temp_hist_df.set_index('date')
     if s_stock.temp_hist_df.empty:
         index_temp_df['sys_score']=index_temp_df['k_score']
         index_temp_df['position']=index_temp_df['position']
         index_temp_df['operation']=index_temp_df['position']-index_temp_df['position'].shift(1)
         return index_temp_df[['sys_score','position','operation']].round(3)
-    print(chuangye_ma_score,chuangye_score,k_position)
+    #print(chuangye_ma_score,chuangye_score,k_position)
     #sys_score=round(0.65*shangzheng_score+0.35*chuangye_score,2)  #-5 ~5
     #stock_first_date=stock.temp_hist_df.head(1).iloc[0].date
     stock_temp_df=s_stock.temp_hist_df.set_index('date')
@@ -164,7 +168,7 @@ def get_stock_position(stock_synbol='399006',is_realtime_update=False,index_weig
     s_temp_df['pos']=index_weight*i_temp_df['position']+(1-index_weight)*s_temp_df['position']
     s_temp_df['oper']=i_temp_df['position']-i_temp_df['position'].shift(1)
     s_temp_df.to_csv('%s.csv'%stock_synbol)
-    select_columns=['close','p_change','gap','star','star_chg','ma5_chg','ma10_chg','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','sys_score','pos','oper','std']
+    select_columns=['close','p_change','gap','star','star_chg','ma5_chg','ma10_chg','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3','sys_score','pos','oper','std','tangle_p']
     stock_df=s_temp_df[select_columns].round(3)
     stock_df.to_csv('stock_%s.csv' % stock_synbol)
     print(stock_df.tail(80))

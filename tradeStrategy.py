@@ -687,7 +687,10 @@ class Stockhistory:
         self.temp_hist_df=self._form_temp_df()
         #self.average_high=0
         #self.average_low=0
-    
+    def set_code(self,code_str):
+        self.code = code_str
+        
+        
     def data_feed(self, k_data, feed_type='hist'):
         if feed_type=='hist':
             self.h_df = k_data
@@ -875,7 +878,8 @@ class Stockhistory:
         open=temp_df.tail(1).iloc[1].open
         return 0.0
     
-    def get_market_score(self,short_turn_weight=None,k_data=None):
+    
+    def get_market_score0(self,short_turn_weight=None,k_data=None):
         ma_type='ma5'
         temp_df=self.temp_hist_df
         if temp_df.empty:
@@ -950,12 +954,14 @@ class Stockhistory:
         del temp_df['ma30_c_ma60']
         """
         """Get K data trend score next"""
-        great_high_open_rate=1.0
-        great_low_open_rate=-1.5
-        temp_df1=temp_df.fillna(0)
+        great_high_open_rate = 1.0
+        great_low_open_rate = -1.5
+        recent_k_num = 120
+        temp_df1=temp_df.fillna(0).tail(recent_k_num)
+        extreme_rate = 0.8
         temp_df1['o_change']=(temp_df1['o_change']).round(1)
-        score_list=temp_df1['o_change'].values.tolist()
-        great_high_open_rate,great_low_open_rate=self.get_extreme_change(score_list,rate=0.9)
+        o_change_list=temp_df1['o_change'].values.tolist()
+        great_high_open_rate,great_low_open_rate=self.get_extreme_change(o_change_list,rate=extreme_rate)
         print('great_high_open_rate=%s,great_low_open_rate=%s' %(great_high_open_rate,great_low_open_rate))
         
         temp_df['gt_o_h']=np.where(temp_df['o_change']>great_high_open_rate,(temp_df['o_change']/great_high_open_rate-1),0)
@@ -967,8 +973,8 @@ class Stockhistory:
         great_increase_rate=3.0
         great_descrease_rate=-3.0
         temp_df1['p_change']=(temp_df1['p_change']).round(1)
-        score_list=temp_df1['p_change'].values.tolist()
-        great_increase_rate,great_descrease_rate=self.get_extreme_change(score_list,rate=0.9)
+        p_change_list=temp_df1['p_change'].values.tolist()
+        great_increase_rate,great_descrease_rate=self.get_extreme_change(p_change_list,rate=extreme_rate)
         print('great_increase_rate=%s,great_descrease_rate=%s' %(great_increase_rate,great_descrease_rate))
         
         temp_df['gt_c_h']=np.where(temp_df['p_change']>great_increase_rate,(temp_df['p_change']/great_increase_rate-1),0)
@@ -980,8 +986,8 @@ class Stockhistory:
         great_v_rate=1.2
         little_v_rate=0.8
         temp_df1['rmb_rate']=(temp_df1['rmb_rate']).round(2)
-        score_list=temp_df1['rmb_rate'].values.tolist()
-        great_v_rate,little_v_rate=self.get_extreme_change(score_list,rate=0.9)
+        rmb_rate_list=temp_df1['rmb_rate'].values.tolist()
+        great_v_rate,little_v_rate=self.get_extreme_change(rmb_rate_list,rate=extreme_rate)
         print('great_v_rate=%s,little_v_rate=%s' %(great_v_rate,little_v_rate))
         
         temp_df['gt_v_r']=np.where(temp_df['rmb_rate']>great_v_rate,(temp_df['rmb_rate']/great_v_rate-1),0)
@@ -1044,6 +1050,9 @@ class Stockhistory:
             stock_score = max(stock_score,-5.0)
         """
         latest_k_data = temp_df.tail(1)
+        #recent_k_num=10
+        #describe_df = temp_df.tail(recent_k_num).describe()
+        #print(describe_df)
         
         return ma_score,stock_score,position
     
@@ -1074,6 +1083,15 @@ class Stockhistory:
         strong_v = 0.0
         weak_v = 0.0
         if value_list:
+            value_length = len(value_list)
+            #print('value_length=%s' % value_length)
+            if value_length==1:
+                return value_list[0],value_list[0]
+            elif value_length==2:
+                #print('value_length1=%s' % value_length)
+                return max(value_list[0],value_list[1]),min(value_list[0],value_list[1])
+            else:
+                pass
             if unique_v:   
                 filter_li = []
                 for ele in value_list:
@@ -1086,8 +1104,9 @@ class Stockhistory:
             value_list.pop(0)
             value_list.pop(len(value_list)-2)
             sorted_li = sorted(value_list,reverse=True)
-            strong_index = int(round(len(sorted_li)*(1-normal_rate)))
-            weak_index = int(round(len(sorted_li)*normal_rate))
+            strong_index = int(len(sorted_li)*(1-normal_rate))
+            weak_index = round(len(sorted_li)*normal_rate)
+            weak_index = int(len(sorted_li)*normal_rate)
             #print('sorted_li=',sorted_li,type(sorted_li[1]))
             strong_v = sorted_li[strong_index]
             weak_v = sorted_li[weak_index]
@@ -1510,8 +1529,9 @@ class Stockhistory:
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(16, 'o_change', 100.00*((temp_df.open-temp_df.last_close)/temp_df.last_close).round(4))
-        temp_df['atr']=np.where(temp_df['high']-temp_df['low']<temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['low']) #temp_df['close'].shift(1)-temp_df['low'])
-        temp_df['atr']=np.where(temp_df['atr']<temp_df['close'].shift(1)-temp_df['low'],temp_df['close'].shift(1)-temp_df['low'],temp_df['atr'])
+        temp_df['atr']=np.where((temp_df['high']-temp_df['low'])<(temp_df['high']-temp_df['close'].shift(1)),
+                                temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['low']) #temp_df['close'].shift(1)-temp_df['low'])
+        temp_df['atr']=np.where(temp_df['atr']<(temp_df['close'].shift(1)-temp_df['low']),temp_df['close'].shift(1)-temp_df['low'],temp_df['atr'])
         short_num=5
         long_num=10
         if '3.5' in platform.python_version():
@@ -1547,11 +1567,11 @@ class Stockhistory:
         """一日反转"""
         temp_df['k_rate'] = np.where((temp_df['close'].shift(1)-temp_df['open'].shift(1))!=0,
                                      ((temp_df['close']-temp_df['open'])/(temp_df['close'].shift(1)-temp_df['open'].shift(1))).round(2),0)
-        great_rate=2.0
+        great_rate=1.5
         temp_df['reverse'] = np.where((temp_df['p_change'].shift(1).abs()>great_rate) 
                                       & (temp_df['k_rate']<=-0.8) & (temp_df['star'].abs()>=0.5)
                                       & (temp_df['star'].shift(1).abs()>=0.5),
-                                      -temp_df['k_rate']*temp_df['p_change']/temp_df['p_change'].abs(),0)
+                                      -temp_df['k_rate']*temp_df['p_change']/(temp_df['p_change'].abs()),0)
         temp_df['p_rate'] = np.where(temp_df['p_change'].shift(1)!=0,(temp_df['p_change']/temp_df['p_change'].shift(1)).round(2),0)
         #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
         
@@ -1589,8 +1609,207 @@ class Stockhistory:
         temp_df['ma5_chg'] = np.where(temp_df['ma5']>0, (temp_df['close']/temp_df['ma5']-1).round(4),-10)
         temp_df['ma10_chg'] = np.where(temp_df['ma10']>0, (temp_df['close']/temp_df['ma10']-1).round(4),-10)
         
-        #print(temp_df.tail(10))
+        """ma over cross """
+        """
+        temp_df['cOma5'] = (temp_df['close']-temp_df['ma5']).round(2)
+        temp_df['ma5O10'] = (temp_df['ma5']-temp_df['ma10']).round(2)
+        temp_df['ma20O30'] = (temp_df['ma20']-temp_df['ma30']).round(2)
+        temp_df['ma30O60'] = (temp_df['ma30']-temp_df['ma60']).round(2)
+        temp_df['lowOma5'] = (temp_df['low']-temp_df['ma60']).round(2)
+        """
+        temp_df['ma5Cma20'] = np.where((temp_df['ma5']>=temp_df['ma20']) & (temp_df['ma5'].shift(1)<temp_df['ma20'].shift(1)),1,0)
+        temp_df['ma5Cma30'] = np.where((temp_df['ma5']>=temp_df['ma30']) & (temp_df['ma5'].shift(1)<temp_df['ma30'].shift(1)),1,0)
+        temp_df['ma10Cma20'] = np.where((temp_df['ma10']>=temp_df['ma20']) & (temp_df['ma10'].shift(1)<temp_df['ma20'].shift(1)),1,0)
+        temp_df['ma10Cma30'] = np.where((temp_df['ma10']>=temp_df['ma30']) & (temp_df['ma10'].shift(1)<temp_df['ma30'].shift(1)),1,0)
+        criteria_trangle_p = ((temp_df['ma5']>=temp_df['ma20']) & 
+                              (temp_df['ma5'].shift(1)<temp_df['ma20'].shift(1)) & 
+                              (temp_df['ma5']>=temp_df['ma10']) & 
+                              (temp_df['ma20']<temp_df['ma30'])
+                              )
+        
+        criteria_trangle_p1 = ((temp_df['ma5']>=temp_df['ma30']) & 
+                              (temp_df['ma5'].shift(1)<temp_df['ma30'].shift(1)) & 
+                              (temp_df['ma5']>=temp_df['ma10']) & 
+                              (temp_df['ma30']<temp_df['ma60'])
+                              )
+        temp_df['tangle_p'] = np.where(criteria_trangle_p,(temp_df['ma5']/temp_df['ma10']-1),0)
+        temp_df['tangle_p1'] = np.where(criteria_trangle_p1,(temp_df['ma5']/temp_df['ma10']-1),0)
+        #self.data_feed(k_data=temp_df, feed_type='temp')
+        #print(temp_df.tail(30))
         return temp_df
+    
+    def get_market_score(self,short_turn_weight=None,k_data=None):
+        ma_type='ma5'
+        temp_df=self.temp_hist_df
+        if temp_df.empty:
+            return None
+        if k_data!=None:
+            update_one_hist(code_sybol, today_df, today_df_update_time)
+            temp_df=self._form_temp_df()
+        #if len(temp_df)<5:
+        #    return temp_df
+        ma_offset=0.002
+        WINDOW=3
+        ma_type_list=['ma5','ma10','ma20','ma30','ma60','ma120']
+        ma_weight=[0.3,0.2,0.2,0.1,0.1,0.1]
+        short_weight=0.7
+        ma_seq_score={'ma5_o_ma10':0.5,'ma10_o_ma30':0.3,'ma30_o_ma60':0.2}
+        ma_cross_score={'ma5_c_ma10':0.75,'ma10_c_ma30':0.5,'ma30_c_ma60':0.3}
+        if short_turn_weight!=None:
+            short_weight=short_turn_weight
+        """Get MA score next"""
+        for ma_type in ma_type_list:
+            ma_sum_name='sum_o_'
+            temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
+            temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])<-ma_offset*temp_df['close'].shift(1),-1,temp_df['c_o_ma']) #-1 for bellow ma
+            ma_sum_name=ma_sum_name+ma_type
+            #temp_df[ma_sum_name] = pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW).round(2)
+            if '3.5' in platform.python_version():
+                temp_df[ma_sum_name] = temp_df['c_o_ma'].rolling(window=5,center=False).mean().round(2)
+            else:
+                temp_df[ma_sum_name] = np.round(pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW), 2)
+            del temp_df['c_o_ma']
+            temp_df[ma_sum_name]=temp_df[ma_sum_name]+(temp_df[ma_sum_name]-temp_df[ma_sum_name].shift(1))
+            
+        temp_df['ma_score0']=(short_weight*ma_weight[0]+(1-short_weight)*ma_weight[5])*temp_df['sum_o_ma5']\
+        +(short_weight*ma_weight[1]+(1-short_weight)*ma_weight[4])*temp_df['sum_o_ma10']\
+        +(short_weight*ma_weight[2]+(1-short_weight)*ma_weight[3])*temp_df['sum_o_ma20']\
+        +(short_weight*ma_weight[3]+(1-short_weight)*ma_weight[2])*temp_df['sum_o_ma30']\
+        +(short_weight*ma_weight[4]+(1-short_weight)*ma_weight[1])*temp_df['sum_o_ma60']\
+        +(short_weight*ma_weight[5]+(1-short_weight)*ma_weight[1])*temp_df['sum_o_ma120']
+        #temp_df['ma_s_score']=0.1*temp_df['sum_o_ma5']+0.1*temp_df['sum_o_ma10']+0.1*temp_df['sum_o_ma20']+0.2*temp_df['sum_o_ma30']+0.2*temp_df['sum_o_ma60']+0.3*temp_df['sum_o_ma120']
+        del temp_df['sum_o_ma5']
+        del temp_df['sum_o_ma10']
+        del temp_df['sum_o_ma20']
+        del temp_df['sum_o_ma30']
+        del temp_df['sum_o_ma60']
+        del temp_df['sum_o_ma120']
+        """Get MA trend score next"""
+        ma_trend_score=0.0
+        for ma_o_name in ma_seq_score.keys():
+            ma_name_list=ma_o_name.split('_')
+            s_ma_name=ma_name_list[0]
+            l_ma_name=ma_name_list[2]
+            ma_cross_name=ma_o_name.replace('o','c')
+            temp_df[ma_o_name]=np.where(temp_df[s_ma_name]>temp_df[l_ma_name],ma_seq_score[ma_o_name],-ma_seq_score[ma_o_name])
+            temp_df[ma_cross_name+'_d']=np.where((temp_df[s_ma_name]<=temp_df[l_ma_name]) & 
+                                                 (temp_df[s_ma_name].shift(1)>temp_df[l_ma_name].shift(1)),-ma_cross_score[ma_cross_name],0)
+            temp_df[ma_cross_name+'_u']=np.where((temp_df[s_ma_name]>=temp_df[l_ma_name]) &
+                                                  (temp_df[s_ma_name].shift(1)<temp_df[l_ma_name].shift(1)),ma_cross_score[ma_cross_name],0)
+            temp_df[ma_cross_name]=temp_df[ma_cross_name+'_d']+temp_df[ma_cross_name+'_u']
+            del temp_df[ma_cross_name+'_d']
+            del temp_df[ma_cross_name+'_u']
+        ma_o_name_list=ma_seq_score.keys()
+        ma_c_name_list=ma_cross_score.keys()
+        temp_df['ma_trend_score']=temp_df['ma5_o_ma10']+temp_df['ma10_o_ma30']+temp_df['ma30_o_ma60']\
+        +temp_df['ma5_c_ma10']+temp_df['ma10_c_ma30']+temp_df['ma30_c_ma60']
+        temp_df['ma_score']=temp_df['ma_score0']+temp_df['ma_trend_score']
+        del temp_df['ma5_o_ma10']
+        del temp_df['ma10_o_ma30']
+        del temp_df['ma30_o_ma60']
+        """
+        del temp_df['ma5_c_ma10']
+        del temp_df['ma10_c_ma30']
+        del temp_df['ma30_c_ma60']
+        """
+        """Get K data trend score next"""
+        great_high_open_rate = 1.0
+        great_low_open_rate = -1.5
+        recent_k_num = 120
+        temp_df1=temp_df.fillna(0).tail(recent_k_num)
+        extreme_rate = 0.85
+        temp_df1['o_change']=(temp_df1['o_change']).round(1)
+        o_change_list=temp_df1['o_change'].values.tolist()
+        great_high_open_rate,great_low_open_rate=self.get_extreme_change(o_change_list,rate=extreme_rate)
+        #print('great_high_open_rate=%s,great_low_open_rate=%s' %(great_high_open_rate,great_low_open_rate))
+        
+        temp_df['gt_o_h']=np.where(temp_df['o_change']>great_high_open_rate,(temp_df['o_change']/great_high_open_rate-1),0)
+        temp_df['gt_o_l']=np.where(temp_df['o_change']<great_low_open_rate,-(temp_df['o_change']/great_low_open_rate-1),0)
+        temp_df['gt_open']=temp_df['gt_o_h']+temp_df['gt_o_l']
+        del temp_df['gt_o_h']
+        del temp_df['gt_o_l']
+        
+        great_increase_rate=3.0
+        great_descrease_rate=-3.0
+        temp_df1['p_change']=(temp_df1['p_change']).round(1)
+        p_change_list=temp_df1['p_change'].values.tolist()
+        great_increase_rate,great_descrease_rate=self.get_extreme_change(p_change_list,rate=extreme_rate)
+        #print('great_increase_rate=%s,great_descrease_rate=%s' %(great_increase_rate,great_descrease_rate))
+        
+        temp_df['gt_c_h']=np.where(temp_df['p_change']>great_increase_rate,(temp_df['p_change']/great_increase_rate-1),0)
+        temp_df['gt_c_l']=np.where(temp_df['p_change']<great_descrease_rate,-(temp_df['p_change']/great_descrease_rate-1),0)
+        temp_df['gt_close']=temp_df['gt_c_h']+temp_df['gt_c_l']
+        del temp_df['gt_c_h']
+        del temp_df['gt_c_l']
+        
+        great_v_rate=1.2
+        little_v_rate=0.8
+        temp_df1['rmb_rate']=(temp_df1['rmb_rate']).round(2)
+        rmb_rate_list=temp_df1['rmb_rate'].values.tolist()
+        great_v_rate,little_v_rate=self.get_extreme_change(rmb_rate_list,rate=extreme_rate)
+        #print('great_v_rate=%s,little_v_rate=%s' %(great_v_rate,little_v_rate))
+        
+        temp_df['gt_v_r']=np.where(temp_df['rmb_rate']>great_v_rate,(temp_df['rmb_rate']/great_v_rate-1),0)
+        temp_df['lt_v_r']=np.where(temp_df['rmb_rate']<little_v_rate,-(little_v_rate/temp_df['rmb_rate']-1),0)
+        temp_df['great_v_rate']=temp_df['gt_v_r']+temp_df['lt_v_r']
+        del temp_df['gt_v_r']
+        del temp_df['lt_v_r']
+        
+        great_continue_increase_rate=great_increase_rate*0.75
+        great_continue_descrease_rate=great_descrease_rate*0.75
+        temp_df['gt_cc_h']=np.where((temp_df['p_change']>great_continue_increase_rate)\
+                                     & (temp_df['p_change'].shift(1)>great_continue_increase_rate),\
+                                     0.5*(0.5*(temp_df['p_change']+temp_df['p_change'].shift(1))/great_increase_rate-1),0)
+        temp_df['gt_cc_l']=np.where((temp_df['p_change']<great_continue_descrease_rate)\
+                                     & (temp_df['p_change'].shift(1)<great_continue_descrease_rate),\
+                                     -0.5*(0.5*(temp_df['p_change']+temp_df['p_change'].shift(1))/great_continue_descrease_rate-1),0)
+        temp_df['gt_cont_close']=temp_df['gt_cc_h']+temp_df['gt_cc_l']
+        del temp_df['gt_cc_h']
+        del temp_df['gt_cc_l']
+        
+        temp_df['k_trend']=temp_df['gt_open']*0.5 + temp_df['gt_close'] + temp_df['gt_cont_close'] \
+        + 2.0*temp_df['p_change']/abs(temp_df['p_change'])*temp_df['great_v_rate']
+        temp_df['k_score0']=temp_df['ma_score'] + temp_df['k_trend']
+        temp_df['k_score_g']=np.where(temp_df['k_score0']>5.0,5.0,0.0)
+        temp_df['k_score_m']=np.where((temp_df['k_score0']<=5.0) & (temp_df['k_score0']>=-5.0),temp_df['k_score0'],0.0)
+        temp_df['k_score_l']=np.where(temp_df['k_score0']<-5.0,-5.0,0.0)
+        temp_df['k_score'] =temp_df['k_score_g'] + temp_df['k_score_l'] + temp_df['k_score_m']
+        del temp_df['k_score_g']
+        del temp_df['k_score_l']
+        
+        sys_risk_range = 10.0
+        ultimate_coefficient = 0.25
+        max_position=1.0
+        temp_df['position_nor'] = np.where((temp_df['k_score']>=-ultimate_coefficient*sys_risk_range) & \
+                                         (temp_df['k_score']<=ultimate_coefficient*sys_risk_range),\
+                                         0.5*max_position/sys_risk_range/ultimate_coefficient*temp_df['k_score']+0.5*max_position,0)
+        temp_df['position_full'] = np.where(temp_df['k_score']>ultimate_coefficient*sys_risk_range,max_position,0)
+        temp_df['position']=  temp_df['position_nor'] + temp_df['position_full']
+        temp_df['operation']= temp_df['position'] - temp_df['position'].shift(1)
+        del temp_df['position_nor']
+        del temp_df['position_full']
+        #print(temp_df)
+        #self.data_feed(k_data=temp_df, feed_type='temp')
+        #self.temp_hist_df = temp_df
+        #print(temp_df)
+        return temp_df
+    
+    def get_extrem_data(self):
+        return
+    
+    def form_temp_df(self,code_str):
+        self.set_code(code_str)
+        self.h_df = ps.get_raw_hist_df(code_str)
+        #print(self.h_df)
+        self.temp_hist_df = self._form_temp_df()
+        self.temp_hist_df = self.get_market_score()
+        select_columns=['close','p_change','gap','star','star_chg','ma5_chg',
+                        'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
+                        'cross1','cross2','cross3','k_score','position','operation',
+                        'std','tangle_p','tangle_p1']
+        #print(self.temp_hist_df)
+        select_df=self.temp_hist_df[select_columns].round(3)
+        return select_df
     
     def _form_temp_df1(self):
         #print(self.h_df)
@@ -2908,6 +3127,10 @@ class Market:
         lower_limit_rate=round(round(len(lower_limit_df),3)/len(today_df),3)
         return lower_limit_df,lower_limit_rate
     
+    def get_high_open(self,high_open_rate):
+        high_open_df,high_open_rate = self.filter_today_df(self,operator='gte', threshhold_rate=high_open_rate, column='o_change')
+        return
+        
     def filter_today_df(self,operator,threshhold_rate, column):
         #print temp_df
         today_df=self.today_df
@@ -2916,14 +3139,14 @@ class Market:
             #criteria=temp_df.close>=temp_df.last_close*threshhold_rate/100
             if column=='changepercent':
                 criteria=today_df.changepercent>=threshhold_rate
+            elif column=='h_change':
+                criteria=today_df.h_change>=threshhold_rate
+            elif column=='l_change':
+                criteria=today_df.l_change>=threshhold_rate
+            elif column=='o_change':
+                criteria=today_df.o_change>=threshhold_rate
             else:
-                if column=='h_change':
-                    criteria=today_df.h_change>=threshhold_rate
-                else:
-                    if column=='l_change':
-                        criteria=today_df.l_change>=threshhold_rate
-                    else:
-                        pass
+                pass
                 
         else:
             if operator=='lt':
@@ -2931,14 +3154,14 @@ class Market:
                 criteria=today_df.changepercent<threshhold_rate
                 if column=='changepercent':
                     criteria=today_df.changepercent<threshhold_rate
+                elif column=='h_change':
+                    criteria=today_df.h_change<threshhold_rate
+                elif column=='l_change':
+                    criteria=today_df.l_change<threshhold_rate
+                elif column=='o_change':
+                    criteria=today_df.o_change<threshhold_rate
                 else:
-                    if column=='h_change':
-                        criteria=today_df.h_change<threshhold_rate
-                    else:
-                        if column=='l_change':
-                            criteria=today_df.l_change<threshhold_rate
-                        else:
-                            pass
+                    pass
             else:
                 pass
         filter_df=today_df[criteria]
