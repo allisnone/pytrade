@@ -104,12 +104,13 @@ def get_approximate_trade_fee(total_buy_amount):
     trade_fee = round(trade_fee,2)
     return trade_fee, min_profit_rate,ten_time_trade_fee_rate
 
+"""
 multiple_num = 10
 for total_buy_amount in [100000,50000,30000,20000,10000,8000,5000,3000,2000]:
     trade_fee,min_profit_rate,ten_time_trade_fee_rate = get_approximate_trade_fee(total_buy_amount)
     expect_rate = round((multiple_num+1)*trade_fee/total_buy_amount + 1.0,4)
     print(total_buy_amount,trade_fee,min_profit_rate,expect_rate, round(multiple_num*trade_fee,2))
-"""
+
 def test():
     trade_num=13.64
     trade_price=1600
