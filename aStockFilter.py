@@ -74,7 +74,6 @@ def today_df_filter(today_df):
     great_rate = 2.0
     gt_today_df = today_df[today_df.changepercent> great_rate]
     great_atd_df = today_df[today_df['atr_r']>11]
-    
     stock_basic_df=ts.get_stock_basics()
     #stock_basic_df['outstanding'] = stock_basic_df['outstanding'] * 0.0001
     #stock_basic_df['totals'] = stock_basic_df['totals'] * 0.0001
@@ -140,7 +139,7 @@ def get_latest_temp_df(today_df_high_open=[]):
         result_df.to_csv('result.csv')
         return result_df
     else:
-        column_list = ['close','p_change','gap','star','star_chg','ma5_chg','ma10_chg','k_rate','p_rate','island',
+        column_list = ['close','p_change','gap','star','star_h','star_chg','ma5_chg','ma10_chg','k_rate','p_rate','island',
                        'atr_in','reverse','cross1','cross2','cross3','k_score','position','operation','std']
         empty_data ={}
         empty_df = pd.DataFrame(data=empty_data,columns=column_list)

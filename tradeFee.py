@@ -72,9 +72,40 @@ TRADE_FEE_1W=20.20#20.20RMB fee to complete 10000 trade(buy&sell)
 TRADE_FEE_8000=18.20#18.2RMB fee to complete 8000 trade(buy&sell)
 TRADE_FEE_5000=15.20#15.2RMB fee to complete 5000 trade(buy&sell)
 TRADE_FEE_3000=13.20#13.2RMB fee to complete 3000 trade(buy&sell)
-#MIN_PROFIT_PRICE_RATE0=1.001623
+MIN_PROFIT_PRICE_RATE_1w=1.001623
 MIN_PROFIT_PRICE_RATE=1.002
+
+TEN_TIMES_THAN_TRADE_FEE_RATE = 1.018
+TEN_TIMES_THAN_TRADE_FEE_RATE_1w = 1.022
+TEN_TIMES_THAN_TRADE_FEE_RATE_5K = 1.033
+
+def get_approximate_trade_fee(total_buy_amount):
+    """
+    :param total_buy_amount: float type
+    :return: float, total fee and fee rate(min profit rate) of du-direct (buy & sell)
+    """
+    TRADE_FEE_PER_1W=16.23
+    trade_fee = 10.0
+    min_profit_rate = 1.0016
+    if total_buy_amount >= 16600:
+        trade_fee = TRADE_FEE_PER_1W * 0.0001 * total_buy_amount
+    else:
+        trade_fee = 0.00101 * total_buy_amount + 10.12
+        if total_buy_amount>=8000:
+            min_profit_rate = 1.0022
+        elif total_buy_amount>=5000:
+            min_profit_rate = 1.0037
+        else:
+            min_profit_rate = 1.0045
+    trade_fee = round(trade_fee,2)
+    return trade_fee, min_profit_rate
 """
+multiple_num = 10
+for total_buy_amount in [100000,50000,30000,20000,10000,8000,5000,3000,2000]:
+    trade_fee,min_profit_rate = get_approximate_trade_fee(total_buy_amount)
+    expect_rate = round((multiple_num+1)*trade_fee/total_buy_amount + 1.0,4)
+    print(total_buy_amount,trade_fee,min_profit_rate,expect_rate, round(multiple_num*trade_fee,2))
+
 def test():
     trade_num=13.64
     trade_price=1600

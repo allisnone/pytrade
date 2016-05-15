@@ -1562,8 +1562,9 @@ class Stockhistory:
                                     ) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]
                                          ),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
         temp_df['star'] = ((temp_df['close']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(2) #k线实体比例
+        today_df['star_h'] = np.where(today_df['star']>=0, ((today_df['high']-today_df['close'])/(today_df['high']-today_df['low'])).round(3),
+                                  ((today_df['high']-today_df['open'])/(today_df['high']-today_df['low'])).round(3))
         temp_df['star_chg'] =temp_df['p_change']*(temp_df['star'].abs())
-        
         """一日反转"""
         temp_df['k_rate'] = np.where((temp_df['close'].shift(1)-temp_df['open'].shift(1))!=0,
                                      ((temp_df['close']-temp_df['open'])/(temp_df['close'].shift(1)-temp_df['open'].shift(1))).round(2),0)
@@ -1574,7 +1575,6 @@ class Stockhistory:
                                       -temp_df['k_rate']*temp_df['p_change']/(temp_df['p_change'].abs()),0)
         temp_df['p_rate'] = np.where(temp_df['p_change'].shift(1)!=0,(temp_df['p_change']/temp_df['p_change'].shift(1)).round(2),0)
         #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
-        
         """岛型反转"""
         gap_rate=0.005
         temp_df['jump_max']=np.where(temp_df['close']>temp_df['open'],temp_df['close'],temp_df['open'])
@@ -1585,7 +1585,6 @@ class Stockhistory:
                                       1-temp_df['jump_min'].shift(1)/temp_df['jump_max'],0)
         temp_df['gap'] = (temp_df['jump_up'] + temp_df['jump_down']).round(3)
         temp_df['island'] = np.where(temp_df['gap']*temp_df['gap'].shift(1)<0,temp_df['gap'],0)
-        
         """实体跨越多条k线"""
         cross_ma5_criteria = (temp_df['ma5']>=temp_df['jump_min']) & (temp_df['ma5']<=temp_df['jump_max'])
         cross_ma10_criteria = (temp_df['ma10']>=temp_df['jump_min']) & (temp_df['ma10']<=temp_df['jump_max'])
@@ -1608,6 +1607,8 @@ class Stockhistory:
         
         temp_df['ma5_chg'] = np.where(temp_df['ma5']>0, (temp_df['close']/temp_df['ma5']-1).round(4),-10)
         temp_df['ma10_chg'] = np.where(temp_df['ma10']>0, (temp_df['close']/temp_df['ma10']-1).round(4),-10)
+        
+        temp_df['sell'] = np.where((temp_df['ma5_chg']<0 ) & ( temp_df['ma10_chg']<0))
         
         """ma over cross """
         """
@@ -1803,7 +1804,7 @@ class Stockhistory:
         #print(self.h_df)
         self.temp_hist_df = self._form_temp_df()
         self.temp_hist_df = self.get_market_score()
-        select_columns=['close','p_change','gap','star','star_chg','ma5_chg',
+        select_columns=['close','p_change','gap','star','star_h','star_chg','ma5_chg',
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
                         'std','tangle_p','tangle_p1']
