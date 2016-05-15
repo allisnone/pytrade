@@ -1562,8 +1562,8 @@ class Stockhistory:
                                     ) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]
                                          ),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
         temp_df['star'] = ((temp_df['close']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(2) #k线实体比例
-        today_df['star_h'] = np.where(today_df['star']>=0, ((today_df['high']-today_df['close'])/(today_df['high']-today_df['low'])).round(3),
-                                  ((today_df['high']-today_df['open'])/(today_df['high']-today_df['low'])).round(3))
+        today_df['star_h'] = np.where(temp_df['star']>=0, ((temp_df['high']-temp_df['close'])/(temp_df['high']-temp_df['low'])).round(3),
+                                  ((temp_df['high']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(3))
         temp_df['star_chg'] =temp_df['p_change']*(temp_df['star'].abs())
         """一日反转"""
         temp_df['k_rate'] = np.where((temp_df['close'].shift(1)-temp_df['open'].shift(1))!=0,
