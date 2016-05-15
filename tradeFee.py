@@ -87,25 +87,29 @@ def get_approximate_trade_fee(total_buy_amount):
     TRADE_FEE_PER_1W=16.23
     trade_fee = 10.0
     min_profit_rate = 1.0016
+    ten_time_trade_fee_rate = 1.018
     if total_buy_amount >= 16600:
         trade_fee = TRADE_FEE_PER_1W * 0.0001 * total_buy_amount
     else:
         trade_fee = 0.00101 * total_buy_amount + 10.12
         if total_buy_amount>=8000:
             min_profit_rate = 1.0022
+            ten_time_trade_fee_rate = 1.021
         elif total_buy_amount>=5000:
             min_profit_rate = 1.0037
+            ten_time_trade_fee_rate = 1.031
         else:
             min_profit_rate = 1.0045
+            ten_time_trade_fee_rate = 1.051
     trade_fee = round(trade_fee,2)
-    return trade_fee, min_profit_rate
-"""
+    return trade_fee, min_profit_rate,ten_time_trade_fee_rate
+
 multiple_num = 10
 for total_buy_amount in [100000,50000,30000,20000,10000,8000,5000,3000,2000]:
-    trade_fee,min_profit_rate = get_approximate_trade_fee(total_buy_amount)
+    trade_fee,min_profit_rate,ten_time_trade_fee_rate = get_approximate_trade_fee(total_buy_amount)
     expect_rate = round((multiple_num+1)*trade_fee/total_buy_amount + 1.0,4)
     print(total_buy_amount,trade_fee,min_profit_rate,expect_rate, round(multiple_num*trade_fee,2))
-
+"""
 def test():
     trade_num=13.64
     trade_price=1600
