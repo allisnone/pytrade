@@ -1608,7 +1608,7 @@ class Stockhistory:
         temp_df['ma5_chg'] = np.where(temp_df['ma5']>0, (temp_df['close']/temp_df['ma5']-1).round(4),-10)
         temp_df['ma10_chg'] = np.where(temp_df['ma10']>0, (temp_df['close']/temp_df['ma10']-1).round(4),-10)
         
-        temp_df['sell'] = np.where((temp_df['ma5_chg']<0 ) & ( temp_df['ma10_chg']<0))
+        #temp_df['sell'] = np.where((temp_df['ma5_chg']<0 ) & ( temp_df['ma10_chg']<0),1,0)
         
         """ma over cross """
         """
