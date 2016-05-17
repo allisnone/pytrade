@@ -1619,7 +1619,7 @@ class Stockhistory:
             temp_df[ma_name_turn] = np.where((temp_df[ma_name_k] * (temp_df[ma_name_k].shift(1)))<=0, (temp_df[ma_name_k]-temp_df[ma_name_k].shift(1)),0)
         temp_df['trend_chg'] = np.where((temp_df['ma5_turn'] * (temp_df['ma10_turn'].shift(1)))<=0,1,0)
         
-        print(temp_df[['p_change','ma5_k','ma5_k2','ma5_turn','ma10_k','ma10_k2','ma10_turn','ma20_turn','trend_chg']].tail(30))
+        #print(temp_df[['p_change','ma5_k','ma5_k2','ma5_turn','ma10_k','ma10_k2','ma10_turn','ma20_turn','trend_chg']].tail(30))
         #temp_df['sell'] = np.where((temp_df['ma5_chg']<0 ) & ( temp_df['ma10_chg']<0),1,0)
         
         """ma over cross """
