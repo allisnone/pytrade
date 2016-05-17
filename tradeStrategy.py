@@ -1581,6 +1581,8 @@ class Stockhistory:
         temp_df['jump_min']=np.where(temp_df['close']<temp_df['open'],temp_df['close'],temp_df['open'])
         temp_df['jump_up']=np.where(temp_df['jump_min']>(1+gap_rate)*temp_df['jump_max'].shift(1),
                                     temp_df['jump_min']/temp_df['jump_max'].shift(1)-1,0)
+        temp_df['jump_up']=np.where(temp_df['low']>(1+gap_rate)*temp_df['high'].shift(1),
+                                    temp_df['jump_min']/temp_df['jump_max'].shift(1)-1,0)
         temp_df['jump_down']=np.where(temp_df['jump_max']<(1-gap_rate)*temp_df['jump_min'].shift(1),
                                       1-temp_df['jump_min'].shift(1)/temp_df['jump_max'],0)
         temp_df['gap'] = (temp_df['jump_up'] + temp_df['jump_down']).round(3)
@@ -1607,7 +1609,17 @@ class Stockhistory:
         
         temp_df['ma5_chg'] = np.where(temp_df['ma5']>0, (temp_df['close']/temp_df['ma5']-1).round(4),-10)
         temp_df['ma10_chg'] = np.where(temp_df['ma10']>0, (temp_df['close']/temp_df['ma10']-1).round(4),-10)
+        """均线拐点"""
+        #temp_df['ma5_k'] = temp_df['ma5'].diff(1)
+        for ma_name in ['ma5','ma10','ma20']:
+            ma_name_k = '%s_k' % ma_name
+            temp_df[ma_name_k] = temp_df[ma_name].diff(1)
+            temp_df[ma_name_k+'2'] = temp_df[ma_name_k].diff(1)
+            ma_name_turn = '%s_turn' % ma_name
+            temp_df[ma_name_turn] = np.where((temp_df[ma_name_k] * (temp_df[ma_name_k].shift(1)))<=0, (temp_df[ma_name_k]-temp_df[ma_name_k].shift(1)),0)
+        temp_df['trend_chg'] = np.where((temp_df['ma5_turn'] * (temp_df['ma10_turn'].shift(1)))<=0,1,0)
         
+        print(temp_df[['p_change','ma5_k','ma5_k2','ma5_turn','ma10_k','ma10_k2','ma10_turn','ma20_turn','trend_chg']].tail(30))
         #temp_df['sell'] = np.where((temp_df['ma5_chg']<0 ) & ( temp_df['ma10_chg']<0),1,0)
         
         """ma over cross """
@@ -1718,7 +1730,7 @@ class Stockhistory:
         """Get K data trend score next"""
         great_high_open_rate = 1.0
         great_low_open_rate = -1.5
-        recent_k_num = 120
+        recent_k_num = 60
         temp_df1=temp_df.fillna(0).tail(recent_k_num)
         extreme_rate = 0.85
         temp_df1['o_change']=(temp_df1['o_change']).round(1)
