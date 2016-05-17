@@ -1516,7 +1516,7 @@ class Stockhistory:
         temp_df['v_ma10'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
         """
         #temp_df['v_rate'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
-        temp_df.insert(17, 'v_rate', (temp_df['volume']/temp_df['v_ma5']).round(4))
+        temp_df.insert(17, 'v_rate', (temp_df['volume']/(temp_df['v_ma5'].shift(1))).round(4))
         if '3.5' in platform.python_version():
             temp_df['rmb_ma5'] = temp_df['rmb'].rolling(center=False,window=5).mean().round(2)
             temp_df['rmb_ma10'] = temp_df['rmb'].rolling(center=False,window=10).mean().round(2)
@@ -1525,7 +1525,7 @@ class Stockhistory:
             temp_df['rmb_ma10'] = pd.rolling_mean(temp_df['rmb'], window=10).round(2)
         #temp_df['rmb_ma5'] = np.round(pd.rolling_mean(temp_df['rmb'], window=5), 2)
         #temp_df['rmb_ma10'] = np.round(pd.rolling_mean(temp_df['rmb'], window=10), 2)
-        temp_df.insert(17, 'rmb_rate', (temp_df['rmb']/temp_df['rmb_ma5']).round(4))
+        temp_df.insert(18, 'rmb_rate', (temp_df['rmb']/(temp_df['rmb_ma5'].shift(1))).round(4))
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(16, 'o_change', 100.00*((temp_df.open-temp_df.last_close)/temp_df.last_close).round(4))
@@ -1637,6 +1637,8 @@ class Stockhistory:
         temp_df['tangle_p1'] = np.where(criteria_trangle_p1,(temp_df['ma5']/temp_df['ma10']-1),0)
         #self.data_feed(k_data=temp_df, feed_type='temp')
         #print(temp_df.tail(30))
+        
+        
         return temp_df
     
     def get_market_score(self,short_turn_weight=None,k_data=None):
@@ -1756,6 +1758,14 @@ class Stockhistory:
         del temp_df['gt_v_r']
         del temp_df['lt_v_r']
         
+        temp_df['gt2_rmb'] = np.where(((temp_df['rmb_rate']>(great_v_rate*1.2)) 
+                                       & (temp_df['rmb_rate'].shift(1)>(great_v_rate*1.2)) 
+                                       ),(temp_df['rmb_rate']>great_v_rate),0)
+        
+        temp_df['gt3_rmb'] = np.where(((temp_df['rmb_rate']>great_v_rate) 
+                                       & (temp_df['rmb_rate'].shift(1)>great_v_rate) 
+                                       & (temp_df['rmb_rate'].shift(2)>great_v_rate)),(temp_df['rmb_rate']>great_v_rate),0)
+        
         great_continue_increase_rate=great_increase_rate*0.75
         great_continue_descrease_rate=great_descrease_rate*0.75
         temp_df['gt_cc_h']=np.where((temp_df['p_change']>great_continue_increase_rate)\
@@ -1804,10 +1814,10 @@ class Stockhistory:
         #print(self.h_df)
         self.temp_hist_df = self._form_temp_df()
         self.temp_hist_df = self.get_market_score()
-        select_columns=['close','p_change','gap','star','star_h','star_chg','ma5_chg',
+        select_columns=['close','p_change','rmb_rate','gap','star','star_h','star_chg','ma5_chg',
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
-                        'std','tangle_p','tangle_p1']
+                        'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb']
         #print(self.temp_hist_df)
         select_df=self.temp_hist_df[select_columns].round(3)
         return select_df
