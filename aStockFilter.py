@@ -133,11 +133,10 @@ def get_latest_temp_df(today_df_high_open=[]):
         print(atr_in_df)
         island_df = result_df[result_df.island>0]
         reverse_df = result_df[result_df.reverse>0]
-        atr_in_df = result_df[result_df.atr_in>0 and result_df.position>0.5]
+        atr_in_df = result_df[result_df.atr_in>0 & result_df.position>0.5]
         tangle_p_df = result_df[result_df.tangle_p>0]
         gt2_rmb_df = result_df[result_df.gt2_rmb>0]
         gt3_rmb_df = result_df[result_df.gt3_rmb>0]
-        
         island_df.to_csv('island.csv')
         reverse_df.to_csv('reverse.csv')
         atr_in_df.to_csv('atr_in.csv')
