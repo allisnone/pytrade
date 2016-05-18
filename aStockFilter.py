@@ -131,6 +131,7 @@ def get_latest_temp_df(today_df_high_open=[]):
         print(result_df)
         print('atr in df :')
         print(atr_in_df)
+        
         island_df = result_df[result_df.island>0]
         reverse_df = result_df[result_df.reverse>0]
         atr_in_df = result_df[(result_df.atr_in>0) & (result_df.position>0.5)]
