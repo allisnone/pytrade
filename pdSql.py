@@ -316,6 +316,4 @@ def stock_sql_test():
     stock_sql_obj.delete_data(table, "name='陈五'")
 
 
-
-
     

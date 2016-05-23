@@ -1649,7 +1649,9 @@ class Stockhistory:
         temp_df['tangle_p1'] = np.where(criteria_trangle_p1,(temp_df['ma5']/temp_df['ma10']-1),0)
         #self.data_feed(k_data=temp_df, feed_type='temp')
         #print(temp_df.tail(30))
-        
+        """动态止损点"""
+        #temp_df['e_d_loss'] = (temp_df['low'].shift(1)).rolling(window=3,center=False).min().round(2)
+        temp_df['e_d_loss'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
         
         return temp_df
     
@@ -1829,7 +1831,7 @@ class Stockhistory:
         select_columns=['close','p_change','rmb_rate','gap','star','star_h','star_chg','ma5_chg',
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
-                        'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb']
+                        'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb','e_d_loss']
         #print(self.temp_hist_df)
         select_df=self.temp_hist_df[select_columns].round(3)
         return select_df

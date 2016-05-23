@@ -255,7 +255,7 @@ def sys_position_test():
     need_update=tt.is_trade_time_now()
     sys_df = sys_risk_analyse(is_realtime_update=need_update)
     print(sys_df.tail(10))
-    stock_df = get_stock_position(stock_synbol='600103')#,is_realtime_update=True)
+    stock_df = get_stock_position(stock_synbol='300162')#,is_realtime_update=True)
     #sys_df = get_stock_position(stock_synbol='002673',is_realtime_update=True)
     #sys_df = get_stock_position(stock_synbol='000680')#,is_realtime_update=True)
     sys_score,position,operation,latest_day=get_sys_risk_info(stock_df)
