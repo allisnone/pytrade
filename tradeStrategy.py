@@ -1545,6 +1545,8 @@ class Stockhistory:
             temp_df['c_min10']=temp_df['close'].rolling(window=long_num,center=False).min().round(2)
             temp_df['h_max10']=temp_df['high'].rolling(window=long_num,center=False).max().round(2)
             temp_df['l_min10']=temp_df['low'].rolling(window=long_num,center=False).min().round(2)
+            temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
+            temp_df['c_min2'] = temp_df['close'].rolling(window=2,center=False).min().round(2)
         else:#elif '3.4' in platform.python_version():
             temp_df['atr_ma%s'%short_num] = pd.rolling_mean(temp_df['atr'], window=short_num).round(2)
             temp_df['atr_ma%s'%long_num] = pd.rolling_mean(temp_df['atr'], window=long_num).round(2)
@@ -1556,6 +1558,8 @@ class Stockhistory:
             temp_df['c_min10']=pd.rolling_min(temp_df['close'], window=long_num).round(2)
             temp_df['h_max10']=pd.rolling_max(temp_df['high'], window=long_num).round(2)
             temp_df['l_min10']=pd.rolling_min(temp_df['low'], window=long_num).round(2)
+            temp_df['l_min3']=pd.rolling_min(temp_df['low'], window=3).round(2)
+            temp_df['c_min2']=pd.rolling_min(temp_df['low'], window=2).round(2)
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
         temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]
