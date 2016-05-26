@@ -1826,12 +1826,25 @@ class Stockhistory:
     def get_extrem_data(self):
         return
     
+    def shipan_test(self):
+        self.temp_hist_df['s_price'] = np.where(self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1),-self.temp_hist_df['l_min3'],0)
+        self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['s_price']>=0) 
+                                                & (self.temp_hist_df['position']>0.3)
+                                                & (self.temp_hist_df['position'].shift(1)<0.3)), self.temp_hist_df['close'],0)
+        
+        self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)<0) 
+                                                & (self.temp_hist_df['position']>0.5)
+                                                & (self.temp_hist_df['s_price'].shift(2)==0)), self.temp_hist_df['close'], self.temp_hist_df['b_price'])
+        return
+    
+    
     def form_temp_df(self,code_str):
         self.set_code(code_str)
         self.h_df = ps.get_raw_hist_df(code_str)
         #print(self.h_df)
         self.temp_hist_df = self._form_temp_df()
         self.temp_hist_df = self.get_market_score()
+        self.shipan_test()
         select_columns=['close','p_change','rmb_rate','gap','star','star_h','star_chg','ma5_chg',
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
