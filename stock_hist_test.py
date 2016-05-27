@@ -27,12 +27,18 @@ if __name__ == "__main__":
     stock_synbol = '300162'
     #stock_synbol = '002177'
     #stock_synbol = '000418'
-    print(type(sys.argv[2]))
+    num = 0
     if sys.argv[1] and isinstance(sys.argv[1], str) and len(sys.argv[1])==6:
         stock_synbol = sys.argv[1]
-    num = 0
-    if sys.argv[2] and isinstance(sys.argv[2], str):
-        num = int(sys.argv[2])
+    
+    if len(sys.argv)>=2:
+        if sys.argv[2] and isinstance(sys.argv[2], str):
+            num = int(sys.argv[2])
+    elif len(sys.argv)==1:
+        if sys.argv[1] and isinstance(sys.argv[1], str) and len(sys.argv[1])==6:
+            stock_synbol = sys.argv[1]
+    else:
+        pass
     s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
     
     s_stock.is_island_reverse_up()
