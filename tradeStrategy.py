@@ -1832,35 +1832,18 @@ class Stockhistory:
     def get_extrem_data(self):
         return
     
-    def shipan_test0(self):
-        self.temp_hist_df['s_price'] = np.where(self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1),-self.temp_hist_df['l_min3'].shift(1),0)
-        self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['s_price']>=0) 
-                                                & (self.temp_hist_df['position']>0.3)
-                                                & (self.temp_hist_df['position'].shift(1)<0.3)), self.temp_hist_df['close'].shift(1),0)
-        
-        self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)<0) 
-                                                & (self.temp_hist_df['position']>0.5)
-                                                & (self.temp_hist_df['s_price'].shift(2)==0)), self.temp_hist_df['close'], self.temp_hist_df['b_price'])
-        self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)>=0) 
-                                                & (self.temp_hist_df['s_price']<0)),self.temp_hist_df['s_price'],0)
-        
-        temp_df = self.temp_hist_df[(self.temp_hist_df['s_price']<0) | (self.temp_hist_df['b_price']>0)]
-        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
-        temp_df['profit'] = np.where(((temp_df['s_price']<0)
-                                      & (temp_df['s_price'].shift(1)==0)
-                                      & (temp_df['b_price'].shift(1)>0)),-(temp_df['s_price']+temp_df['b_price'].shift(1))/temp_df['b_price'].shift(1),0)
-        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit']]
-        #temp_df.to_csv('./temp/bs_%s.csv' % self.code)
-        return
-    
-    def shipan_test(self):
+    def regression_test(self):
+        """
+        卖出： 当天最低价小于之前三天的最低价，以最近三天的最低价卖出；如果跳空低开且开盘价小于近三天的最低价，以开盘价卖出
+        买入： 当天价格高于前三天的收盘价的最大值，且当前建议仓位不小于25%，并无明显的减仓建议， 则以前三天收盘价的最大值买入；如果跳空高开且开盘价大于前三天的收盘价的最大值，以开盘价买入；
+        """
         self.temp_hist_df['s_price0'] = np.where(self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1),self.temp_hist_df['l_min3'].shift(1),0)
         self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price0']),
-                                                self.temp_hist_df['high'],self.temp_hist_df['s_price0'])
+                                                self.temp_hist_df['open'],self.temp_hist_df['s_price0'])
         self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>self.temp_hist_df['c_max3'].shift(1)) &
-                                                 (self.temp_hist_df['position']>0.25) & (self.temp_hist_df['operation']>-0.10),self.temp_hist_df['c_max3'].shift(1),0)
+                                                 (self.temp_hist_df['position']>0.3) & (self.temp_hist_df['operation']>-0.15),self.temp_hist_df['c_max3'].shift(1),0)
         self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['b_price0']>0) & (self.temp_hist_df['low']>self.temp_hist_df['b_price0']),
-                                                -self.temp_hist_df['low'], -self.temp_hist_df['b_price0'])
+                                                -self.temp_hist_df['open'], -self.temp_hist_df['b_price0'])
         #print(self.temp_hist_df[['s_price', 'b_price']].tail(30))
         self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['b_price'].shift(1)==0) 
                                                 & (self.temp_hist_df['s_price']==0)
@@ -1886,16 +1869,16 @@ class Stockhistory:
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit']]
         
         #temp_df = self.temp_hist_df[['date','close','p_change', 'position','operation','s_price','b_price']]
-        print(temp_df.describe())
-        print(temp_df.sum())
+        #print(temp_df.describe())
+        #print(temp_df.sum())
         summary_profit = temp_df.describe()['profit']
         trade_times = len(temp_df)/2
         TRADE_FEE = 0.00162
         total_profit = temp_df.sum().profit - trade_times * TRADE_FEE
         summary_profit['sum'] = total_profit
-        print(summary_profit)
+        #print(summary_profit)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
-        return
+        return summary_profit
     
     
     def form_temp_df(self,code_str):
@@ -1904,7 +1887,6 @@ class Stockhistory:
         #print(self.h_df)
         self.temp_hist_df = self._form_temp_df()
         self.temp_hist_df = self.get_market_score()
-        self.shipan_test()
         select_columns=['close','p_change','rmb_rate','gap','star','star_h','star_chg','ma5_chg',
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
