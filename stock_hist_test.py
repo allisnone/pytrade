@@ -5,8 +5,8 @@ import sendEmail as se
 import tradeTime as tt
 
 stock_synbol = '300162'
-stock_synbol = '002177'
-stock_synbol = '000418'
+#stock_synbol = '002177'
+#stock_synbol = '000418'
 s_stock=tds.Stockhistory(stock_synbol,'D')
 
 s_stock.is_island_reverse_up()
