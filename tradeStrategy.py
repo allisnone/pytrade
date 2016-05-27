@@ -1892,7 +1892,7 @@ class Stockhistory:
         trade_times = len(temp_df)/2
         TRADE_FEE = 0.00162
         total_profit = temp_df.sum().profit - trade_times * TRADE_FEE
-        summary['profit'] = total_profit
+        summary['sum_profit'] = total_profit
         print(summary)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return
