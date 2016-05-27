@@ -1545,6 +1545,8 @@ class Stockhistory:
             temp_df['c_min10']=temp_df['close'].rolling(window=long_num,center=False).min().round(2)
             temp_df['h_max10']=temp_df['high'].rolling(window=long_num,center=False).max().round(2)
             temp_df['l_min10']=temp_df['low'].rolling(window=long_num,center=False).min().round(2)
+            temp_df['l_max3'] = temp_df['low'].rolling(window=3,center=False).max().round(2)
+            temp_df['c_max3'] = temp_df['close'].rolling(window=3,center=False).max().round(2)
             temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
             temp_df['c_min2'] = temp_df['close'].rolling(window=2,center=False).min().round(2)
         else:#elif '3.4' in platform.python_version():
@@ -1558,6 +1560,8 @@ class Stockhistory:
             temp_df['c_min10']=pd.rolling_min(temp_df['close'], window=long_num).round(2)
             temp_df['h_max10']=pd.rolling_max(temp_df['high'], window=long_num).round(2)
             temp_df['l_min10']=pd.rolling_min(temp_df['low'], window=long_num).round(2)
+            temp_df['l_max3']=pd.rolling_max(temp_df['low'], window=3).round(2)
+            temp_df['c_max3']=pd.rolling_max(temp_df['close'], window=3).round(2)
             temp_df['l_min3']=pd.rolling_min(temp_df['low'], window=3).round(2)
             temp_df['c_min2']=pd.rolling_min(temp_df['low'], window=2).round(2)
         expect_rate=1.8
@@ -1826,15 +1830,58 @@ class Stockhistory:
     def get_extrem_data(self):
         return
     
-    def shipan_test(self):
-        self.temp_hist_df['s_price'] = np.where(self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1),-self.temp_hist_df['l_min3'],0)
+    def shipan_test0(self):
+        self.temp_hist_df['s_price'] = np.where(self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1),-self.temp_hist_df['l_min3'].shift(1),0)
         self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['s_price']>=0) 
                                                 & (self.temp_hist_df['position']>0.3)
-                                                & (self.temp_hist_df['position'].shift(1)<0.3)), self.temp_hist_df['close'],0)
+                                                & (self.temp_hist_df['position'].shift(1)<0.3)), self.temp_hist_df['close'].shift(1),0)
         
         self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)<0) 
                                                 & (self.temp_hist_df['position']>0.5)
                                                 & (self.temp_hist_df['s_price'].shift(2)==0)), self.temp_hist_df['close'], self.temp_hist_df['b_price'])
+        self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)>=0) 
+                                                & (self.temp_hist_df['s_price']<0)),self.temp_hist_df['s_price'],0)
+        
+        temp_df = self.temp_hist_df[(self.temp_hist_df['s_price']<0) | (self.temp_hist_df['b_price']>0)]
+        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
+        temp_df['profit'] = np.where(((temp_df['s_price']<0)
+                                      & (temp_df['s_price'].shift(1)==0)
+                                      & (temp_df['b_price'].shift(1)>0)),-(temp_df['s_price']+temp_df['b_price'].shift(1))/temp_df['b_price'].shift(1),0)
+        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit']]
+        temp_df.to_csv('./temp/bs_%s.csv' % self.code)
+        return
+    
+    def shipan_test(self):
+        self.temp_hist_df['s_price'] = np.where(self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1),self.temp_hist_df['l_min3'].shift(1),0)
+        self.temp_hist_df['b_price'] = np.where(self.temp_hist_df['close']>self.temp_hist_df['c_max3'].shift(1),-self.temp_hist_df['c_max3'].shift(1),0)
+     
+        self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['b_price'].shift(1)==0) 
+                                                & (self.temp_hist_df['s_price']==0)
+                                                & (self.temp_hist_df['b_price']<0)), self.temp_hist_df['b_price'], 0)
+        self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)==0) 
+                                                & (self.temp_hist_df['s_price']>0)
+                                                & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
+        
+        temp_df = self.temp_hist_df[(self.temp_hist_df['s_price']>0) | (self.temp_hist_df['b_price']<0)]
+        
+        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
+        temp_df['b_price'] = np.where(((temp_df['b_price'].shift(1)==0) 
+                                                & (temp_df['s_price']==0)
+                                                & (temp_df['b_price']<0)), temp_df['b_price'], 0)
+        temp_df['s_price'] = np.where(((temp_df['s_price'].shift(1)==0) 
+                                                & (temp_df['s_price']>0)
+                                                & (temp_df['b_price']==0)),temp_df['s_price'],0)
+        temp_df = temp_df[(temp_df['s_price']>0) | (temp_df['b_price']<0)]
+        
+        temp_df['profit'] = np.where(((temp_df['s_price']>0)
+                                      & (temp_df['s_price'].shift(1)==0)
+                                      & (temp_df['b_price'].shift(1)<0)),-(temp_df['s_price']+temp_df['b_price'].shift(1))/(temp_df['b_price'].shift(1)),0)
+        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit']]
+        
+        #temp_df = self.temp_hist_df[['date','close','p_change', 'position','operation','s_price','b_price']]
+        print(temp_df.describe())
+        print(temp_df.sum())
+        temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return
     
     
