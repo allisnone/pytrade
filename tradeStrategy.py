@@ -1888,10 +1888,12 @@ class Stockhistory:
         #temp_df = self.temp_hist_df[['date','close','p_change', 'position','operation','s_price','b_price']]
         print(temp_df.describe())
         print(temp_df.sum())
+        summary = temp_df.describe()
         trade_times = len(temp_df)/2
         TRADE_FEE = 0.00162
         total_profit = temp_df.sum().profit - trade_times * TRADE_FEE
-        print('total_profit= %s' % total_profit)
+        summary['profit'] = total_profit
+        print(summary)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return
     
