@@ -1853,9 +1853,11 @@ class Stockhistory:
     
     def shipan_test(self):
         self.temp_hist_df['s_price0'] = np.where(self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1),self.temp_hist_df['l_min3'].shift(1),0)
-        self.temp_hist_df['s_price'] = np.where(self.temp_hist_df['high']<self.temp_hist_df['s_price0'],self.temp_hist_df['high'],self.temp_hist_df['s_price0'])
-        self.temp_hist_df['b_price0'] = np.where(self.temp_hist_df['close']>self.temp_hist_df['c_max3'].shift(1),self.temp_hist_df['c_max3'].shift(1),0)
-        self.temp_hist_df['b_price'] = np.where(self.temp_hist_df['low']>self.temp_hist_df['b_price0'],-self.temp_hist_df['low'], -self.temp_hist_df['b_price0'])
+        self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['b_price0']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price0']),
+                                                self.temp_hist_df['high'],self.temp_hist_df['s_price0'])
+        self.temp_hist_df['b_price0'] = np.where(self.temp_hist_df['high']>self.temp_hist_df['c_max3'].shift(1),self.temp_hist_df['c_max3'].shift(1),0)
+        self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['b_price0']>0) & (self.temp_hist_df['low']>self.temp_hist_df['b_price0']),
+                                                -self.temp_hist_df['low'], -self.temp_hist_df['b_price0'])
         
         print(self.temp_hist_df[['s_price', 'b_price']].tail(30))
         self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['b_price'].shift(1)==0) 
