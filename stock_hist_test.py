@@ -27,6 +27,7 @@ if __name__ == "__main__":
     stock_synbol = '300162'
     #stock_synbol = '002177'
     #stock_synbol = '000418'
+    print(type(sys.argv[2]))
     if sys.argv[1] and isinstance(sys.argv[1], str) and len(sys.argv[1])==6:
         stock_synbol = sys.argv[1]
     s_stock=tds.Stockhistory(stock_synbol,'D',test_num=sys.argv[2])
