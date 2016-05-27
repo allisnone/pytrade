@@ -31,10 +31,10 @@ if __name__ == "__main__":
     if sys.argv[1] and isinstance(sys.argv[1], str) and len(sys.argv[1])==6:
         stock_synbol = sys.argv[1]
     
-    if len(sys.argv)>=2:
+    if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
             num = int(sys.argv[2])
-    elif len(sys.argv)==1:
+    elif len(sys.argv)==2:
         if sys.argv[1] and isinstance(sys.argv[1], str) and len(sys.argv[1])==6:
             stock_synbol = sys.argv[1]
     else:
