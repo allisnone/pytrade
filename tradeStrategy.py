@@ -674,7 +674,7 @@ def market_analyze_today():
     print('market_analyze completed for today.')
     
 class Stockhistory:
-    def __init__(self,code_str,ktype):
+    def __init__(self,code_str,ktype, test_num=0):
         self.code=code_str
         self.ktype=ktype
         self.DEBUG_ENABLED=False
@@ -685,6 +685,9 @@ class Stockhistory:
         self.alarm_category='normal'
         self.realtime_stamp=0
         self.temp_hist_df=self._form_temp_df()
+        self.test_num = test_num
+        if test_num ==0:
+            self.test_num = len(self.h_df)
         #self.average_high=0
         #self.average_low=0
     def set_code(self,code_str):
@@ -714,7 +717,6 @@ class Stockhistory:
             else:
                 pass
         """
-            
             
     def get_all_symbols(self):
         return
@@ -1866,7 +1868,7 @@ class Stockhistory:
         self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)==0) 
                                                 & (self.temp_hist_df['s_price']>0)
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
-        temp_hist_df =self.temp_hist_df.tail(250)
+        temp_hist_df =self.temp_hist_df.tail(self.test_num)
         temp_df = temp_hist_df[(temp_hist_df['s_price']>0) | (temp_hist_df['b_price']<0)]
         
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
