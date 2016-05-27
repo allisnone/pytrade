@@ -1879,8 +1879,8 @@ class Stockhistory:
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit']]
         
         #temp_df = self.temp_hist_df[['date','close','p_change', 'position','operation','s_price','b_price']]
-        print(temp_df.describe())
-        print(temp_df.sum())
+        print(temp_df.tail(250).describe())
+        print(temp_df.tail(250).sum())
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return
     
