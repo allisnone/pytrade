@@ -30,7 +30,10 @@ if __name__ == "__main__":
     print(type(sys.argv[2]))
     if sys.argv[1] and isinstance(sys.argv[1], str) and len(sys.argv[1])==6:
         stock_synbol = sys.argv[1]
-    s_stock=tds.Stockhistory(stock_synbol,'D',test_num=sys.argv[2])
+    num = 0
+    if sys.argv[2] and isinstance(sys.argv[2], str):
+        num = int(sys.argv[2])
+    s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
     
     s_stock.is_island_reverse_up()
     result_df = s_stock.form_temp_df(stock_synbol)
