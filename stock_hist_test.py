@@ -28,10 +28,6 @@ if __name__ == "__main__":
     #stock_synbol = '002177'
     #stock_synbol = '000418'
     num = 0
-    print(len(sys.argv))
-    if sys.argv[1] and isinstance(sys.argv[1], str) and len(sys.argv[1])==6:
-        stock_synbol = sys.argv[1]
-    
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
             num = int(sys.argv[2])
