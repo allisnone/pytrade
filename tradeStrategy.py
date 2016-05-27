@@ -1861,8 +1861,8 @@ class Stockhistory:
         self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)==0) 
                                                 & (self.temp_hist_df['s_price']>0)
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
-        
-        temp_df = self.temp_hist_df[(self.temp_hist_df['s_price']>0) | (self.temp_hist_df['b_price']<0)]
+        temp_hist_df =self.temp_hist_df.tail(250)
+        temp_df = temp_hist_df[(temp_hist_df['s_price']>0) | (temp_hist_df['b_price']<0)]
         
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
         temp_df['b_price'] = np.where(((temp_df['b_price'].shift(1)==0) 
@@ -1879,8 +1879,8 @@ class Stockhistory:
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit']]
         
         #temp_df = self.temp_hist_df[['date','close','p_change', 'position','operation','s_price','b_price']]
-        print(temp_df.tail(250).describe())
-        print(temp_df.tail(250).sum())
+        print(temp_df.describe())
+        print(temp_df.sum())
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return
     
