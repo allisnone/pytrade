@@ -1892,8 +1892,11 @@ class Stockhistory:
                         'cross1','cross2','cross3','k_score','position','operation',
                         'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb','e_d_loss']
         #print(self.temp_hist_df)
-        select_df=self.temp_hist_df[select_columns].round(3)
-        return select_df
+        if self.temp_hist_df.empty:
+            return self.temp_hist_df
+        else:
+            select_df=self.temp_hist_df[select_columns].round(3)
+            return select_df
     
     def _form_temp_df1(self):
         #print(self.h_df)

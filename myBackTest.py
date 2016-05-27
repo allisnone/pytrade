@@ -25,14 +25,18 @@ if __name__ == "__main__":
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%',  'sum']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
     all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
+    i=0
     for stock_synbol in all_codes:
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
         result_df = s_stock.form_temp_df(stock_synbol)
         test_result = s_stock.regression_test()
         test_result_df = tds.pd.DataFrame(test_result.to_dict(), columns=column_list, index=[stock_synbol])
         all_result_df = all_result_df.append(test_result_df,ignore_index=False)
+        i = i+1
+        print(i,stock_synbol)
         
     #print(result_df.tail(20))
+    all_result_df = all_result_df.sort_index(axis=0, by='sum', ascending=False)
     print(all_result_df)
-    all_result_df.to_csv('./temp/all_result_df.csv' )
+    all_result_df.to_csv('./temp/regression_test.csv' )
     #print(s_stock.temp_hist_df.tail(20))
