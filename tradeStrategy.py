@@ -1886,7 +1886,6 @@ class Stockhistory:
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
     
-    
     def form_temp_df(self,code_str):
         self.set_code(code_str)
         self.h_df = ps.get_raw_hist_df(code_str)
