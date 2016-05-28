@@ -85,8 +85,6 @@ def get_raw_hist_df(code_str,latest_count=None):
         #print('code_str=%s'%code_str)
         df=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
         #print('pd.read_csv=',df)
-        if not df:
-            return df_0
         if df.empty:
             #print('code_str=',code_str)
             return df_0

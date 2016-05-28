@@ -1884,14 +1884,14 @@ class Stockhistory:
     def form_temp_df(self,code_str):
         self.set_code(code_str)
         self.h_df = ps.get_raw_hist_df(code_str)
-        #print(self.h_df)
+        print(self.h_df)
         self.temp_hist_df = self._form_temp_df()
         self.temp_hist_df = self.get_market_score()
         select_columns=['close','p_change','rmb_rate','gap','star','star_h','star_chg','ma5_chg',
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
                         'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb','e_d_loss']
-        #print(self.temp_hist_df)
+        print(self.temp_hist_df)
         if self.temp_hist_df.empty:
             return self.temp_hist_df
         else:
