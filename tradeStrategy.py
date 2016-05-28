@@ -1840,12 +1840,12 @@ class Stockhistory:
         if self.temp_hist_df.empty:
             return pd.Series({})
         self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['high']!=self.temp_hist_df['low']) 
-                                                 & (self.temp_hist_df['p_chang']<0)
+                                                 & (self.temp_hist_df['p_change']<0)
                                                  & (self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)),self.temp_hist_df['l_min3'].shift(1),0)
         self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price0']),
                                                 self.temp_hist_df['open'],self.temp_hist_df['s_price0'])
         self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']!=self.temp_hist_df['low'])
-                                                 & (self.temp_hist_df['p_chang']>0)
+                                                 & (self.temp_hist_df['p_change']>0)
                                                  & (self.temp_hist_df['high']>self.temp_hist_df['c_max3'].shift(1)) &
                                                  (self.temp_hist_df['position']>0.3) & (self.temp_hist_df['operation']>-0.15),self.temp_hist_df['c_max3'].shift(1),0)
         self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['b_price0']>0) & (self.temp_hist_df['low']>self.temp_hist_df['b_price0']),
