@@ -5,6 +5,7 @@ import sendEmail as se
 import tradeTime as tt
 import pdSql as pds
 import sys
+from pydoc import describe
 
 if __name__ == "__main__":
     stock_synbol = '300162'
@@ -37,6 +38,8 @@ if __name__ == "__main__":
         
     #print(result_df.tail(20))
     all_result_df = all_result_df.sort_index(axis=0, by='sum', ascending=False)
+    result_summary = all_result_df.describe()
     print(all_result_df)
     all_result_df.to_csv('./temp/regression_test.csv' )
+    result_summary.to_csv('./temp/result_summary.csv' )
     #print(s_stock.temp_hist_df.tail(20))
