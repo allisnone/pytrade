@@ -1837,6 +1837,8 @@ class Stockhistory:
         卖出： 当天最低价小于之前三天的最低价，以最近三天的最低价卖出；如果跳空低开且开盘价小于近三天的最低价，以开盘价卖出
         买入： 当天价格高于前三天的收盘价的最大值，且当前建议仓位不小于25%，并无明显的减仓建议， 则以前三天收盘价的最大值买入；如果跳空高开且开盘价大于前三天的收盘价的最大值，以开盘价买入；
         """
+        if self.temp_hist_df.empty:
+            return pd.Series({})
         self.temp_hist_df['s_price0'] = np.where(self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1),self.temp_hist_df['l_min3'].shift(1),0)
         self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price0']),
                                                 self.temp_hist_df['open'],self.temp_hist_df['s_price0'])
