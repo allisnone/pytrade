@@ -42,6 +42,7 @@ if __name__ == "__main__":
     s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
     result_df = s_stock.form_temp_df(stock_synbol)
     test_result = s_stock.regression_test()
+    print(test_result)
     #print(result_df.tail(20))
     s_stock.temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)
     #print(s_stock.temp_hist_df.tail(20))
