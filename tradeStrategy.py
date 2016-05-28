@@ -1669,7 +1669,7 @@ class Stockhistory:
         ma_type='ma5'
         temp_df=self.temp_hist_df
         if temp_df.empty:
-            return None
+            return temp_df
         if k_data!=None:
             update_one_hist(code_sybol, today_df, today_df_update_time)
             temp_df=self._form_temp_df()
