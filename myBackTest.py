@@ -40,7 +40,8 @@ if __name__ == "__main__":
         print(i,stock_synbol)
         
     #print(result_df.tail(20))
-    all_result_df = all_result_df.sort_index(axis=0, by='sum', ascending=False)
+    #all_result_df = all_result_df.sort_index(axis=0, by='sum', ascending=False)
+    all_result_df = all_result_df.sort_values(axis=0, by='sum', ascending=False)
     result_summary = all_result_df.describe()
     print(all_result_df)
     all_result_df.to_csv('./temp/regression_test.csv' )
