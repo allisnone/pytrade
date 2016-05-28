@@ -31,6 +31,9 @@ if __name__ == "__main__":
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
         result_df = s_stock.form_temp_df(stock_synbol)
         test_result = s_stock.regression_test()
+        #if test_result.empty:
+        #    pass
+        #else: 
         test_result_df = tds.pd.DataFrame(test_result.to_dict(), columns=column_list, index=[stock_synbol])
         all_result_df = all_result_df.append(test_result_df,ignore_index=False)
         i = i+1
