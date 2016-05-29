@@ -1661,7 +1661,7 @@ class Stockhistory:
         #print(temp_df.tail(30))
         """动态止损点"""
         #temp_df['e_d_loss'] = (temp_df['low'].shift(1)).rolling(window=3,center=False).min().round(2)
-        temp_df['e_d_loss'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
+        #temp_df['e_d_loss'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
         
         return temp_df
     
@@ -1832,6 +1832,29 @@ class Stockhistory:
     def get_extrem_data(self):
         return
     
+    def get_recent_max_min(self,num=20,column='close'):
+        if self.temp_hist_df.empty:
+            return
+        temp_df = self.temp_hist_df
+        latest_date = temp_df.tail(1).iloc[0].date
+        id_latest = len(temp_df)
+        latest_close = temp_df.tail(1).iloc[0].close
+        print(latest_date,latest_close)
+        id_close_max20 = temp_df.tail(num)[column].idxmax(axis=0)
+        print(id_close_max20)
+        max_close = temp_df.loc[id_close_max20].close
+        print('max20_close=%s'%max_close)
+        max_close_date = temp_df.loc[id_close_max20].date
+        id_close_min20 = temp_df.tail(num)[column].idxmin(axis=0)
+        min_close = temp_df.loc[id_close_min20].close
+        print(id_close_min20,min_close)
+        increase_df = temp_df[temp_df.index>id_close_min20]
+        close_position = (latest_close-min_close)/(max_close-min_close)
+        print('fantan_rate=%s' % (latest_close/min_close-1))
+        print('close_position=%s' % close_position)
+        #increase_df = temp_df[temp_df.date>(temp_df.loc[id_close_min20].date)]
+        print(increase_df[['close','p_change','star_chg','position']].describe())
+    
     def regression_test(self):
         """
         卖出： 当天最低价小于之前三天的最低价，以最近三天的最低价卖出；如果跳空低开且开盘价小于近三天的最低价，以开盘价卖出
@@ -1875,7 +1898,8 @@ class Stockhistory:
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit']]
         
         #temp_df = self.temp_hist_df[['date','close','p_change', 'position','operation','s_price','b_price']]
-        #print(temp_df.describe())
+        #print(temp_df)
+        #print(temp_df[['close','p_change', 'position','operation','s_price','b_price']].describe())
         #print(temp_df.sum())
         summary_profit = temp_df.describe()['profit']
         trade_times = len(temp_df)/2
@@ -1895,7 +1919,7 @@ class Stockhistory:
         select_columns=['close','p_change','rmb_rate','gap','star','star_h','star_chg','ma5_chg',
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
-                        'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb','e_d_loss']
+                        'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb']#,'e_d_loss']
         #print(self.temp_hist_df)
         if self.temp_hist_df.empty:
             return self.temp_hist_df
