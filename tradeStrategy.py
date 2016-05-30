@@ -1556,9 +1556,9 @@ class Stockhistory:
             temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
             temp_df['c_min2'] = temp_df['close'].rolling(window=2,center=False).min().round(2)
             #temp_df['id_c_max20'] = temp_df['close'].idxmax(axis=0)
-            print(temp_df['close'].rolling(window=20,center=False))
-            print(type(temp_df['close'].rolling(window=20,center=False)))
-            temp_df['id_c_max20'] = temp_df['close'].rolling(window=20,center=False).apply(self.get_max_id(temp_df))
+            #print(temp_df['close'].rolling(window=20,center=False))
+            #print(type(temp_df['close'].rolling(window=20,center=False)))
+            #temp_df['id_c_max20'] = temp_df['close'].rolling(window=20,center=False).apply(self.get_max_id(temp_df))
         else:#elif '3.4' in platform.python_version():
             temp_df['atr_ma%s'%short_num] = pd.rolling_mean(temp_df['atr'], window=short_num).round(2)
             temp_df['atr_ma%s'%long_num] = pd.rolling_mean(temp_df['atr'], window=long_num).round(2)
