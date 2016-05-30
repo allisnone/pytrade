@@ -32,6 +32,7 @@ if __name__ == "__main__":
     stock_synbol = '300458'
     stock_synbol = '300407'
     stock_synbol = '300269'
+    stock_synbol = '600260'
     num = 0
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
