@@ -1927,7 +1927,7 @@ class Stockhistory:
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
                         'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb']#,'e_d_loss']
-        #print(self.temp_hist_df)
+        print(self.temp_hist_df.tail(10)[['date','close','id_c_max20']])
         if self.temp_hist_df.empty:
             return self.temp_hist_df
         else:
