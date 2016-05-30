@@ -1457,6 +1457,9 @@ class Stockhistory:
         average_high=round((average_high+average_close)*0.5,2)
         return average_high
     
+    def get_max_id(self, temp_df, column='close', num=20):
+        return temp_df[column].tail(num).idxmax(axis=0)
+    
     def get_average_low(self,days=None):
         num=60
         if days!=None:
@@ -1552,7 +1555,7 @@ class Stockhistory:
             temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
             temp_df['c_min2'] = temp_df['close'].rolling(window=2,center=False).min().round(2)
             #temp_df['id_c_max20'] = temp_df['close'].idxmax(axis=0)
-            temp_df['id_c_max20'] = temp_df['close'].rolling(window=20,center=False).apply(temp_df['close'].idxmax(axis=0))
+            temp_df['id_c_max20'] = temp_df['close'].rolling(window=20,center=False).apply(get_max_id(temp_df))
         else:#elif '3.4' in platform.python_version():
             temp_df['atr_ma%s'%short_num] = pd.rolling_mean(temp_df['atr'], window=short_num).round(2)
             temp_df['atr_ma%s'%long_num] = pd.rolling_mean(temp_df['atr'], window=long_num).round(2)
