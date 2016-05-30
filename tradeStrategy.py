@@ -1552,7 +1552,7 @@ class Stockhistory:
             temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
             temp_df['c_min2'] = temp_df['close'].rolling(window=2,center=False).min().round(2)
             #temp_df['id_c_max20'] = temp_df['close'].idxmax(axis=0)
-            temp_df['id_c_max20'] = temp_df['close'].rolling(window=20,center=False).apply(pd.Series.idxmax(axis=0))
+            temp_df['id_c_max20'] = temp_df['close'].rolling(window=20,center=False).apply(temp_df['close'].idxmax(axis=0))
         else:#elif '3.4' in platform.python_version():
             temp_df['atr_ma%s'%short_num] = pd.rolling_mean(temp_df['atr'], window=short_num).round(2)
             temp_df['atr_ma%s'%long_num] = pd.rolling_mean(temp_df['atr'], window=long_num).round(2)
@@ -1568,7 +1568,7 @@ class Stockhistory:
             temp_df['c_max3']=pd.rolling_max(temp_df['close'], window=3).round(2)
             temp_df['l_min3']=pd.rolling_min(temp_df['low'], window=3).round(2)
             temp_df['c_min2']=pd.rolling_min(temp_df['low'], window=2).round(2)
-            
+        print(self.temp_df.tail(30)[['date','close','id_c_max20']]) 
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
         temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]
@@ -1928,7 +1928,6 @@ class Stockhistory:
                         'ma10_chg','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
                         'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb']#,'e_d_loss']
-        print(self.temp_hist_df.tail(10)[['date','close','id_c_max20']])
         if self.temp_hist_df.empty:
             return self.temp_hist_df
         else:
