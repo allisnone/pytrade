@@ -1574,7 +1574,7 @@ class Stockhistory:
             temp_df['c_max3']=pd.rolling_max(temp_df['close'], window=3).round(2)
             temp_df['l_min3']=pd.rolling_min(temp_df['low'], window=3).round(2)
             temp_df['c_min2']=pd.rolling_min(temp_df['low'], window=2).round(2)
-        print(self.temp_df.tail(30)[['date','close','id_c_max20']]) 
+        #print(self.temp_df.tail(30)[['date','close','id_c_max20']]) 
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
         temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]
