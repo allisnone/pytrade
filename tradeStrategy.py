@@ -1839,7 +1839,7 @@ class Stockhistory:
         latest_date = temp_df.tail(1).iloc[0].date
         id_latest = len(temp_df)
         latest_close = temp_df.tail(1).iloc[0].close
-        print(latest_date,latest_close)
+        print('latest_close= %s' %latest_close)
         id_close_max20 = temp_df.tail(num)[column].idxmax(axis=0)
         print(id_close_max20)
         max_close = temp_df.loc[id_close_max20].close
@@ -1847,9 +1847,14 @@ class Stockhistory:
         max_close_date = temp_df.loc[id_close_max20].date
         id_close_min20 = temp_df.tail(num)[column].idxmin(axis=0)
         min_close = temp_df.loc[id_close_min20].close
-        print(id_close_min20,min_close)
+        print('min_close=%s' % min_close)
         increase_df = temp_df[temp_df.index>id_close_min20]
         close_position = (latest_close-min_close)/(max_close-min_close)
+        id_max_id_min = id_close_max20 -id_close_min20
+        id_latest_id_min = id_latest - id_close_min20
+        print(id_close_min20,id_close_max20,id_latest)
+        print('id_latest_id_min=%s' % id_latest_id_min)
+        print('id_max_id_min = %s'%id_max_id_min)
         print('fantan_rate=%s' % (latest_close/min_close-1))
         print('close_position=%s' % close_position)
         #increase_df = temp_df[temp_df.date>(temp_df.loc[id_close_min20].date)]
@@ -1906,7 +1911,7 @@ class Stockhistory:
         TRADE_FEE = 0.00162
         total_profit = temp_df.sum().profit - trade_times * TRADE_FEE
         summary_profit['sum'] = total_profit
-        #print(summary_profit)
+        print(summary_profit)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
     
