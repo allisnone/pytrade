@@ -1848,14 +1848,49 @@ class Stockhistory:
         latest_date = temp_df.tail(1).iloc[0].date
         id_latest = len(temp_df)
         latest_close = temp_df.tail(1).iloc[0].close
-        print('latest_close= %s' %latest_close)
+        #print('latest_close= %s' %latest_close)
         id_close_max20 = temp_df.tail(num)[column].idxmax(axis=0)
-        print(id_close_max20)
         max_close = temp_df.loc[id_close_max20].close
-        print('max20_close=%s'%max_close)
-        max_close_date = temp_df.loc[id_close_max20].date
         id_close_min20 = temp_df.tail(num)[column].idxmin(axis=0)
         min_close = temp_df.loc[id_close_min20].close
+        id_max_id_min = id_close_max20 -id_close_min20
+        close_state = 0
+        recent_trend_df = temp_df[temp_df.index>id_close_min20]
+        if id_max_id_min>0:
+            if id_close_max20==id_latest:
+                close_state = 5
+            else:
+                recent_trend_df = temp_df[temp_df.index>id_close_max20]
+                if latest_close>(2.0*max_close + min_close)/3.0:
+                    close_state = 4
+                elif latest_close<(max_close + 2.0* min_close)/3.0:
+                    close_state = -3
+                else:
+                    close_state = 1
+        else:
+            if id_close_min20==id_latest:
+                close_state = -5
+                recent_trend_df = temp_df[temp_df.index>id_close_max20]
+            else:
+                recent_trend_df = temp_df[temp_df.index>id_close_min20]
+                if latest_close>(2.0*max_close + min_close)/3.0:
+                    print((2.0*max_close + min_close)/3.0)
+                    close_state = 3
+                elif latest_close<(max_close + 2.0* min_close)/3.0:
+                    close_state = -4
+                else:
+                    close_state = -1
+        """
+        state>=3, strong
+        state<=-3, weak
+        """
+        print('close_state=%s' % close_state)
+        #print(recent_trend_df)
+        fantan_rate = (latest_close/min_close-1)
+        if close_state in [-5,-3,1,4]:
+            fantan_rate = -(1-latest_close/max_close) #drop down
+        print('max20_close=%s'%max_close)
+        max_close_date = temp_df.loc[id_close_max20].date
         print('min_close=%s' % min_close)
         increase_df = temp_df[temp_df.index>id_close_min20]
         close_position = (latest_close-min_close)/(max_close-min_close)
@@ -1864,10 +1899,11 @@ class Stockhistory:
         print(id_close_min20,id_close_max20,id_latest)
         print('id_latest_id_min=%s' % id_latest_id_min)
         print('id_max_id_min = %s'%id_max_id_min)
-        print('fantan_rate=%s' % (latest_close/min_close-1))
+        print('fantan_rate=%s' % fantan_rate)
         print('close_position=%s' % close_position)
         #increase_df = temp_df[temp_df.date>(temp_df.loc[id_close_min20].date)]
-        print(increase_df[['close','p_change','star_chg','position']].describe())
+        print(recent_trend_df[['close','p_change','star_chg','position']].describe())
+        return close_state,fantan_rate,recent_trend_df
     
     def regression_test(self):
         """

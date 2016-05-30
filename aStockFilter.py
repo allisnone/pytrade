@@ -46,6 +46,40 @@ def today_df_filter(today_df):
     all_a_code = ps.get_all_code(hist_dir="C:/中国银河证券海王星/T0002/export/")
     all_stop_code = list(set(all_a_code).difference(set(all_trade_code)))
     print('\n')
+    #print('all_stop_code=%s' % all_stop_code)
+    print(len(all_stop_code))
+    high_open_code_str = today_df_high_open['code'].values.tolist()
+    print('all_trade_code = %s'%all_trade_code)
+    print(len(all_trade_code))
+    print('today_df_high_open = %s'%high_open_code_str)
+    today_df['star'] = ((today_df['trade']-today_df['open'])/(today_df['high']-today_df['low'])).round(3)
+    today_df['star_h'] = np.where(today_df['star']>=0, ((today_df['high']-today_df['trade'])/(today_df['high']-today_df['low'])).round(3),
+                                  ((today_df['high']-today_df['open'])/(today_df['high']-today_df['low'])).round(3))
+    today_df['atr'] = np.where((today_df['high']-today_df['low'])<(today_df['high']-today_df['settlement']),
+                                today_df['high']-today_df['settlement'],today_df['high']-today_df['low']) #temp_df['close'].shift(1)-temp_df['low'])
+    today_df['atr'] = np.where(today_df['atr']<(today_df['settlement']-today_df['low']),
+                             (today_df['settlement']-today_df['low']),today_df['atr'])
+    today_df['atr_r'] = ((today_df['atr']/today_df['settlement']).round(3))*100.0
+    today_df['star_chg'] = today_df['star'] * today_df['changepercent']
+    star_rate = 0.20
+    cross_star_df = today_df[today_df['star'].abs()<star_rate]
+    strong_star_chg = 2.5
+    strong_chg_df = today_df[today_df['star_chg']>strong_star_chg]
+    strong_to_end_df = today_df[today_df['star']>(1-star_rate)]
+    weak_to_end_df = today_df[today_df['star']<-(1-star_rate)]
+    print(cross_star_df)
+    print(strong_chg_df)
+    print(strong_to_end_df)
+    
+def today_df_filter0(today_df):
+    #"""
+    today_df = ts.get_today_all()
+    today_df = today_df[today_df.amount>0]
+    today_df_high_open = today_df[today_df.open>today_df.settlement*1.005]
+    all_trade_code = today_df['code'].values.tolist()
+    all_a_code = ps.get_all_code(hist_dir="C:/中国银河证券海王星/T0002/export/")
+    all_stop_code = list(set(all_a_code).difference(set(all_trade_code)))
+    print('\n')
     print('all_stop_code=%s' % all_stop_code)
     print(len(all_stop_code))
     high_open_code_str = today_df_high_open['code'].values.tolist()
@@ -60,6 +94,7 @@ def today_df_filter(today_df):
     today_df['atr'] = np.where(today_df['atr']<(today_df['settlement']-today_df['low']),
                              (today_df['settlement']-today_df['low']),today_df['atr'])
     today_df['atr_r'] = ((today_df['atr']/today_df['settlement']).round(3))*100.0
+    today_df['star_chg'] = today_df['star'] * today_df['changepercent']
     #del today_df['atr']
     describe_df = today_df.describe().round(3)
     #print(type(describe_df))
@@ -93,9 +128,9 @@ def today_df_filter(today_df):
     filter_df = min_atr_df[min_atr_df.index.isin(inter_list)]
     #print(filter_df)
     #print(type(filter_df))
-    min_atr_df = filter_df.sort_index(axis=0, by='atr_r', ascending=True)
-    min_atr_df = filter_df.sort_index(axis=0, by='star', ascending=False)
-    #print(min_atr_df)
+    min_atr_df = filter_df.sort_values(axis=0, by='atr_r', ascending=True)
+    min_atr_df = filter_df.sort_values(axis=0, by='star', ascending=False)
+    print(min_atr_df)
 
 #@jit
 def get_latest_temp_df(today_df_high_open=[]):
@@ -159,8 +194,8 @@ def get_latest_temp_df(today_df_high_open=[]):
         empty_df = pd.DataFrame(data=empty_data,columns=column_list)
         return empty_df
 
-#today_df_filter(today_df=None)    
-get_latest_temp_df()
+today_df_filter(today_df=None)    
+#get_latest_temp_df()
 
 """
 from numba import jit, int32
