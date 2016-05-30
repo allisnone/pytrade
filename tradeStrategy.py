@@ -1458,6 +1458,7 @@ class Stockhistory:
         return average_high
     
     def get_max_id(self, temp_df, column='close', num=20):
+        print(temp_df[column].tail(num).idxmax(axis=0))
         return temp_df[column].tail(num).idxmax(axis=0)
     
     def get_average_low(self,days=None):
