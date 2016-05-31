@@ -1841,10 +1841,11 @@ class Stockhistory:
     def get_extrem_data(self):
         return
     
-    def get_recent_trend(self,num=20,column='close'):
-        if self.temp_hist_df.empty:
-            return
-        temp_df = self.temp_hist_df
+    def get_recent_state(self, temp_df,num=20,column='close'):#,id_max_id_min,id_latest,id_close_max20,id_close_min20,max_close,min_close):
+        """
+        state>=3, strong
+        state<=-3, weak
+        """
         latest_date = temp_df.tail(1).iloc[0].date
         id_latest = len(temp_df)
         latest_close = temp_df.tail(1).iloc[0].close
@@ -1855,8 +1856,8 @@ class Stockhistory:
         min_close = temp_df.loc[id_close_min20].close
         id_max_id_min = id_close_max20 -id_close_min20
         close_position = (latest_close-min_close)/(max_close-min_close)
-        close_state = 0
         recent_trend_df = temp_df[temp_df.index>id_close_min20]
+        close_state = 0
         if id_max_id_min>0:
             if id_close_max20==id_latest:
                 close_state = 5
@@ -1875,21 +1876,30 @@ class Stockhistory:
             else:
                 recent_trend_df = temp_df[temp_df.index>id_close_min20]
                 if latest_close>(2.0*max_close + min_close)/3.0:
-                    #print((2.0*max_close + min_close)/3.0)
+                    print((2.0*max_close + min_close)/3.0)
                     close_state = 3
                 elif latest_close<(max_close + 2.0* min_close)/3.0:
                     close_state = -4
                 else:
                     close_state = -1
-        """
-        state>=3, strong
-        state<=-3, weak
-        """
+        return id_close_max20,id_close_min20,max_close, min_close, close_state,recent_trend_df
+    
+    def get_recent_trend(self,num=20,column='close'):
+        
+        if self.temp_hist_df.empty:
+            return pd.Series({})
+        id_close_max20,id_close_min20, max_close, min_close, close_state,recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
         #print('close_state=%s' % close_state)
         #print(recent_trend_df)
+        #close_state = get_recent_state(temp_df, id_max_id_min, id_latest, id_close_max20, id_close_min20, max_close, min_close)
+        latest_close = self.temp_hist_df.tail(1).iloc[0].close
         fantan_rate = (latest_close/min_close-1)
         if close_state in [-5,-3,1,4]:
             fantan_rate = -(1-latest_close/max_close) #drop down
+        
+        last_temp_df = self.temp_hist_df[self.temp_hist_df.index<min(id_close_min20,id_close_max20)]
+        id_close_max20_last,id_close_min20_last,  max_close_last, min_close_last, close_state_last,recent_trend_df_last =self.get_recent_state(temp_df=last_temp_df,num=20,column='close')
+        
         recent_trend_describe = recent_trend_df[['close','p_change','star_chg','position']].describe()
         recent_trend = recent_trend_describe['star_chg']
         recent_trend['c_state'] = close_state

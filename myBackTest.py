@@ -30,22 +30,25 @@ if __name__ == "__main__":
     i=0
     trend_column_list = ['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state', 'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close']
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
-    #all_codes = ['300128', '002288', '002156', '000829']# '300476', '002548', '002779']
+    #all_codes = ['300128', '002288', '002156', '002799']# '300476', '002548', '002799']
     ma_num = 20
     for stock_synbol in all_codes:
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
         result_df = s_stock.form_temp_df(stock_synbol)
         test_result = s_stock.regression_test()
         recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
+        i = i+1
+        print(i,stock_synbol)
         #if test_result.empty:
-        #    pass
+        #    continue
         #else: 
         test_result_df = tds.pd.DataFrame(test_result.to_dict(), columns=column_list, index=[stock_synbol])
         all_result_df = all_result_df.append(test_result_df,ignore_index=False)
+        #if recent_trend.empty:
+        #    continue
         trend_result_df = tds.pd.DataFrame(recent_trend.to_dict(), columns=trend_column_list, index=[stock_synbol])
         all_trend_result_df = all_trend_result_df.append(trend_result_df,ignore_index=False)
-        i = i+1
-        print(i,stock_synbol)
+        
         
     #print(result_df.tail(20))
     #all_result_df = all_result_df.sort_index(axis=0, by='sum', ascending=False)
