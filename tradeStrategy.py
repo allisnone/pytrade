@@ -1892,7 +1892,8 @@ class Stockhistory:
             return pd.Series({})
         id_close_max20,id_close_min20, max_close, min_close, close_state,recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
         #print('close_state=%s' % close_state)
-        #print(recent_trend_df)
+        if recent_trend_df.empty:
+            return pd.Series({})
         #close_state = get_recent_state(temp_df, id_max_id_min, id_latest, id_close_max20, id_close_min20, max_close, min_close)
         latest_close = recent_trend_df.tail(1).iloc[0].close
         fantan_rate = (latest_close/min_close-1)
