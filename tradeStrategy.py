@@ -1905,6 +1905,8 @@ class Stockhistory:
         recent_trend_describe = recent_trend_df[['close','p_change','star_chg','position']].describe()
         recent_trend = recent_trend_describe['star_chg']
         recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
+        if len(recent_trend) ==0 or min_close==0:
+            recent_trend['chg_fuli'] =0
         #if id_close_max20>id_close_min20:
         #    recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
         recent_trend['c_state'] = close_state
