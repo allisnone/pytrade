@@ -1846,6 +1846,8 @@ class Stockhistory:
         state>=3, strong
         state<=-3, weak
         """
+        if temp_df.empty:
+            return -1,-1,-1, 0, 0,pd.DataFrame({})
         latest_date = temp_df.tail(1).iloc[0].date
         id_latest = len(temp_df)
         latest_close = temp_df.tail(1).iloc[0].close
@@ -1876,7 +1878,7 @@ class Stockhistory:
             else:
                 recent_trend_df = temp_df[temp_df.index>id_close_min20]
                 if latest_close>(2.0*max_close + min_close)/3.0:
-                    print((2.0*max_close + min_close)/3.0)
+                    #print((2.0*max_close + min_close)/3.0)
                     close_state = 3
                 elif latest_close<(max_close + 2.0* min_close)/3.0:
                     close_state = -4
@@ -1892,7 +1894,7 @@ class Stockhistory:
         #print('close_state=%s' % close_state)
         #print(recent_trend_df)
         #close_state = get_recent_state(temp_df, id_max_id_min, id_latest, id_close_max20, id_close_min20, max_close, min_close)
-        latest_close = self.temp_hist_df.tail(1).iloc[0].close
+        latest_close = recent_trend_df.tail(1).iloc[0].close
         fantan_rate = (latest_close/min_close-1)
         if close_state in [-5,-3,1,4]:
             fantan_rate = -(1-latest_close/max_close) #drop down
@@ -1902,13 +1904,18 @@ class Stockhistory:
         
         recent_trend_describe = recent_trend_df[['close','p_change','star_chg','position']].describe()
         recent_trend = recent_trend_describe['star_chg']
+        recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
+        #if id_close_max20>id_close_min20:
+        #    recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
         recent_trend['c_state'] = close_state
+        recent_trend['c_state0'] = close_state_last
         recent_trend['c_mean'] = recent_trend_describe.loc['mean'].close
         recent_trend['pos_mean'] = recent_trend_describe.loc['mean'].position
         recent_trend['ft_rate'] = fantan_rate
         recent_trend['presure'] = max_close
         recent_trend['holding'] = min_close
         recent_trend['close'] = latest_close
+        
         #print(recent_trend)
         return recent_trend
     

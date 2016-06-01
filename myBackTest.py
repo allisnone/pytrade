@@ -8,6 +8,16 @@ import pdSql as pds
 import sys
 from pydoc import describe
 
+def get_stop_trade_symbol():
+    today_df = ts.get_today_all()
+    today_df = today_df[today_df.amount>0]
+    today_df_high_open = today_df[today_df.open>today_df.settlement*1.005]
+    all_trade_code = today_df['code'].values.tolist()
+    all_a_code = ps.get_all_code(hist_dir="C:/中国银河证券海王星/T0002/export/")
+    all_stop_codes = list(set(all_a_code).difference(set(all_trade_code)))
+    return all_stop_codes
+
+
 if __name__ == "__main__":
     stock_synbol = '300162'
     stock_synbol = '002177'
@@ -54,7 +64,7 @@ if __name__ == "__main__":
     #all_result_df = all_result_df.sort_index(axis=0, by='sum', ascending=False)
     #print(all_result_df)
     all_result_df = all_result_df.sort_values(axis=0, by='sum', ascending=False)
-    all_trend_result_df = all_trend_result_df.sort_values(axis=0, by='c_state', ascending=False)
+    all_trend_result_df = all_trend_result_df.sort_values(axis=0, by='chg_fl', ascending=False)
     result_summary = all_result_df.describe()
     stock_basic_df=ts.get_stock_basics()
     basic_code = stock_basic_df['name'].to_dict()
@@ -69,6 +79,7 @@ if __name__ == "__main__":
     #print(tds.pd.DataFrame(result_codes_dict, columns=['name'], index=list(result_codes_dict.keys())))
     #all_result_df['name'] = result_codes_dict
     all_result_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
+    all_trend_result_df['name'] = tds.Series(result_codes_dict,index=all_trend_result_df.index)
     all_result_df['max_r'] = all_result_df['max']/all_result_df['sum']
     all_result_df['avrg'] = all_result_df['sum']/all_result_df['count']
     #print(all_result_df)
