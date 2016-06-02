@@ -1916,7 +1916,7 @@ class Stockhistory:
         index_value = continue_incrs_df.index.values.tolist()
         #index_list = [247, 248, 249, 250, 251, 252, 253, 254, 255, 256]
         continue_incrs_count,min_incrs_index = self.get_continue_incrs(index_value)
-        print(continue_incrs_count,min_incrs_index)
+        #print(continue_incrs_count,min_incrs_index)
         #continue_incrs_df['diff_id'] = continue_incrs_df[continue_incrs_df.index - continue_incrs_df.index.shift(1)]
         #print(continue_incrs_df[['p_change','diff_id']])
         if close_state in [-5,-3,1,4]:
