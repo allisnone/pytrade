@@ -25,7 +25,8 @@ if __name__ == "__main__":
     stock_synbol = '600570'
     stock_synbol = '002504'
     num = 0
-    all_stop_codes = get_stop_trade_symbol()
+    #all_stop_codes = get_stop_trade_symbol()
+    all_stop_codes = []
     jianchi_stocks_201605 = ['002548','002220','300467','300459','300238','603588','300379','002528',
                        '603026','002615','603609','603010','300459','300378','002709','300438',
                        '300277','002752','002613','300337','603005','603718','600666','002350',
@@ -46,9 +47,10 @@ if __name__ == "__main__":
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
     all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
     i=0
-    trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state', 'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close']
+    trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
+                        'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close','cont_num']
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
-    #all_codes = ['300128', '002288', '002156', '002799']# '300476', '002548', '002799']
+    all_codes = ['300128', '002288', '002156', '002799']# '300476', '002548', '002799']
     ma_num = 30
     for stock_synbol in all_codes:
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)

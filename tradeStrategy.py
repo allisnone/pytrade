@@ -1886,6 +1886,19 @@ class Stockhistory:
                     close_state = -1
         return id_close_max20,id_close_min20,max_close, min_close, close_state,recent_trend_df
     
+    def get_continue_incrs(self,index_list):
+        #index_list = [244, 245, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256]
+        count = len(index_list)
+        loop_count = count -1
+        while loop_count>0:
+            if (index_list[loop_count] -index_list[loop_count-1])==1:
+                loop_count = loop_count - 1
+            else:
+                break
+        min_incrs_index = index_list[loop_count]
+        continue_incrs_count = count - loop_count
+        return continue_incrs_count,min_incrs_index
+    
     def get_recent_trend(self,num=20,column='close'):
         
         if self.temp_hist_df.empty:
@@ -1897,6 +1910,13 @@ class Stockhistory:
         #close_state = get_recent_state(temp_df, id_max_id_min, id_latest, id_close_max20, id_close_min20, max_close, min_close)
         latest_close = recent_trend_df.tail(1).iloc[0].close
         fantan_rate = (latest_close/min_close-1)
+        continue_incrs_df = recent_trend_df[recent_trend_df['p_change']>0]
+        index_value = continue_incrs_df.index.values.tolist()
+        #index_list = [247, 248, 249, 250, 251, 252, 253, 254, 255, 256]
+        continue_incrs_count,min_incrs_index = self.get_continue_incrs(index_value)
+        print(continue_incrs_count,min_incrs_index)
+        #continue_incrs_df['diff_id'] = continue_incrs_df[continue_incrs_df.index - continue_incrs_df.index.shift(1)]
+        #print(continue_incrs_df[['p_change','diff_id']])
         if close_state in [-5,-3,1,4]:
             fantan_rate = -(1-latest_close/max_close) #drop down
         
@@ -1918,6 +1938,9 @@ class Stockhistory:
         recent_trend['presure'] = max_close
         recent_trend['holding'] = min_close
         recent_trend['close'] = latest_close
+        recent_trend['cont_num'] = continue_incrs_count
+        
+        
         
         #print(recent_trend)
         return recent_trend

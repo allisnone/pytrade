@@ -35,7 +35,7 @@ if __name__ == "__main__":
     #stock_synbol = '999999'
     stock_synbol = '600841'
     stock_synbol = '300458'
-    stock_synbol = '002796'
+    #stock_synbol = '002796'
     #stock_synbol = '000813'
     num = 0
     if len(sys.argv)>=3:
