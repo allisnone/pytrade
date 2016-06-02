@@ -1889,6 +1889,8 @@ class Stockhistory:
     def get_continue_incrs(self,index_list):
         #index_list = [244, 245, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256]
         count = len(index_list)
+        if count == 0:
+            return 0,0
         loop_count = count -1
         while loop_count>0:
             if (index_list[loop_count] -index_list[loop_count-1])==1:
