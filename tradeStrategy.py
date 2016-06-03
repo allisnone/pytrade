@@ -1854,6 +1854,7 @@ class Stockhistory:
         #print('latest_close= %s' %latest_close)
         id_close_max20 = temp_df.tail(num)[column].idxmax(axis=0)
         max_close = temp_df.loc[id_close_max20].close
+        max_high = temp_df.loc[temp_df.tail(num)['high'].idxmax(axis=0)].close
         id_close_min20 = temp_df.tail(num)[column].idxmin(axis=0)
         min_close = temp_df.loc[id_close_min20].close
         id_max_id_min = id_close_max20 -id_close_min20
@@ -1884,7 +1885,7 @@ class Stockhistory:
                     close_state = -4
                 else:
                     close_state = -1
-        return id_close_max20,id_close_min20,max_close, min_close, close_state,recent_trend_df
+        return id_close_max20,id_close_min20,max_close, min_close, close_state,recent_trend_df,max_high
     
     def get_continue_incrs(self,index_list):
         #index_list = [244, 245, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256]
@@ -1905,7 +1906,7 @@ class Stockhistory:
         
         if self.temp_hist_df.empty:
             return pd.Series({})
-        id_close_max20,id_close_min20, max_close, min_close, close_state,recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
+        id_close_max20,id_close_min20, max_close, min_close, close_state,recent_trend_df,max_high =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
         #print('close_state=%s' % close_state)
         if recent_trend_df.empty:
             return pd.Series({})
@@ -1923,8 +1924,7 @@ class Stockhistory:
             fantan_rate = -(1-latest_close/max_close) #drop down
         
         last_temp_df = self.temp_hist_df[self.temp_hist_df.index<min(id_close_min20,id_close_max20)]
-        id_close_max20_last,id_close_min20_last,  max_close_last, min_close_last, close_state_last,recent_trend_df_last =self.get_recent_state(temp_df=last_temp_df,num=20,column='close')
-        
+        id_close_max20_last,id_close_min20_last,  max_close_last, min_close_last, close_state_last,recent_trend_df_last,max_high_last =self.get_recent_state(temp_df=last_temp_df,num=20,column='close')
         recent_trend_describe = recent_trend_df[['close','p_change','star_chg','position']].describe()
         recent_trend = recent_trend_describe['star_chg']
         recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
@@ -1937,7 +1937,8 @@ class Stockhistory:
         recent_trend['c_mean'] = recent_trend_describe.loc['mean'].close
         recent_trend['pos_mean'] = recent_trend_describe.loc['mean'].position
         recent_trend['ft_rate'] = fantan_rate
-        recent_trend['presure'] = max_close
+        #recent_trend['presure'] = max_close
+        recent_trend['presure'] = max_high
         recent_trend['holding'] = min_close
         recent_trend['close'] = latest_close
         recent_trend['cont_num'] = continue_incrs_count

@@ -42,7 +42,7 @@ if __name__ == "__main__":
             stock_synbol = sys.argv[1]
     else:
         pass
-    num = 120
+    num = 122
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%',  'sum']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
     all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
                         'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close','cont_num']
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
-    #all_codes = ['300128', '002288', '002156', '002799']# '300476', '002548', '002799']
+    all_codes = ['300128', '002288', '002156', '002799']# '300476', '002548', '002799']
     ma_num = 30
     for stock_synbol in all_codes:
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         
     #print(result_df.tail(20))
     #all_result_df = all_result_df.sort_index(axis=0, by='sum', ascending=False)
-    print(all_trend_result_df)
+    
     all_result_df = all_result_df.sort_values(axis=0, by='sum', ascending=False)
     all_trend_result_df = all_trend_result_df.sort_values(axis=0, by='chg_fuli', ascending=False)
     result_summary = all_result_df.describe()
@@ -89,24 +89,29 @@ if __name__ == "__main__":
         else:
             result_codes_dict[code] = 'NA'
         if code in all_stop_codes:
-            on_trade_dict[code] = '0'
-        else:
             on_trade_dict[code] = '1'
-        if code in jianchi_stocks_201605:
-            valid_dict[code] = '0'
         else:
+            on_trade_dict[code] = '0'
+        if code in jianchi_stocks_201605:
             valid_dict[code] = '1'
+        else:
+            valid_dict[code] = '0'
     #print(tds.pd.DataFrame(result_codes_dict, columns=['name'], index=list(result_codes_dict.keys())))
     #all_result_df['name'] = result_codes_dict
     all_result_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
     all_trend_result_df['name'] = tds.Series(result_codes_dict,index=all_trend_result_df.index)
-    all_result_df['on_trade'] = tds.Series(on_trade_dict,index=all_result_df.index)
-    all_trend_result_df['on_trade'] = tds.Series(on_trade_dict,index=all_trend_result_df.index)
-    all_result_df['valid'] = tds.Series(valid_dict, index=all_result_df.index)
-    all_trend_result_df['valid'] = tds.Series(valid_dict, index=all_trend_result_df.index)
+    all_result_df['stopped'] = tds.Series(on_trade_dict,index=all_result_df.index)
+    all_trend_result_df['stopped'] = tds.Series(on_trade_dict,index=all_trend_result_df.index)
+    all_result_df['invalid'] = tds.Series(valid_dict, index=all_result_df.index)
+    all_trend_result_df['invalid'] = tds.Series(valid_dict, index=all_trend_result_df.index)
     all_result_df['max_r'] = all_result_df['max']/all_result_df['sum']
     all_result_df['avrg'] = all_result_df['sum']/all_result_df['count']
+    ma_c_name = '%s日趋势数' % ma_num
+    trend_column_chiness = {'count':ma_c_name, 'mean': '平均涨幅','chg_fuli': '复利涨幅', 'std': '标准差', 'min': '最小涨幅', '25%': '25%', '50%': '50%', '75%': '75%', 'max': '最大涨幅', 'c_state': '收盘价状态',
+                        'c_mean': '平均收盘价', 'pos_mean': '平均仓位', 'ft_rate': '低点反弹率', 'presure': '压力', 'holding': '支撑', 'close': '收盘价','cont_num': '连涨天数', 'name': '名字', 'stopped': '停牌','invalid': '除外'}
+    all_trend_result_df = all_trend_result_df.rename(index=str, columns=trend_column_chiness)
     #print(all_result_df)
+    print(all_trend_result_df)
     all_result_df.to_csv('./temp/regression_test_%s.csv' % num)
     result_summary.to_csv('./temp/result_summary_%s.csv' % num )
     all_trend_result_df.to_csv('./temp/trend_result_%s.csv' % ma_num)
