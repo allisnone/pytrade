@@ -109,10 +109,10 @@ if __name__ == "__main__":
     ma_c_name = '%s日趋势数' % ma_num
     trend_column_chiness = {'count':ma_c_name, 'mean': '平均涨幅','chg_fuli': '复利涨幅', 'std': '标准差', 'min': '最小涨幅', '25%': '25%', '50%': '50%', '75%': '75%', 'max': '最大涨幅', 'c_state': '收盘价状态',
                         'c_mean': '平均收盘价', 'pos_mean': '平均仓位', 'ft_rate': '低点反弹率', 'presure': '压力', 'holding': '支撑', 'close': '收盘价','cont_num': '连涨天数', 'name': '名字', 'stopped': '停牌','invalid': '除外'}
-    all_trend_result_df = all_trend_result_df.rename(index=str, columns=trend_column_chiness)
+    all_trend_result_df_chinese = all_trend_result_df.rename(index=str, columns=trend_column_chiness)
     #print(all_result_df)
     print(all_trend_result_df)
     all_result_df.to_csv('./temp/regression_test_%s.csv' % num)
     result_summary.to_csv('./temp/result_summary_%s.csv' % num )
-    all_trend_result_df.to_csv('./temp/trend_result_%s.csv' % ma_num)
+    all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
     #print(s_stock.temp_hist_df.tail(20))
