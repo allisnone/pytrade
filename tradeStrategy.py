@@ -1885,7 +1885,7 @@ class Stockhistory:
                     close_state = -4
                 else:
                     close_state = -1
-        return id_close_max20,id_close_min20,max_close, min_close, close_state,recent_trend_df,max_high
+        return id_close_max20,id_close_min20,max_close, min_close, close_state,max_high,recent_trend_df
     
     def get_continue_incrs(self,index_list):
         #index_list = [244, 245, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256]
