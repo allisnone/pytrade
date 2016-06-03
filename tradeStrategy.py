@@ -1847,7 +1847,7 @@ class Stockhistory:
         state<=-3, weak
         """
         if temp_df.empty:
-            return -1,-1,-1, 0, 0,pd.DataFrame({})
+            return -1,-1,-1, 0, 0,0,pd.DataFrame({})
         latest_date = temp_df.tail(1).iloc[0].date
         id_latest = len(temp_df)
         latest_close = temp_df.tail(1).iloc[0].close
@@ -1906,7 +1906,7 @@ class Stockhistory:
         
         if self.temp_hist_df.empty:
             return pd.Series({})
-        id_close_max20,id_close_min20, max_close, min_close, close_state,recent_trend_df,max_high =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
+        id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
         #print('close_state=%s' % close_state)
         if recent_trend_df.empty:
             return pd.Series({})
@@ -1924,7 +1924,7 @@ class Stockhistory:
             fantan_rate = -(1-latest_close/max_close) #drop down
         
         last_temp_df = self.temp_hist_df[self.temp_hist_df.index<min(id_close_min20,id_close_max20)]
-        id_close_max20_last,id_close_min20_last,  max_close_last, min_close_last, close_state_last,recent_trend_df_last,max_high_last =self.get_recent_state(temp_df=last_temp_df,num=20,column='close')
+        id_close_max20_last,id_close_min20_last,  max_close_last, min_close_last, close_state_last,max_high_last,recent_trend_df_last =self.get_recent_state(temp_df=last_temp_df,num=20,column='close')
         recent_trend_describe = recent_trend_df[['close','p_change','star_chg','position']].describe()
         recent_trend = recent_trend_describe['star_chg']
         recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
