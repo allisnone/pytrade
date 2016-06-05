@@ -1926,6 +1926,7 @@ class Stockhistory:
         last_temp_df = self.temp_hist_df[self.temp_hist_df.index<min(id_close_min20,id_close_max20)]
         id_close_max20_last,id_close_min20_last,  max_close_last, min_close_last, close_state_last,max_high_last,recent_trend_df_last =self.get_recent_state(temp_df=last_temp_df,num=20,column='close')
         recent_trend_describe = recent_trend_df[['close','p_change','star_chg','position']].describe()
+        #print(recent_trend_describe)
         recent_trend = recent_trend_describe['star_chg']
         recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
         if len(recent_trend) ==0 or min_close==0:
@@ -1935,6 +1936,8 @@ class Stockhistory:
         recent_trend['c_state'] = close_state
         recent_trend['c_state0'] = close_state_last
         recent_trend['c_mean'] = recent_trend_describe.loc['mean'].close
+        recent_trend['p_mean'] = recent_trend_describe.loc['mean'].p_change
+        recent_trend['p_std'] = recent_trend_describe.loc['std'].p_change
         recent_trend['pos_mean'] = recent_trend_describe.loc['mean'].position
         recent_trend['ft_rate'] = fantan_rate
         #recent_trend['presure'] = max_close
@@ -1960,6 +1963,10 @@ class Stockhistory:
                                                  & (self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)),self.temp_hist_df['l_min3'].shift(1),0)
         self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price0']),
                                                 self.temp_hist_df['open'],self.temp_hist_df['s_price0'])
+        
+        #self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price1']==0) & (self.temp_hist_df['star_chg']<-3.5),
+        #                                        self.temp_hist_df['close'],self.temp_hist_df['s_price1'])
+        
         self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']!=self.temp_hist_df['low'])
                                                  & (self.temp_hist_df['p_change']>0)
                                                  & (self.temp_hist_df['high']>self.temp_hist_df['c_max3'].shift(1)) &
@@ -1984,22 +1991,38 @@ class Stockhistory:
                                                 & (temp_df['s_price']>0)
                                                 & (temp_df['b_price']==0)),temp_df['s_price'],0)
         temp_df = temp_df[(temp_df['s_price']>0) | (temp_df['b_price']<0)]
-        
+        TRADE_FEE = 0.00162
         temp_df['profit'] = np.where(((temp_df['s_price']>0)
                                       & (temp_df['s_price'].shift(1)==0)
                                       & (temp_df['b_price'].shift(1)<0)),-(temp_df['s_price']+temp_df['b_price'].shift(1))/(temp_df['b_price'].shift(1)),0)
-        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit']]
+        temp_df['fuli_prf0'] = np.where((temp_df['profit']!=0) ,(temp_df['profit'] + 1.0 - TRADE_FEE),(temp_df['profit'] + 1.0))
+        temp_df['fuli_prf'] = temp_df['fuli_prf0'].cumprod()
+        del temp_df['fuli_prf0']
+        temp_df['profit'] = np.where((temp_df['profit']!=0) ,(temp_df['profit'] - TRADE_FEE),temp_df['profit'])
         
         #temp_df = self.temp_hist_df[['date','close','p_change', 'position','operation','s_price','b_price']]
-        #print(temp_df)
+        #print(temp_df[temp_df['profit']!=0])
+        #print(temp_df[temp_df['profit']!=0].describe())
         #print(temp_df[['close','p_change', 'position','operation','s_price','b_price']].describe())
         #print(temp_df.sum())
-        summary_profit = temp_df.describe()['profit']
-        trade_times = len(temp_df)/2
-        TRADE_FEE = 0.00162
-        total_profit = temp_df.sum().profit - trade_times * TRADE_FEE
-        summary_profit['sum'] = total_profit
-        #print(summary_profit)
+        
+        temp_df['cum_prf'] = temp_df['profit'].cumsum()
+        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit','cum_prf','fuli_prf']]
+        cum_prf = temp_df.tail(1).iloc[0].cum_prf
+        fuli_prf = temp_df.tail(1).iloc[0].fuli_prf
+        last_trade_date = temp_df.tail(1).iloc[0].date
+        last_trade_price = temp_df.tail(1).iloc[0].b_price
+        #print( temp_df)
+        #print('cum_prf=%s' % cum_prf)
+        summary_profit = temp_df[temp_df['profit']!=0].describe()['profit']
+        #trade_times = len(temp_df)/2
+        #total_profit = temp_df.sum().profit - trade_times * TRADE_FEE
+        #summary_profit['sum'] = total_profit
+        summary_profit['cum_prf'] = cum_prf
+        summary_profit['fuli_prf'] = fuli_prf
+        summary_profit['last_trade_date'] = last_trade_date
+        summary_profit['last_trade_price'] = last_trade_price
+        print(summary_profit)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
     
