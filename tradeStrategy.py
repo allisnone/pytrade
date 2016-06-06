@@ -2010,7 +2010,7 @@ class Stockhistory:
         temp_df['hold_count'] = np.where((temp_df['profit']!=0) ,(temp_df['id'] - temp_df['id'].shift(1)),0)
         
         temp_df['cum_prf'] = temp_df['profit'].cumsum()
-        
+        print(temp_df)
         cum_prf = temp_df.tail(1).iloc[0].cum_prf
         fuli_prf = temp_df.tail(1).iloc[0].fuli_prf
         last_trade_date = temp_df.tail(1).iloc[0].date
