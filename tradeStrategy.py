@@ -1982,7 +1982,8 @@ class Stockhistory:
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         temp_hist_df =self.temp_hist_df.tail(self.test_num)
         temp_df = temp_hist_df[(temp_hist_df['s_price']>0) | (temp_hist_df['b_price']<0)]
-        
+        if temp_hist_df.empty or temp_df.empty:
+            return pd.Series({})
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
         temp_df['b_price'] = np.where(((temp_df['b_price'].shift(1)==0) 
                                                 & (temp_df['s_price']==0)
