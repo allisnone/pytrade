@@ -44,14 +44,15 @@ if __name__ == "__main__":
     else:
         pass
     num = 120
-    column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf','fuli_prf','last_trade_date','last_trade_price']
+    column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
+                   'fuli_prf','last_trade_date','last_trade_price','min_hold_count','max_hold_count','avrg_hold_count','this_hold_count']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
     all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
     i=0
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
                         'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close','cont_num']
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
-    all_codes = ['300128', '002288', '002156', '300126','300162','002717']# '300476', '002548', '002799']
+    #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799']# '300476', '002548', '002799']
     ma_num = 20
     for stock_synbol in all_codes:
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)

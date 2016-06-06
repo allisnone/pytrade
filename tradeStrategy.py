@@ -1997,6 +1997,7 @@ class Stockhistory:
                                       & (temp_df['b_price'].shift(1)<0)),-(temp_df['s_price']+temp_df['b_price'].shift(1))/(temp_df['b_price'].shift(1)),0)
         temp_df['fuli_prf0'] = np.where((temp_df['profit']!=0) ,(temp_df['profit'] + 1.0 - TRADE_FEE),(temp_df['profit'] + 1.0))
         temp_df['fuli_prf'] = temp_df['fuli_prf0'].cumprod()
+        
         del temp_df['fuli_prf0']
         temp_df['profit'] = np.where((temp_df['profit']!=0) ,(temp_df['profit'] - TRADE_FEE),temp_df['profit'])
         
@@ -2005,16 +2006,29 @@ class Stockhistory:
         #print(temp_df[temp_df['profit']!=0].describe())
         #print(temp_df[['close','p_change', 'position','operation','s_price','b_price']].describe())
         #print(temp_df.sum())
+        temp_df['id'] = temp_df.index
+        temp_df['hold_count'] = np.where((temp_df['profit']!=0) ,(temp_df['id'] - temp_df['id'].shift(1)),0)
         
         temp_df['cum_prf'] = temp_df['profit'].cumsum()
-        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit','cum_prf','fuli_prf']]
+        
         cum_prf = temp_df.tail(1).iloc[0].cum_prf
         fuli_prf = temp_df.tail(1).iloc[0].fuli_prf
         last_trade_date = temp_df.tail(1).iloc[0].date
         last_trade_price = temp_df.tail(1).iloc[0].b_price
+        last_trade_id = temp_df.tail(1).iloc[0].id
+        last_id = temp_hist_df.tail(1).index.values.tolist()[0]
+        #print(last_id,last_trade_id)
         #print( temp_df)
         #print('cum_prf=%s' % cum_prf)
+        del temp_df['id']
+        #print(temp_df[temp_df['profit']!=0])
+        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit','cum_prf','fuli_prf','hold_count']]
         summary_profit = temp_df[temp_df['profit']!=0].describe()['profit']
+        avrg_hold_count = round(temp_df[temp_df['profit']!=0].describe().loc['mean'].hold_count)
+        min_hold_count = round(temp_df[temp_df['profit']!=0].describe().loc['min'].hold_count)
+        max_hold_count = round(temp_df[temp_df['profit']!=0].describe().loc['max'].hold_count)
+        #recent_trend['p_mean'] = recent_trend_describe.loc['mean'].p_change
+        #print(summary_hold_count)
         #trade_times = len(temp_df)/2
         #total_profit = temp_df.sum().profit - trade_times * TRADE_FEE
         #summary_profit['sum'] = total_profit
@@ -2022,7 +2036,11 @@ class Stockhistory:
         summary_profit['fuli_prf'] = fuli_prf
         summary_profit['last_trade_date'] = last_trade_date
         summary_profit['last_trade_price'] = last_trade_price
-        print(summary_profit)
+        summary_profit['min_hold_count'] = min_hold_count
+        summary_profit['max_hold_count'] = max_hold_count
+        summary_profit['avrg_hold_count'] = avrg_hold_count
+        summary_profit['this_hold_count'] = last_id - last_trade_id
+        #print(summary_profit)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
     
