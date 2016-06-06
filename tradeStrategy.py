@@ -1945,9 +1945,6 @@ class Stockhistory:
         recent_trend['holding'] = min_close
         recent_trend['close'] = latest_close
         recent_trend['cont_num'] = continue_incrs_count
-        
-        
-        
         #print(recent_trend)
         return recent_trend
     
