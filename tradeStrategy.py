@@ -2039,7 +2039,7 @@ class Stockhistory:
         summary_profit['min_hold_count'] = min_hold_count
         summary_profit['max_hold_count'] = max_hold_count
         summary_profit['avrg_hold_count'] = avrg_hold_count
-        summary_profit['this_hold_count'] = last_id - last_trade_id
+        summary_profit['this_hold_count'] = last_id - last_trade_id + 1
         #print(summary_profit)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
