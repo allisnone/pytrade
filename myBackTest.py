@@ -52,7 +52,7 @@ if __name__ == "__main__":
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
                         'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close','cont_num','rmb_rate','ma_rmb_rate']
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
-    all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516']# '300476', '002548', '002799']
+    #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516']# '300476', '002548', '002799']
     ma_num = 20
     for stock_synbol in all_codes:
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
