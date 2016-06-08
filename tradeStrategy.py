@@ -1890,9 +1890,9 @@ class Stockhistory:
         id_latest = len(temp_df)
         latest_close = temp_df.tail(1).iloc[0].close
         #print('latest_close= %s' %latest_close)
-        print('------------',self.code,temp_df)
+        #print('------------',self.code,temp_df)
         id_close_max20 = temp_df.tail(num)[column].idxmax(axis=0)
-        print(id_close_max20)
+        #print(id_close_max20)
         max_close = temp_df.loc[id_close_max20].close
         max_high = temp_df.loc[temp_df.tail(num)['high'].idxmax(axis=0)].close
         id_close_min20 = temp_df.tail(num)[column].idxmin(axis=0)
