@@ -1555,10 +1555,13 @@ class Stockhistory:
             temp_df['c_max3'] = temp_df['close'].rolling(window=3,center=False).max().round(2)
             temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
             temp_df['c_min2'] = temp_df['close'].rolling(window=2,center=False).min().round(2)
+            temp_df['chg_mean2'] = temp_df['p_change'].rolling(window=2,center=False).mean().round(2)
             temp_df['chg_min2'] = temp_df['p_change'].rolling(window=2,center=False).min().round(2)
             temp_df['chg_min3'] = temp_df['p_change'].rolling(window=3,center=False).min().round(2)
             temp_df['chg_min4'] = temp_df['p_change'].rolling(window=4,center=False).min().round(2)
             temp_df['chg_min5'] = temp_df['p_change'].rolling(window=5,center=False).min().round(2)
+            temp_df['chg_max2'] = temp_df['p_change'].rolling(window=2,center=False).max().round(2)
+            temp_df['chg_max3'] = temp_df['p_change'].rolling(window=3,center=False).max().round(2)
             #temp_df['id_c_max20'] = temp_df['close'].idxmax(axis=0)
             #print(temp_df['close'].rolling(window=20,center=False))
             #print(type(temp_df['close'].rolling(window=20,center=False)))
@@ -1582,6 +1585,8 @@ class Stockhistory:
             temp_df['chg_min3']=pd.rolling_min(temp_df['p_change'], window=2).round(2)
             temp_df['chg_min4']=pd.rolling_min(temp_df['p_change'], window=2).round(2)
             temp_df['chg_min5']=pd.rolling_min(temp_df['p_change'], window=2).round(2)
+            temp_df['chg_max2']=pd.rolling_max(temp_df['p_change'], window=2).round(2)
+            temp_df['chg_max3']=pd.rolling_max(temp_df['p_change'], window=3).round(2)
         #print(self.temp_df.tail(30)[['date','close','id_c_max20']]) 
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
@@ -1633,9 +1638,10 @@ class Stockhistory:
         del temp_df['jump_min']
         del temp_df['jump_up']
         del temp_df['jump_down']
-        
-        temp_df['ma5_chg'] = np.where(temp_df['ma5']>0, (temp_df['close']/temp_df['ma5']-1).round(4),-10)
-        temp_df['ma10_chg'] = np.where(temp_df['ma10']>0, (temp_df['close']/temp_df['ma10']-1).round(4),-10)
+        temp_df['cOma5'] = (temp_df['close']/temp_df['ma5']-1).round(4)
+        temp_df['cOma10'] = (temp_df['close']/temp_df['ma10']-1).round(4)
+        #temp_df['ma5_chg'] = np.where(temp_df['ma5']>0, (temp_df['close']/temp_df['ma5']-1).round(4),-10)
+        #temp_df['ma10_chg'] = np.where(temp_df['ma10']>0, (temp_df['close']/temp_df['ma10']-1).round(4),-10)
         """均线拐点"""
         #temp_df['ma5_k'] = temp_df['ma5'].diff(1)
         for ma_name in ['ma5','ma10','ma20']:
@@ -1679,6 +1685,30 @@ class Stockhistory:
         """动态止损点"""
         #temp_df['e_d_loss'] = (temp_df['low'].shift(1)).rolling(window=3,center=False).min().round(2)
         #temp_df['e_d_loss'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
+        """涨停后十字星，MA5之上入手"""
+        temp_df['star_in'] = np.where(((
+                                        (temp_df['p_change'].shift(1) >= 6.50)
+                                       | (temp_df['chg_min2'].shift(1) >= 4.00)
+                                       | (temp_df['chg_min3'].shift(1) >= 3.00)
+                                       | (temp_df['chg_min4'].shift(1) >= 1.50)
+                                       | (temp_df['chg_min5'].shift(1) >= -0.50)
+                                       )
+                                      & (temp_df['star']<0.20)
+                                      & (temp_df['cOma5'].abs()<0.02)
+                                      #& ((temp_df['ma5']-temp_df['ma10'])>0)
+                                      ),temp_df['chg_mean2'].shift(1),0)
+        """
+        temp_df['star_in'] = np.where(((
+                                      (temp_df['close'] == (temp_df['close'].shift(1)*1.1).round(2))
+                                       | (temp_df['close'].shift(1) == (temp_df['close'].shift(2)*1.1).round(2))
+                                       | (temp_df['close'].shift(2) == (temp_df['close'].shift(3)*1.1).round(2))
+                                       )
+                                      & (temp_df['star'].abs()<0.20)
+                                      & (temp_df['cOma5'].abs()<0.02)
+                                      & ((temp_df['ma5']-temp_df['ma10'])>0)
+                                      ),temp_df['p_change'],0)
+        """
+        """连涨若干天后，第一次回调入手"""""
         
         return temp_df
     
@@ -1714,7 +1744,6 @@ class Stockhistory:
                 temp_df[ma_sum_name] = np.round(pd.rolling_sum(temp_df['c_o_ma'], window=WINDOW), 2)
             del temp_df['c_o_ma']
             temp_df[ma_sum_name]=temp_df[ma_sum_name]+(temp_df[ma_sum_name]-temp_df[ma_sum_name].shift(1))
-            
         temp_df['ma_score0']=(short_weight*ma_weight[0]+(1-short_weight)*ma_weight[5])*temp_df['sum_o_ma5']\
         +(short_weight*ma_weight[1]+(1-short_weight)*ma_weight[4])*temp_df['sum_o_ma10']\
         +(short_weight*ma_weight[2]+(1-short_weight)*ma_weight[3])*temp_df['sum_o_ma20']\
