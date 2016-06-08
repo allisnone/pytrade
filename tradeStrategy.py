@@ -1868,6 +1868,10 @@ class Stockhistory:
         id_max_id_min = id_close_max20 -id_close_min20
         close_position = (latest_close-min_close)/(max_close-min_close)
         recent_trend_df = temp_df[temp_df.index>id_close_min20]
+        if column == 'rmb_rate':
+            latest_close = temp_df.tail(1).iloc[0].rmb_rate
+            max_close = temp_df.loc[id_close_max20].rmb_rate
+            min_close = temp_df.loc[id_close_min20].rmb_rate
         close_state = 0
         if id_max_id_min>0:
             if id_close_max20==id_latest:
@@ -1915,7 +1919,10 @@ class Stockhistory:
         if self.temp_hist_df.empty:
             return pd.Series({})
         id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
-        #print('close_state=%s' % close_state)
+        print(id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df )
+        id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='rmb_rate')
+        print(id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df)
+        #print('rbm_rate_state=%s' % close_state)
         if recent_trend_df.empty:
             return pd.Series({})
         #close_state = get_recent_state(temp_df, id_max_id_min, id_latest, id_close_max20, id_close_min20, max_close, min_close)
@@ -2022,12 +2029,16 @@ class Stockhistory:
         last_trade_price = temp_df.tail(1).iloc[0].b_price
         last_trade_id = temp_df.tail(1).iloc[0].id
         last_id = temp_hist_df.tail(1).index.values.tolist()[0]
+        #rmd_rate_sumary = temp_hist_df.describe()['rmb_rate']
+        #max_rmb_rate = temp_hist_df.tail(1).iloc[0].rmb_rate
+        #last_rmb_rate = temp_hist_df.tail(1).iloc[0].rmb_rate
         #print(last_id,last_trade_id)
         #print( temp_df)
         #print('cum_prf=%s' % cum_prf)
         del temp_df['id']
         #print(temp_df[temp_df['profit']!=0])
-        temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price','profit','cum_prf','fuli_prf','hold_count']]
+        
+        temp_df = temp_df[['date','close','p_change',  'position','operation','s_price','b_price','profit','cum_prf','fuli_prf','hold_count']]
         summary_profit = temp_df[temp_df['profit']!=0].describe()['profit']
         avrg_hold_count = round(temp_df[temp_df['profit']!=0].describe().loc['mean'].hold_count)
         min_hold_count = round(temp_df[temp_df['profit']!=0].describe().loc['min'].hold_count)
@@ -2045,6 +2056,9 @@ class Stockhistory:
         summary_profit['max_hold_count'] = max_hold_count
         summary_profit['avrg_hold_count'] = avrg_hold_count
         summary_profit['this_hold_count'] = last_id - last_trade_id + 1
+        #summary_profit['max_rmb_rate'] = max_rmb_rate
+        #summary_profit['max_rmb_rate'] = max_rmb_rate
+        
         #print(summary_profit)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
