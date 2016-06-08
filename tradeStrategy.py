@@ -1532,6 +1532,7 @@ class Stockhistory:
         #temp_df['rmb_ma5'] = np.round(pd.rolling_mean(temp_df['rmb'], window=5), 2)
         #temp_df['rmb_ma10'] = np.round(pd.rolling_mean(temp_df['rmb'], window=10), 2)
         temp_df.insert(18, 'rmb_rate', (temp_df['rmb']/(temp_df['rmb_ma5'].shift(1))).round(4))
+        temp_df.insert(19, 'ma_rmb_rate', (temp_df['rmb_ma5']/temp_df['rmb_ma10']).round(4))
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(16, 'o_change', 100.00*((temp_df.open-temp_df.last_close)/temp_df.last_close).round(4))
@@ -1948,9 +1949,9 @@ class Stockhistory:
         if self.temp_hist_df.empty:
             return pd.Series({})
         id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
-        print(id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df )
+        #print(id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df )
         id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='rmb_rate')
-        print(id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df)
+        #print(id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df)
         #print('rbm_rate_state=%s' % close_state)
         if recent_trend_df.empty:
             return pd.Series({})
@@ -1977,6 +1978,8 @@ class Stockhistory:
             recent_trend['chg_fuli'] =0
         #if id_close_max20>id_close_min20:
         #    recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
+        rmb_rate = recent_trend_df.tail(1).iloc[0].rmb_rate
+        ma_rmb_rate = recent_trend_df.tail(1).iloc[0].ma_rmb_rate
         recent_trend['c_state'] = close_state
         recent_trend['c_state0'] = close_state_last
         recent_trend['c_mean'] = recent_trend_describe.loc['mean'].close
@@ -1989,6 +1992,9 @@ class Stockhistory:
         recent_trend['holding'] = min_close
         recent_trend['close'] = latest_close
         recent_trend['cont_num'] = continue_incrs_count
+        recent_trend['rmb_rate'] = rmb_rate
+        recent_trend['ma_rmb_rate'] = ma_rmb_rate
+        
         #print(recent_trend)
         return recent_trend
     
