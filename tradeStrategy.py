@@ -1890,7 +1890,9 @@ class Stockhistory:
         id_latest = len(temp_df)
         latest_close = temp_df.tail(1).iloc[0].close
         #print('latest_close= %s' %latest_close)
+        print('------------',self.code,temp_df)
         id_close_max20 = temp_df.tail(num)[column].idxmax(axis=0)
+        print(id_close_max20)
         max_close = temp_df.loc[id_close_max20].close
         max_high = temp_df.loc[temp_df.tail(num)['high'].idxmax(axis=0)].close
         id_close_min20 = temp_df.tail(num)[column].idxmin(axis=0)
@@ -1902,6 +1904,10 @@ class Stockhistory:
             latest_close = temp_df.tail(1).iloc[0].rmb_rate
             max_close = temp_df.loc[id_close_max20].rmb_rate
             min_close = temp_df.loc[id_close_min20].rmb_rate
+        elif column == 'close':
+            latest_close = temp_df.tail(1).iloc[0].close
+            max_close = temp_df.loc[id_close_max20].close
+            min_close = temp_df.loc[id_close_min20].close
         close_state = 0
         if id_max_id_min>0:
             if id_close_max20==id_latest:
@@ -1950,7 +1956,7 @@ class Stockhistory:
             return pd.Series({})
         id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
         #print(id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df )
-        id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='rmb_rate')
+        #id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='rmb_rate')
         #print(id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df)
         #print('rbm_rate_state=%s' % close_state)
         if recent_trend_df.empty:
