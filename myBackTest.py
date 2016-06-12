@@ -25,7 +25,8 @@ if __name__ == "__main__":
     stock_synbol = '600570'
     stock_synbol = '002504'
     stock_synbol = '000989'
-    num = 0
+    k_num = 0
+    all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
     all_stop_codes = get_stop_trade_symbol()
     #all_stop_codes = []
     jianchi_stocks_201605 = ['002548','002220','300467','300459','300238','603588','300379','002528',
@@ -35,27 +36,26 @@ if __name__ == "__main__":
                        '002544','300395','002605','300403','002225','002297','600572','000333',
                        '300413','002285','002312','002509','600305','002631','603718','002496',
                        '002600','603198','002444','300238','300467']
-    if len(sys.argv)>=3:
-        if sys.argv[2] and isinstance(sys.argv[2], str):
-            num = int(sys.argv[2])
-    elif len(sys.argv)==2:
-        if sys.argv[1] and isinstance(sys.argv[1], str) and len(sys.argv[1])==6:
-            stock_synbol = sys.argv[1]
+    if len(sys.argv)==2:
+        if sys.argv[1] and isinstance(sys.argv[1], str):
+            k_num = int(sys.argv[1])
+    elif len(sys.argv)>=3:
+        if sys.argv[2] and isinstance(sys.argv[2], str) and (int(sys.argv[2])==1): #just test for a few stocks
+            is_few_test = int(sys.argv[2])==1
+            all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418','002673']# '300476', '002548', '002799']
     else:
         pass
-    num = 120
+    k_num = 120
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
                    'fuli_prf','last_trade_date','last_trade_price','min_hold_count','max_hold_count','avrg_hold_count','this_hold_count']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
-    all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
     i=0
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
                         'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close','cont_num','rmb_rate','ma_rmb_rate']
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
-    #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516']# '300476', '002548', '002799']
     ma_num = 20
     for stock_synbol in all_codes:
-        s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
+        s_stock=tds.Stockhistory(stock_synbol,'D',test_num=k_num)
         result_df = s_stock.form_temp_df(stock_synbol)
         test_result = s_stock.regression_test()
         recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     all_trend_result_df_chinese = all_trend_result_df.rename(index=str, columns=trend_column_chiness)
     print(all_result_df)
     
-    all_result_df.to_csv('./temp/regression_test_%s.csv' % num)
-    result_summary.to_csv('./temp/result_summary_%s.csv' % num )
+    all_result_df.to_csv('./temp/regression_test_%s.csv' % k_num)
+    result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
     #print(s_stock.temp_hist_df.tail(20))

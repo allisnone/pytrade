@@ -2070,6 +2070,10 @@ class Stockhistory:
         last_trade_price = temp_df.tail(1).iloc[0].b_price
         last_trade_id = temp_df.tail(1).iloc[0].id
         last_id = temp_hist_df.tail(1).index.values.tolist()[0]
+        last_price = temp_hist_df.tail(1).iloc[0].close
+        if last_trade_price<0:
+            fuli_prf = fuli_prf * (1.0 + (last_price+last_trade_price)/abs(last_trade_price))
+            cum_prf = cum_prf + (last_price+last_trade_price)/abs(last_trade_price)
         #rmd_rate_sumary = temp_hist_df.describe()['rmb_rate']
         #max_rmb_rate = temp_hist_df.tail(1).iloc[0].rmb_rate
         #last_rmb_rate = temp_hist_df.tail(1).iloc[0].rmb_rate
