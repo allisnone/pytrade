@@ -120,7 +120,7 @@ if __name__ == "__main__":
     all_trend_result_df_chinese = all_trend_result_df.rename(index=str, columns=trend_column_chiness)
     print(all_result_df)
     if isinstance(k_num, str):
-        k_num = k_num.replace('/','')
+        k_num = k_num.replace('/','').replace('-','')
     all_result_df.to_csv('./temp/regression_test_%s.csv' % k_num)
     result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
