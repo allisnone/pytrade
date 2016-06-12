@@ -50,7 +50,7 @@ if __name__ == "__main__":
             all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418','002673','600060','600887']# '300476', '002548', '002799']
     else:
         pass
-    k_num = 120
+    #k_num = 120
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
                    'fuli_prf','last_trade_date','last_trade_price','min_hold_count','max_hold_count','avrg_hold_count','this_hold_count']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
