@@ -44,10 +44,10 @@ if __name__ == "__main__":
             except:
                 pass
             print('k_num=%s' % k_num)
-    elif len(sys.argv)>=3:
-        if sys.argv[2] and isinstance(sys.argv[2], str) and (int(sys.argv[2])==1): #just test for a few stocks
-            is_few_test = int(sys.argv[2])==1
-            all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418','002673','600060','600887']# '300476', '002548', '002799']
+        if len(sys.argv)>=3:
+            if sys.argv[2] and isinstance(sys.argv[2], str) and (int(sys.argv[2])==1): #just test for a few stocks
+                is_few_test = int(sys.argv[2])==1
+                all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418','002673','600060','600887']# '300476', '002548', '002799']
     else:
         pass
     #k_num = 120
