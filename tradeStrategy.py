@@ -2101,7 +2101,7 @@ class Stockhistory:
         #total_profit = temp_df.sum().profit - trade_times * TRADE_FEE
         #summary_profit['sum'] = total_profit
         summary_profit['cum_prf'] = cum_prf
-        summary_profit['fuli_prf'] = fuli_prf
+        summary_profit['fuli_prf'] = (fuli_prf - 1.0)
         summary_profit['last_trade_date'] = last_trade_date
         summary_profit['last_trade_price'] = last_trade_price
         summary_profit['min_hold_count'] = min_hold_count
