@@ -38,7 +38,12 @@ if __name__ == "__main__":
                        '002600','603198','002444','300238','300467']
     if len(sys.argv)==2:
         if sys.argv[1] and isinstance(sys.argv[1], str):
-            k_num = int(sys.argv[1])
+            k_num = sys.argv[1]  #start date string   #2016/01/25
+            try:
+                k_num = int(k_num)
+            except:
+                pass
+            print('k_num=%s' % k_num)
     elif len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str) and (int(sys.argv[2])==1): #just test for a few stocks
             is_few_test = int(sys.argv[2])==1
