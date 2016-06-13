@@ -14,6 +14,7 @@ def get_stop_trade_symbol():
     today_df_high_open = today_df[today_df.open>today_df.settlement*1.005]
     all_trade_code = today_df['code'].values.tolist()
     all_a_code = pds.get_all_code(hist_dir="C:/中国银河证券海王星/T0002/export/")
+    #all_a_code = pds.get_all_code(hist_dir="C:/hist/day/data/")
     all_stop_codes = list(set(all_a_code).difference(set(all_trade_code)))
     return all_stop_codes
 
