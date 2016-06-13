@@ -23,7 +23,18 @@ if __name__ == "__main__":
     args.log.write('%s\n' % sum(args.integers))
     args.log.close()
     
+    
+    import easyhistory
+    his = easyhistory.History(dtype='D', path="C:/hist")
+
+    # MA 计算, 直接调用的 talib 的对应函数
+    hist_df = his['002253'].MA(1)
+    hist_df['rmb'] = hist_df['amount']
+    del hist_df['amount']
+    del hist_df['MA1']
+    print(hist_df)
     """
+    
     stock_synbol = '300162'
     stock_synbol = '002177'
     stock_synbol = '000418'
@@ -40,7 +51,7 @@ if __name__ == "__main__":
     stock_synbol = '000418'
     stock_synbol = '300168'
     stock_synbol = '603398'
-    stock_synbol = '000812'
+    stock_synbol = '002253'
     num = 0
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
@@ -56,6 +67,7 @@ if __name__ == "__main__":
     test_result = s_stock.regression_test()
     recent_trend = s_stock.get_recent_trend()
     #print(recent_trend.index.values.tolist())
+    print(test_result)
     print(recent_trend)
     #print(s_stock.temp_hist_df.tail(120).describe())
     s_stock.temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)

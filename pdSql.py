@@ -77,6 +77,30 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
 
 def get_raw_hist_df(code_str,latest_count=None):
     file_type='csv'
+    file_name='C:/hist/day/data/'+code_str+'.'+file_type
+    raw_column_list=['date','open','high','low','close','volume','rmb','factor']
+    #print('file_name=',file_name)
+    df_0=pd.DataFrame({},columns=raw_column_list)
+    try:
+        #print('code_str=%s'%code_str)
+        #df=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
+        hist_df = pd.read_csv(file_name)
+        hist_df['rmb'] = hist_df['amount']
+        del hist_df['amount']
+        #del hist_df['MA1']
+        print(hist_df)
+        #print('pd.read_csv=',df)
+        if hist_df.empty:
+            #print('code_str=',code_str)
+            return df_0
+        
+        return hist_df
+    except OSError as e:
+        #print('OSError:',e)
+        return df_0
+
+def get_raw_hist_df0(code_str,latest_count=None):
+    file_type='csv'
     file_name=RAW_HIST_DIR+code_str+'.'+file_type
     raw_column_list=['date','open','high','low','close','volume','rmb']
     #print('file_name=',file_name)
@@ -106,7 +130,6 @@ def get_raw_hist_df(code_str,latest_count=None):
     except OSError as e:
         #print('OSError:',e)
         return df_0
-
 def update_one_hist(code_str,stock_sql_obj,histdata_last_df,update_db=True):
     """
     :param code_str: string type, code string_name

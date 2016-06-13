@@ -19,6 +19,9 @@ def get_stop_trade_symbol():
 
 
 if __name__ == "__main__":
+    import easyhistory
+    easyhistory.init('D', export='csv', path="C:/hist")
+    #easyhistory.update(path="C:/hist")
     stock_synbol = '300162'
     stock_synbol = '002177'
     stock_synbol = '000418'
