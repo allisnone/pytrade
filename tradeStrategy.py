@@ -2078,6 +2078,10 @@ class Stockhistory:
         last_trade_id = temp_df.tail(1).iloc[0].id
         last_id = temp_hist_df.tail(1).index.values.tolist()[0]
         last_price = temp_hist_df.tail(1).iloc[0].close
+        #print(temp_hist_df.tail(3))
+        dynamic_exit_price  = temp_hist_df.tail(1).iloc[0].l_min3
+        dynamic_buy_price  = temp_hist_df.tail(1).iloc[0].c_max3
+        this_position  = temp_hist_df.tail(1).iloc[0].position
         if last_trade_price<0:
             fuli_prf = fuli_prf * (1.0 + (last_price+last_trade_price)/abs(last_trade_price))
             cum_prf = cum_prf + (last_price+last_trade_price)/abs(last_trade_price)
@@ -2108,6 +2112,9 @@ class Stockhistory:
         summary_profit['max_hold_count'] = max_hold_count
         summary_profit['avrg_hold_count'] = avrg_hold_count
         summary_profit['this_hold_count'] = last_id - last_trade_id + 1
+        summary_profit['exit'] = dynamic_exit_price 
+        summary_profit['enter'] = dynamic_buy_price
+        summary_profit['position'] = this_position 
         #summary_profit['max_rmb_rate'] = max_rmb_rate
         #summary_profit['max_rmb_rate'] = max_rmb_rate
         
