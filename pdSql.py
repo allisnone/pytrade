@@ -88,7 +88,7 @@ def get_raw_hist_df(code_str,latest_count=None):
         hist_df['rmb'] = hist_df['amount']
         del hist_df['amount']
         #del hist_df['MA1']
-        print(hist_df)
+        #print(hist_df)
         #print('pd.read_csv=',df)
         if hist_df.empty:
             #print('code_str=',code_str)
