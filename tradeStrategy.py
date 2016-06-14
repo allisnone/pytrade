@@ -2011,6 +2011,7 @@ class Stockhistory:
         """
         if self.temp_hist_df.empty:
             return pd.Series({})
+        print(self.temp_hist_df)
         self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['high']!=self.temp_hist_df['low']) 
                                                  & (self.temp_hist_df['p_change']<0)
                                                  & (self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)),self.temp_hist_df['l_min3'].shift(1),0)
