@@ -22,7 +22,7 @@ def get_stop_trade_symbol():
 if __name__ == "__main__":
     import easyhistory
     #easyhistory.init('D', export='csv', path="C:/hist")
-    easyhistory.update(path="C:/hist")
+    #easyhistory.update(path="C:/hist")
     stock_synbol = '300162'
     stock_synbol = '002177'
     stock_synbol = '000418'
@@ -70,6 +70,7 @@ if __name__ == "__main__":
         test_result = s_stock.regression_test()
         recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
         i = i+1
+        print(test_result)
         print(i,stock_synbol)
         if test_result.empty:
             continue
