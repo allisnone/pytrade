@@ -2034,6 +2034,7 @@ class Stockhistory:
                                                 & (self.temp_hist_df['s_price']>0)
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         temp_hist_df =self.temp_hist_df
+        print(temp_hist_df)
         if  isinstance(self.test_num, int):
             temp_hist_df =self.temp_hist_df.tail(self.test_num)
         elif isinstance(self.test_num, str):
