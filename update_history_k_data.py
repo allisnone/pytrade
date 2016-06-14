@@ -3,6 +3,7 @@
 #import sendEmail as se
 import tradeTime as tt
 import easyhistory
+import datetime,time
 
 if __name__ == "__main__":
     easyhistory.update(path="C:/hist")
