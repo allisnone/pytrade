@@ -42,12 +42,12 @@ if __name__ == "__main__":
                        '002600','603198','002444','300238','300467']
     if len(sys.argv)>=2:
         if sys.argv[1] and isinstance(sys.argv[1], str):
-            k_num = sys.argv[1]  #start date string   #2016/01/25
+            k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
             try:
                 k_num = int(k_num)
             except:
                 pass
-            print('k_num=%s' % k_num)
+            #print('k_num=%s' % k_num)
         if len(sys.argv)>=3:
             if sys.argv[2] and isinstance(sys.argv[2], str) and (int(sys.argv[2])==1): #just test for a few stocks
                 is_few_test = int(sys.argv[2])==1
@@ -67,7 +67,6 @@ if __name__ == "__main__":
     for stock_synbol in all_codes:
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=k_num)
         result_df = s_stock.form_temp_df(stock_synbol)
-        print(result_df)
         test_result = s_stock.regression_test()
         recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
         i = i+1

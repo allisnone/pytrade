@@ -2011,7 +2011,6 @@ class Stockhistory:
         """
         if self.temp_hist_df.empty:
             return pd.Series({})
-        print(self.temp_hist_df)
         self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['high']!=self.temp_hist_df['low']) 
                                                  & (self.temp_hist_df['p_change']<0)
                                                  & (self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)),self.temp_hist_df['l_min3'].shift(1),0)
@@ -2035,14 +2034,12 @@ class Stockhistory:
                                                 & (self.temp_hist_df['s_price']>0)
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         temp_hist_df =self.temp_hist_df
-        print(temp_hist_df)
         if  isinstance(self.test_num, int):
             temp_hist_df =self.temp_hist_df.tail(self.test_num)
         elif isinstance(self.test_num, str):
             temp_hist_df =self.temp_hist_df[self.temp_hist_df['date']>self.test_num]
         else:
             pass
-        print(temp_hist_df)
         temp_df = temp_hist_df[(temp_hist_df['s_price']>0) | (temp_hist_df['b_price']<0)]
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
         temp_df['b_price'] = np.where(((temp_df['b_price'].shift(1)==0) 
@@ -2053,8 +2050,6 @@ class Stockhistory:
                                                 & (temp_df['b_price']==0)),temp_df['s_price'],0)
         temp_df = temp_df[(temp_df['s_price']>0) | (temp_df['b_price']<0)]
         if temp_hist_df.empty or temp_df.empty:
-            print(temp_hist_df)
-            print(temp_df)
             return pd.Series({})
         TRADE_FEE = 0.00162
         temp_df['profit'] = np.where(((temp_df['s_price']>0)
