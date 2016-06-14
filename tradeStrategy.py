@@ -2040,7 +2040,7 @@ class Stockhistory:
             temp_hist_df =self.temp_hist_df[self.temp_hist_df['date']>self.test_num]
         else:
             pass
-        
+        print(temp_hist_df)
         temp_df = temp_hist_df[(temp_hist_df['s_price']>0) | (temp_hist_df['b_price']<0)]
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
         temp_df['b_price'] = np.where(((temp_df['b_price'].shift(1)==0) 
