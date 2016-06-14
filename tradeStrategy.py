@@ -2051,6 +2051,8 @@ class Stockhistory:
                                                 & (temp_df['b_price']==0)),temp_df['s_price'],0)
         temp_df = temp_df[(temp_df['s_price']>0) | (temp_df['b_price']<0)]
         if temp_hist_df.empty or temp_df.empty:
+            print(temp_hist_df)
+            print(temp_df)
             return pd.Series({})
         TRADE_FEE = 0.00162
         temp_df['profit'] = np.where(((temp_df['s_price']>0)
