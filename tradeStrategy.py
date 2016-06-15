@@ -1563,6 +1563,7 @@ class Stockhistory:
             temp_df['chg_min5'] = temp_df['p_change'].rolling(window=5,center=False).min().round(2)
             temp_df['chg_max2'] = temp_df['p_change'].rolling(window=2,center=False).max().round(2)
             temp_df['chg_max3'] = temp_df['p_change'].rolling(window=3,center=False).max().round(2)
+            temp_df['rmb_rate_min2'] = temp_df['rmb_rate'].rolling(window=2,center=False).min().round(2)
             #temp_df['id_c_max20'] = temp_df['close'].idxmax(axis=0)
             #print(temp_df['close'].rolling(window=20,center=False))
             #print(type(temp_df['close'].rolling(window=20,center=False)))
@@ -1588,6 +1589,7 @@ class Stockhistory:
             temp_df['chg_min5']=pd.rolling_min(temp_df['p_change'], window=2).round(2)
             temp_df['chg_max2']=pd.rolling_max(temp_df['p_change'], window=2).round(2)
             temp_df['chg_max3']=pd.rolling_max(temp_df['p_change'], window=3).round(2)
+            temp_df['rmb_rate_min2'] = pd.rolling_min(temp_df['rmb_rate'], window=2).round(2)
         #print(self.temp_df.tail(30)[['date','close','id_c_max20']]) 
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
@@ -1710,6 +1712,7 @@ class Stockhistory:
                                       ),temp_df['p_change'],0)
         """
         """连涨若干天后，第一次回调入手"""""
+        self.temp_hist_df = temp_df
         
         return temp_df
     
@@ -1872,7 +1875,7 @@ class Stockhistory:
         del temp_df['position_full']
         #print(temp_df)
         #self.data_feed(k_data=temp_df, feed_type='temp')
-        #self.temp_hist_df = temp_df
+        self.temp_hist_df = temp_df
         #print(temp_df)
         return temp_df
     
@@ -2001,6 +2004,7 @@ class Stockhistory:
         recent_trend['rmb_rate'] = rmb_rate
         recent_trend['ma_rmb_rate'] = ma_rmb_rate
         
+        
         #print(recent_trend)
         return recent_trend
     
@@ -2117,16 +2121,22 @@ class Stockhistory:
         #summary_profit['max_rmb_rate'] = max_rmb_rate
         #summary_profit['max_rmb_rate'] = max_rmb_rate
         
+        id_rmb_rate_min2_max20 = self.temp_hist_df.tail(20)['rmb_rate_min2'].idxmax(axis=0)
+        #print(id_close_max20)
+        max_rmb_rate_min2 = self.temp_hist_df.loc[id_rmb_rate_min2_max20].rmb_rate_min2
+        summary_profit['max_rmb_rate'] = max_rmb_rate_min2 
+        summary_profit['max_rmb_distance'] = last_id - id_rmb_rate_min2_max20 + 1
+        
         #print(summary_profit)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
     
     def form_temp_df(self,code_str):
-        self.set_code(code_str)
-        self.h_df = ps.get_raw_hist_df(code_str)
+        #self.set_code(code_str)
+        #self.h_df = ps.get_raw_hist_df(code_str)
         #print(self.h_df)
-        self.temp_hist_df = self._form_temp_df()
-        self.temp_hist_df = self.get_market_score()
+        #self.temp_hist_df = self._form_temp_df()
+        self.get_market_score()
         select_columns=['close','p_change','rmb_rate','ma_rmb_rate','gap','star','star_h','star_chg','cOma5',
                         'cOma10','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',

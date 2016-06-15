@@ -52,6 +52,7 @@ if __name__ == "__main__":
     stock_synbol = '300168'
     stock_synbol = '603398'
     stock_synbol = '002253'
+    stock_synbol = '002371'
     num = 0
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
@@ -63,6 +64,7 @@ if __name__ == "__main__":
         pass
     num = 120
     s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
+    #s_stock.temp_hist_df.to_csv('./temp/%s_01.csv' % stock_synbol)
     result_df = s_stock.form_temp_df(stock_synbol)
     test_result = s_stock.regression_test()
     recent_trend = s_stock.get_recent_trend()
@@ -71,7 +73,8 @@ if __name__ == "__main__":
     print(recent_trend)
     #print(s_stock.temp_hist_df.tail(120).describe())
     s_stock.temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)
-    #print(s_stock.temp_hist_df.tail(20))
+    #result_df.to_csv('./temp/%s_00.csv' % stock_synbol)
+    print(s_stock.temp_hist_df.tail(20))
    
     
     

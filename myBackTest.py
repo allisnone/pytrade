@@ -57,7 +57,7 @@ if __name__ == "__main__":
     #k_num = 120
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
                    'fuli_prf','last_trade_date','last_trade_price','min_hold_count',
-                   'max_hold_count','avrg_hold_count','this_hold_count','exit','enter','position']
+                   'max_hold_count','avrg_hold_count','this_hold_count','exit','enter','position','max_rmb_rate','max_rmb_distance']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
     i=0
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
@@ -128,6 +128,8 @@ if __name__ == "__main__":
     if isinstance(k_num, str):
         k_num = k_num.replace('/','').replace('-','')
     all_result_df.to_csv('./temp/regression_test_%s.csv' % k_num)
+    consider_df = all_result_df[(all_result_df['max_rmb_rate']>2.0) & (all_result_df['position']>0.35)]# & (all_result_df['last_trade_price'] ==0)]
+    consider_df.to_csv('./temp/consider_%s.csv' % k_num )
     result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
     #print(s_stock.temp_hist_df.tail(20))
