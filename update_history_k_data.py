@@ -18,7 +18,7 @@ if __name__ == "__main__":
             if tt.is_trade_time_now():
                 pass
             else:
-                if datetime.datetime.now().hour==17:
+                if datetime.datetime.now().hour==18:
                     #easyhistory.init('D', export='csv', path="C:/hist")
                     easyhistory.update(path="C:/hist")
                     updated_date_count = updated_date_count +1
