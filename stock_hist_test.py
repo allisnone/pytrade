@@ -76,7 +76,7 @@ if __name__ == "__main__":
     #print(s_stock.temp_hist_df.tail(120).describe())
     s_stock.temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)
     #result_df.to_csv('./temp/%s_00.csv' % stock_synbol)
-    print(s_stock.temp_hist_df.tail(20))
+    #print(s_stock.temp_hist_df.tail(20))
    
     
     

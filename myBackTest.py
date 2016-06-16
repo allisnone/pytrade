@@ -74,14 +74,15 @@ if __name__ == "__main__":
         i = i+1
         print(i,stock_synbol)
         if test_result.empty:
-            continue
-        #else: 
-        test_result_df = tds.pd.DataFrame(test_result.to_dict(), columns=column_list, index=[stock_synbol])
-        all_result_df = all_result_df.append(test_result_df,ignore_index=False)
+            pass
+        else: 
+            test_result_df = tds.pd.DataFrame(test_result.to_dict(), columns=column_list, index=[stock_synbol])
+            all_result_df = all_result_df.append(test_result_df,ignore_index=False)
         if recent_trend.empty:
-            continue
-        trend_result_df = tds.pd.DataFrame(recent_trend.to_dict(), columns=trend_column_list, index=[stock_synbol])
-        all_trend_result_df = all_trend_result_df.append(trend_result_df,ignore_index=False)
+            pass
+        else:
+            trend_result_df = tds.pd.DataFrame(recent_trend.to_dict(), columns=trend_column_list, index=[stock_synbol])
+            all_trend_result_df = all_trend_result_df.append(trend_result_df,ignore_index=False)
         
         
     #print(result_df.tail(20))
