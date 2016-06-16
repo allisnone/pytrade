@@ -172,6 +172,35 @@ def update_one_hist(code_str,stock_sql_obj,histdata_last_df,update_db=True):
     stock_sql_obj.update_last_db_date(code_str,last_db_date_str,update_date)
     return len(df)
 
+def get_file_timestamp(file_name):
+    #get last modify time of given file
+    file_mt_str=''
+    try:
+        file_mt= time.localtime(os.stat(file_name).st_mtime)
+        file_mt_str=time.strftime("%Y-%m-%d %X",file_mt)
+    except:
+        #file do not exist
+        pass
+    return file_mt_str
+
+#get the all file source data in certain DIR
+def get_dir_latest_modify_time(hist_dir):
+    """
+    :param hist_dir: string type, DIR of export data
+    :return: list type, code string list 
+    """
+    all_code=[]
+    latest_time = '1970-01-01 00:00:00'
+    for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
+        code=filename[:-4]
+        if len(code)==6:
+            all_code.append(code)
+        full_file_name = hist_dir + filename
+        file_mt_str = get_file_timestamp(full_file_name)
+        if file_mt_str > latest_time:
+            latest_time = file_mt_str
+    return all_code,latest_time
+
 #get the all file source data in certain DIR
 def get_all_code(hist_dir):
     """

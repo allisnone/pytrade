@@ -53,6 +53,8 @@ if __name__ == "__main__":
     stock_synbol = '603398'
     stock_synbol = '002253'
     stock_synbol = '002371'
+    #file_time = tds.get_file_timestamp('c:/hist/day/data/000060.csv')
+    #print(file_time)
     num = 0
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
