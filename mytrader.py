@@ -313,7 +313,7 @@ class MyTrader(YHTrader):
         highest_price = round(last_close*1.1,2)
         a_amount=0
         if a_fund<lowest_price*100:
-            log.debug('可用资金不足买100股  %s，无法购买;至少尚需资金： %s' % (stock_code,(highest*100-a_fund)))
+            log.debug('可用资金不足买100股  %s，无法购买.' % stock_code)
         else:
             #f_buy_price = realtime_price
             f_buy_price = ask5
@@ -452,7 +452,7 @@ class MyTrader(YHTrader):
     
     def get_realtime_k_data(self,symbol):
         #https://github.com/shidenggui/easyquotation
-        quotation=easyquotation.use('sina') # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
+        quotation=easyquotation.use('qq') # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
         #quotation = easyquotation.use('lf') # ['leverfun', 'lf'] #免费十档行情
         index_code=['999999','399001','399002','399003','399005']
         #print(quotation.stocks(symbol))
