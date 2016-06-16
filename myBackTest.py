@@ -111,6 +111,7 @@ if __name__ == "__main__":
             valid_dict[code] = '1'
         else:
             valid_dict[code] = '0'
+    print(result_codes_dict)
     #print(tds.pd.DataFrame(result_codes_dict, columns=['name'], index=list(result_codes_dict.keys())))
     #all_result_df['name'] = result_codes_dict
     all_result_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
@@ -134,7 +135,7 @@ if __name__ == "__main__":
     if all_result_df.empty:
         pass
     else:
-        consider_df = all_result_df[(all_result_df['max_rmb_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stop'] == 0) & (all_result_df['invalid'] == 0)]# & (all_result_df['last_trade_price'] ==0)]
+        consider_df = all_result_df[(all_result_df['max_rmb_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stopped'] == 0) & (all_result_df['invalid'] == 0)]# & (all_result_df['last_trade_price'] ==0)]
         consider_df.to_csv('./temp/consider_%s.csv' % k_num )
     result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
