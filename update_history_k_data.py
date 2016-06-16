@@ -6,9 +6,6 @@ import easyhistory
 import datetime,time
 import pdSql as pds
 
-def get_latest_modify_time():
-    file_time = tds.get_file_timestamp('c:/hist/day/data/000060.csv')
-    print(file_time)
 
 if __name__ == "__main__":
     all_code,latest_time = pds.get_dir_latest_modify_time('c:/hist/day/data/')

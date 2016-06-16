@@ -69,6 +69,8 @@ if __name__ == "__main__":
         result_df = s_stock.form_temp_df(stock_synbol)
         test_result = s_stock.regression_test()
         recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
+        print(test_result)
+        print(recent_trend)
         i = i+1
         print(i,stock_synbol)
         if test_result.empty:
