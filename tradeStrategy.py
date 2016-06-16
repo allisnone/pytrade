@@ -686,7 +686,7 @@ class Stockhistory:
         self.realtime_stamp=0
         self.temp_hist_df=self._form_temp_df()
         self.test_num = test_num
-        if test_num ==0:
+        if test_num ==0 and isinstance(test_num, int):
             self.test_num = len(self.h_df)
         #self.average_high=0
         #self.average_low=0
