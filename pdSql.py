@@ -184,21 +184,29 @@ def get_file_timestamp(file_name):
     return file_mt_str
 
 #get the all file source data in certain DIR
-def get_dir_latest_modify_time(hist_dir):
+def get_dir_latest_modify_time(hist_dir,codes={}):
     """
     :param hist_dir: string type, DIR of export data
     :return: list type, code string list 
     """
     all_code=[]
     latest_time = '1970-01-01 00:00:00'
-    for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
-        code=filename[:-4]
-        if len(code)==6:
-            all_code.append(code)
-        full_file_name = hist_dir + filename
-        file_mt_str = get_file_timestamp(full_file_name)
-        if file_mt_str > latest_time:
-            latest_time = file_mt_str
+    if codes:
+        for code in codes:
+            full_file_name = hist_dir + '%s.csv' % code
+            file_mt_str = get_file_timestamp(full_file_name)
+            if file_mt_str > latest_time:
+                latest_time = file_mt_str
+            all_code = codes  
+    else:
+        for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
+            code=filename[:-4]
+            if len(code)==6:
+                all_code.append(code)
+            full_file_name = hist_dir + filename
+            file_mt_str = get_file_timestamp(full_file_name)
+            if file_mt_str > latest_time:
+                latest_time = file_mt_str
     return all_code,latest_time
 
 #get the all file source data in certain DIR
