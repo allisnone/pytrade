@@ -19,42 +19,39 @@ def get_stop_trade_symbol():
     return all_stop_codes
 
 
-if __name__ == "__main__":
-    import easyhistory
-    #easyhistory.init('D', export='csv', path="C:/hist")
-    #easyhistory.update(path="C:/hist")
-    stock_synbol = '300162'
-    stock_synbol = '002177'
-    stock_synbol = '000418'
-    stock_synbol = '600570'
-    stock_synbol = '002504'
-    stock_synbol = '000989'
-    k_num = 0
-    all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
-    all_stop_codes = get_stop_trade_symbol()
-    #all_stop_codes = []
-    jianchi_stocks_201605 = ['002548','002220','300467','300459','300238','603588','300379','002528',
-                       '603026','002615','603609','603010','300459','300378','002709','300438',
-                       '300277','002752','002613','300337','603005','603718','600666','002350',
-                       '300451','300003','603022','300030','300240','603789','300433','300295',
-                       '002544','300395','002605','300403','002225','002297','600572','000333',
-                       '300413','002285','002312','002509','600305','002631','603718','002496',
-                       '002600','603198','002444','300238','300467']
-    if len(sys.argv)>=2:
-        if sys.argv[1] and isinstance(sys.argv[1], str):
-            k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
-            try:
-                k_num = int(k_num)
-            except:
-                pass
-            #print('k_num=%s' % k_num)
-        if len(sys.argv)>=3:
-            if sys.argv[2] and isinstance(sys.argv[2], str) and (int(sys.argv[2])==1): #just test for a few stocks
-                is_few_test = int(sys.argv[2])==1
-                all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']# '300476', '002548', '002799']
+def get_stopped_stocks(given_stocks=[],except_stocks=[]):
+    import easyquotation
+    quotation =easyquotation.use('qq')
+    stop_stocks = []
+    if given_stocks:
+        this_quotation = quotation.stocks(given_stocks)
     else:
-        pass
-    #k_num = 120
+        this_quotation = quotation.all
+    for stock_code in (this_quotation.keys()):
+        if this_quotation[stock_code]:
+            #print(this_quotation[stock_code])
+            if this_quotation[stock_code]['ask1']==0 and this_quotation[stock_code]['volume']==0:
+                stop_stocks.append(stock_code)
+            else:
+                pass
+    all_stocks = list(this_quotation.keys())
+    print('stop_stocks=', stop_stocks)
+    print(len(stop_stocks))
+    print('all_stocks=',all_stocks)
+    print(len(all_stocks))
+    return stop_stocks,all_stocks
+
+
+def back_test(k_num=0,given_codes=[],except_stocks=[]):
+    all_codes = []
+    all_stop_codes = []
+    if given_codes:
+        all_codes = given_codes
+    else:
+        all_stop_codes,all_stocks = get_stopped_stocks()
+        all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
+    all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
+                 '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
                    'fuli_prf','last_trade_date','last_trade_price','min_hold_count',
                    'max_hold_count','avrg_hold_count','this_hold_count','exit','enter','position','max_rmb_rate','max_rmb_distance']
@@ -107,7 +104,7 @@ if __name__ == "__main__":
             on_trade_dict[code] = '1'
         else:
             on_trade_dict[code] = '0'
-        if code in jianchi_stocks_201605:
+        if code in except_stocks:
             valid_dict[code] = '1'
         else:
             valid_dict[code] = '0'
@@ -139,4 +136,49 @@ if __name__ == "__main__":
         consider_df.to_csv('./temp/consider_%s.csv' % k_num )
     result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
+    
+if __name__ == "__main__":
+    import easyhistory
+    #easyhistory.init('D', export='csv', path="C:/hist")
+    #easyhistory.update(path="C:/hist")
+    stock_synbol = '300162'
+    stock_synbol = '002177'
+    stock_synbol = '000418'
+    stock_synbol = '600570'
+    stock_synbol = '002504'
+    stock_synbol = '000989'
+    k_num = 0
+    #all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
+    #all_stop_codes = get_stop_trade_symbol()
+    #all_stop_codes,all_stocks = get_stopped_stocks()
+    #all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
+    #all_stop_codes = []
+    
+    if len(sys.argv)>=2:
+        if sys.argv[1] and isinstance(sys.argv[1], str):
+            k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
+            try:
+                k_num = int(k_num)
+            except:
+                pass
+            #print('k_num=%s' % k_num)
+        if len(sys.argv)>=3:
+            if sys.argv[2] and isinstance(sys.argv[2], str) and (int(sys.argv[2])==1): #just test for a few stocks
+                is_few_test = int(sys.argv[2])==1
+                all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418',
+                             '002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']# '300476', '002548', '002799']
+    else:
+        pass
+    
+    except_stocks = ['002548','002220','300467','300459','300238','603588','300379','002528',
+                       '603026','002615','603609','603010','300459','300378','002709','300438',
+                       '300277','002752','002613','300337','603005','603718','600666','002350',
+                       '300451','300003','603022','300030','300240','603789','300433','300295',
+                       '002544','300395','002605','300403','002225','002297','600572','000333',
+                       '300413','002285','002312','002509','600305','002631','603718','002496',
+                       '002600','603198','002444','300238','300467']
+    given_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
+                 '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
+    back_test(k_num='2015-06-01',given_codes=[],except_stocks=except_stocks)
+    #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))
