@@ -136,6 +136,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
         consider_df.to_csv('./temp/consider_%s.csv' % k_num )
     result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
+    
+    return
 """ 
 if __name__ == "__main__":
     import easyhistory
