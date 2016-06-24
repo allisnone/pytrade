@@ -136,7 +136,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
         consider_df.to_csv('./temp/consider_%s.csv' % k_num )
     result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
-    
+""" 
 if __name__ == "__main__":
     import easyhistory
     #easyhistory.init('D', export='csv', path="C:/hist")
@@ -182,3 +182,4 @@ if __name__ == "__main__":
     back_test(k_num='2015-06-01',given_codes=[],except_stocks=except_stocks)
     #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))
+"""
