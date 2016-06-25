@@ -45,13 +45,14 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[]):
 def back_test(k_num=0,given_codes=[],except_stocks=[]):
     all_codes = []
     all_stop_codes = []
+    all_stop_codes,all_stocks = get_stopped_stocks()
+    all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     if given_codes:
-        all_codes = given_codes
+        all_codes = list(set(given_codes).difference(set(all_stop_codes)))
     else:
-        all_stop_codes,all_stocks = get_stopped_stocks()
-        all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
-    all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
-                 '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
+        pass
+    #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
+    #            '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
                    'fuli_prf','last_trade_date','last_trade_price','min_hold_count',
                    'max_hold_count','avrg_hold_count','this_hold_count','exit','enter','position','max_rmb_rate','max_rmb_distance']
@@ -138,7 +139,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
     
     return
-""" 
+"""
 if __name__ == "__main__":
     import easyhistory
     #easyhistory.init('D', export='csv', path="C:/hist")
