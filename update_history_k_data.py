@@ -57,7 +57,8 @@ if __name__ == "__main__":
                     pass
                     #sleep_seconds = tt.get_remain_time_to_trade()
         else:
-            sleep_seconds = tt.get_remain_time_to_trade()
+            sleep_seconds = tt.get_remain_time_to_trade()   
+        print('Sleep %s seconds.' % sleep_seconds)
         time.sleep(sleep_seconds)
         print('Sleep %s seconds.' % sleep_seconds)
         
