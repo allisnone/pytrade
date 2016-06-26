@@ -77,6 +77,7 @@ def get_next_trade_date(given_datetime=None):
             this_day=this_day+datetime.timedelta(days=1)
             next_date_str=this_day.strftime('%Y-%m-%d') 
 
+
 #to get the latest trade day
 def get_last_trade_date(given_latest_datetime=None):
     """
