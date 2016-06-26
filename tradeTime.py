@@ -174,7 +174,7 @@ def get_remain_time_to_trade():
                 return 0.0
     else:
         #print('10')
-        next_date_str=get_latest_trade_date()
+        next_date_str=get_next_trade_date()
         next_trade_str=next_date_str + ' 9:15:00'
     print('next_trade_str=',next_trade_str)
     next_trade_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')
