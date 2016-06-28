@@ -46,4 +46,3 @@ if __name__ == "__main__":
     back_test(k_num,given_codes,except_stocks=except_stocks)
     #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))
-
