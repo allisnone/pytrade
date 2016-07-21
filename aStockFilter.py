@@ -41,7 +41,10 @@ def today_df_filter(today_df):
     #"""
     today_df = ts.get_today_all()
     today_df = today_df[today_df.amount>0]
-    today_df_high_open = today_df[today_df.open>today_df.settlement*1.005]
+    today_df_high_open = today_df[(today_df.open>today_df.settlement*1.005)]
+    today_df_jia_yin = today_df_high_open[(today_df_high_open.trade<today_df_high_open.open) & (today_df_high_open.trade >today_df_high_open.settlement*1.005)]
+    print('today_df_jia_yin')
+    print(today_df_jia_yin)
     all_trade_code = today_df['code'].values.tolist()
     all_a_code = ps.get_all_code(hist_dir="C:/中国银河证券海王星/T0002/export/")
     all_stop_code = list(set(all_a_code).difference(set(all_trade_code)))
