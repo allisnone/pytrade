@@ -47,8 +47,9 @@ def t_everyday(great_incrs=3.0,great_decrs=-2.0,k_data={},k_data_1030={},last_k_
     minute = 35
     if k_data:
         real_price = k_data['trade']
-        if k_data['open_rate'] < 0.5 * great_decrs:
-            if real_price <k_data['open'] and (hour ==9 and minute>=55):
+        last_close = last_k_data['close']
+        if k_data['open'] < (0.5 * (1+ great_decrs*0.01) * last_close):
+            if real_price <last_close and (hour ==9 and minute>=55):
                 print('sell half at open')
         else:
             if real_price>=great_incrs:
