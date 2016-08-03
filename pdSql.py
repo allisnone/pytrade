@@ -297,21 +297,21 @@ class StockSQL(object):
         update_sql=form_sql(table_name=table,oper_type='update',update_field=fields,update_value=values,where_condition=condition)
         sql.execute(update_sql,self.engine)
         
-    def delete_data(self,table,condition=None):
+    def delete_data(self,table_name,condition=None):
         """
         :param table_name: string type, db_name.table_name
         :param condition: string type, like 'field_value>50'
         :return: 
         """
-        delete_sql=form_sql(table_name=table,oper_type='delete',where_condition=condition)
+        delete_sql=form_sql(table_name=table_name,oper_type='delete',where_condition=condition)
         sql.execute(delete_sql, self.engine)
     
-    def drop_table(self,table):
+    def drop_table(self,table_name):
         """
         :param table_name: string type, db_name.table_name
         :return: 
         """
-        drop_sql='drop table %s' % table
+        drop_sql='drop table %s' % table_name
         sql.execute(drop_sql, self.engine)
     
     def get_last_db_date(self,code_str,histdata_last_df):
