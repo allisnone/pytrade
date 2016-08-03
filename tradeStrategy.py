@@ -2067,6 +2067,7 @@ class Stockhistory:
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         temp_hist_df =self.temp_hist_df
         break_in_df = temp_hist_df[(temp_hist_df['break_in']!=0)]
+        break_in_df['id'] = break_in_df.index
         break_in_v_rate = break_in_df.tail(1).iloc[0].break_in
         break_in_id = break_in_df.tail(1).iloc[0].id
         break_in_date = break_in_df.tail(1).iloc[0].date
