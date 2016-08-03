@@ -1694,12 +1694,15 @@ class Stockhistory:
                                        | (temp_df['chg_min2'].shift(1) >= 4.00)
                                        | (temp_df['chg_min3'].shift(1) >= 3.00)
                                        | (temp_df['chg_min4'].shift(1) >= 1.50)
-                                       | (temp_df['chg_min5'].shift(1) >= -0.50)
+                                       #| (temp_df['chg_min5'].shift(1) >= -0.50)
+                                       | (temp_df['chg_min2'].shift(2) >= 4.00)
+                                       | (temp_df['chg_min3'].shift(2) >= 3.00)
+                                       | (temp_df['chg_min4'].shift(2) >= 1.50)
                                        )
                                       & (temp_df['star']<0.20)
                                       & (temp_df['cOma5'].abs()<0.02)
                                       #& ((temp_df['ma5']-temp_df['ma10'])>0)
-                                      ),temp_df['chg_mean2'].shift(1),0)
+                                      ),temp_df['rmb_rate'],0)
         """
         temp_df['star_in'] = np.where(((
                                       (temp_df['close'] == (temp_df['close'].shift(1)*1.1).round(2))
