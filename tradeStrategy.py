@@ -1541,6 +1541,7 @@ class Stockhistory:
         temp_df['atr']=np.where(temp_df['atr']<(temp_df['close'].shift(1)-temp_df['low']),temp_df['close'].shift(1)-temp_df['low'],temp_df['atr'])
         short_num=5
         long_num=10
+        long_num20 = 20
         if '3.5' in platform.python_version():
             temp_df['atr_ma%s'%short_num] = temp_df['atr'].rolling(center=False,window=short_num).mean().round(2)
             temp_df['atr_ma%s'%long_num] = temp_df['atr'].rolling(center=False,window=long_num).mean().round(2)
@@ -1552,6 +1553,8 @@ class Stockhistory:
             temp_df['c_min10'] = temp_df['close'].rolling(window=long_num,center=False).min().round(2)
             temp_df['h_max10'] = temp_df['high'].rolling(window=long_num,center=False).max().round(2)
             temp_df['l_min10'] = temp_df['low'].rolling(window=long_num,center=False).min().round(2)
+            temp_df['h_max20'] = temp_df['high'].rolling(window=long_num20,center=False).max().round(2)
+            temp_df['l_min20'] = temp_df['low'].rolling(window=long_num20,center=False).min().round(2)
             temp_df['l_max3'] = temp_df['low'].rolling(window=3,center=False).max().round(2)
             temp_df['c_max3'] = temp_df['close'].rolling(window=3,center=False).max().round(2)
             temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
@@ -1579,6 +1582,8 @@ class Stockhistory:
             temp_df['c_min10']=pd.rolling_min(temp_df['close'], window=long_num).round(2)
             temp_df['h_max10']=pd.rolling_max(temp_df['high'], window=long_num).round(2)
             temp_df['l_min10']=pd.rolling_min(temp_df['low'], window=long_num).round(2)
+            temp_df['h_max20']=pd.rolling_max(temp_df['high'], window=long_num20).round(2)
+            temp_df['l_min20']=pd.rolling_min(temp_df['low'], window=long_num20).round(2)
             temp_df['l_max3']=pd.rolling_max(temp_df['low'], window=3).round(2)
             temp_df['c_max3']=pd.rolling_max(temp_df['close'], window=3).round(2)
             temp_df['l_min3']=pd.rolling_min(temp_df['low'], window=3).round(2)
@@ -1715,6 +1720,15 @@ class Stockhistory:
                                       ),temp_df['p_change'],0)
         """
         """连涨若干天后，第一次回调入手"""""
+        
+        """盘整许多天后突破"""""
+        wave_rate = 10.0
+        temp_df['break_in'] = np.where((
+                                        (temp_df['h_max20'].shift(1) <=((1+wave_rate*0.01)*temp_df['l_max20'].shift(1)))
+                                        & (temp_df['close']>= temp_df['h_max20'].shift(1))
+                                      
+                                      ),temp_df['rmb_rate'],0)
+        
         self.temp_hist_df = temp_df
         
         return temp_df
