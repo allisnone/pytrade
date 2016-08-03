@@ -1723,11 +1723,18 @@ class Stockhistory:
         
         """盘整许多天后突破"""""
         wave_rate = 10.0
+        strong_posistion = 0.5
         temp_df['break_in'] = np.where((
                                         (temp_df['h_max20'].shift(1) <=((1+wave_rate*0.01)*temp_df['l_max20'].shift(1)))
                                         & (temp_df['close']>= temp_df['h_max20'].shift(1))
                                       
                                       ),temp_df['rmb_rate'],0)
+        
+        temp_df['break_in_p'] = np.where((
+                                        (temp_df['h_max20'] <=((1+wave_rate*0.01)*temp_df['l_max20']))
+                                        #& (temp_df['close']>= ((temp_df['h_max20']-temp_df['l_max20'])* strong_posistion + temp_df['l_max20']))
+                                      
+                                      ),((temp_df['close']-temp_df['l_max20'])/(temp_df['h_max20']-temp_df['l_max20'])),0)
         
         self.temp_hist_df = temp_df
         
