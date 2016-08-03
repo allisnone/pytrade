@@ -56,7 +56,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
                    'fuli_prf','last_trade_date','last_trade_price','min_hold_count',
                    'max_hold_count','avrg_hold_count','this_hold_count','exit','enter',
-                   'position','max_rmb_rate','max_rmb_distance','break_in', 'break_in_count','break_in_id']
+                   'position','max_rmb_rate','max_rmb_distance','break_in', 'break_in_count','break_in_date']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
     i=0
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
