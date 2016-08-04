@@ -51,8 +51,9 @@ def show_linear_line(X_parameters,Y_parameters):
  
 def linear_test():
     columns = ['close', 'ma10', 'ma30', 'ma60','ma120']
-    for column in columns:
-        X,Y,next_X = get_data('C:/Users/Administrator/pytrade/temp/002060.csv', count=20,column)#'stock_300162.csv')
+    file = 'C:/Users/Administrator/pytrade/temp/002060.csv'
+    for col in columns:
+        X,Y,next_X = get_data(file, count=20,column= col)#'stock_300162.csv')
         print(type(X))
         print(X)
         print(Y)
