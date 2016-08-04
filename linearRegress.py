@@ -34,8 +34,8 @@ def linear_model_main(X_parameters,Y_parameters,predict_value):
     print(regr.intercept_)
     print(type(regr.intercept_))
     predictions['intercept'] = regr.intercept_#.tolist()[0]
-    predictions['coefficient'] = regr.coef_#.tolist()[0]
-    predictions['predicted_value'] = predict_outcome#.tolist()[0]
+    predictions['coefficient'] = regr.coef_.tolist()[0]
+    predictions['predicted_value'] = predict_outcome.tolist()[0]
     print(predictions)
     return predictions
  
@@ -54,7 +54,7 @@ def get_linear_result(data, count=30,col='close'):
     X,Y,next_X = get_data(data, count=30,column= col)
     result = linear_model_main(X,Y,next_X)
     print('----%s--------' % col)
-    print("Intercept value " , result['intercept'].tolist()[0])
+    print("Intercept value " , result['intercept'])
     print("coefficient" , result['coefficient'])
     print("Predicted value: ",result['predicted_value'])
     print("coefficient1 value: ",result['coefficient']/(sum(Y)/len(Y)))
