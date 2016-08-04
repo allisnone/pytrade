@@ -12,7 +12,7 @@ def get_data(file_name):
     #print(type(data.index))
     #print(type(data['change']))
     data['X']=pd.core.series.Series(li,index=data.index)
-    data = data.tail(120)
+    data = data.tail(20)
     print(data)
     X_parameter = []
     Y_parameter = []
