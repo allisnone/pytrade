@@ -69,7 +69,7 @@ def get_all_ma_linear(data, count=30):
     return all_result
 
 def linear_test():
-    file = 'C:/Users/Administrator/pytrade/temp/002060.csv'
+    file_name = 'C:/Users/Administrator/pytrade/temp/002060.csv'
     data = pd.read_csv(file_name)
     count = 30
     all_result = get_all_ma_linear(data, count)
