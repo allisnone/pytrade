@@ -31,9 +31,9 @@ def linear_model_main(X_parameters,Y_parameters,predict_value):
     regr.fit(X_parameters, Y_parameters)
     predict_outcome = regr.predict(predict_value)
     predictions = dict()
-    predictions['intercept'] = round(regr.intercept_,4)#.tolist()[0]
-    predictions['coefficient'] = round(regr.coef_.tolist()[0],4)
-    predictions['predicted_value'] = round(predict_outcome.tolist()[0],4)
+    predictions['intercept'] = round(regr.intercept_,6)#.tolist()[0]
+    predictions['coefficient'] = round(regr.coef_.tolist()[0],6)
+    predictions['predicted_value'] = round(predict_outcome.tolist()[0],6)
     return predictions
  
 # Function to show the resutls of linear fit model
@@ -50,7 +50,7 @@ def show_linear_line(X_parameters,Y_parameters):
 def get_linear_result(data, count=30,col='close'):
     X,Y,next_X = get_data(data, count=30,column= col)
     result = linear_model_main(X,Y,next_X)
-    result['uniform'] = round(result['coefficient']/(sum(Y)/len(Y)),4)
+    result['uniform'] = round(result['coefficient']/(sum(Y)/len(Y)),6)
     print('----%s--------' % col)
     print(result)
     #show_linear_line(X,Y)
