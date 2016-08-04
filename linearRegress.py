@@ -59,7 +59,7 @@ def get_linear_result(data, count=30,col='close'):
     print(result)
     result['uniform'] = round(result['coefficient']/(sum(Y)/len(Y)),4)
     #show_linear_line(X,Y)
-    return
+    return result
 
 def get_all_ma_linear(data, count=30):
     columns = ['close', 'ma10', 'ma30', 'ma60','ma120','ma250']
