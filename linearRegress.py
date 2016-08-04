@@ -33,9 +33,10 @@ def linear_model_main(X_parameters,Y_parameters,predict_value):
     predictions = dict()
     print(regr.intercept_)
     print(type(regr.intercept_))
-    predictions['intercept'] = regr.intercept_.tolist()[0]
-    predictions['coefficient'] = regr.coef_.tolist()[0]
-    predictions['predicted_value'] = predict_outcome.tolist()[0]
+    predictions['intercept'] = regr.intercept_#.tolist()[0]
+    predictions['coefficient'] = regr.coef_#.tolist()[0]
+    predictions['predicted_value'] = predict_outcome#.tolist()[0]
+    print(predictions)
     return predictions
  
 # Function to show the resutls of linear fit model
