@@ -57,7 +57,7 @@ def get_linear_result(data, count=30,col='close'):
     return result
 
 def get_all_ma_linear(data, count=30):
-    columns = ['close', 'ma10', 'ma30', 'ma60','ma120','ma250']
+    columns = ['close', 'ma5','ma10', 'ma20','ma30', 'ma60','ma120','ma250']
     all_result = {}
     for col in columns:
         result = get_linear_result(data, count,col)
