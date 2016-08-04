@@ -13,7 +13,7 @@ def get_data(file_name, count=20,column='close'):
     #print(type(data['change']))
     data['X']=pd.core.series.Series(li,index=data.index)
     data = data.tail(count)
-    print(data)
+    #print(data)
     X_parameter = []
     Y_parameter = []
     for single_square_feet ,single_price_value in zip(data['X'],data[column]):
@@ -54,7 +54,7 @@ def linear_test():
     file = 'C:/Users/Administrator/pytrade/temp/002060.csv'
     for col in columns:
         X,Y,next_X = get_data(file, count=20,column= col)#'stock_300162.csv')
-        print(type(X))
+        #print(type(X))
         print(X)
         print(Y)
         """
@@ -70,10 +70,11 @@ def linear_test():
         #predictvalue = X[-1][-1]+1
         predictvalue = next_X#7500
         result = linear_model_main(X,Y,predictvalue)
+        print('----%s--------' % col)
         print("Intercept value " , result['intercept'])
         print("coefficient" , result['coefficient'])
         print("Predicted value: ",result['predicted_value'])
-        show_linear_line(X,Y)
+        #show_linear_line(X,Y)
     
     #Y = X * result['coefficient'] +  result['intercept']
 linear_test()
