@@ -19,7 +19,8 @@ def get_data(file_name):
     for single_square_feet ,single_price_value in zip(data['X'],data['close']):
         X_parameter.append([float(single_square_feet)])
         Y_parameter.append(float(single_price_value))
-    return X_parameter,Y_parameter
+    next_X = X_parameter[-1][0]
+    return X_parameter,Y_parameter,next_X
  
  # Function for Fitting our data to Linear model
 def linear_model_main(X_parameters,Y_parameters,predict_value):
@@ -46,7 +47,7 @@ def show_linear_line(X_parameters,Y_parameters):
     plt.show()
  
 def linear_test():
-    X,Y = get_data('stock_300162.csv')
+    X,Y,next_X = get_data('stock_300162.csv')
     print(type(X))
     print(X)
     print(Y)
@@ -61,7 +62,7 @@ def linear_test():
     print(X)
     """
     #predictvalue = X[-1][-1]+1
-    predictvalue = 7500
+    predictvalue = next_X#7500
     result = linear_model_main(X,Y,predictvalue)
     print("Intercept value " , result['intercept'])
     print("coefficient" , result['coefficient'])
