@@ -6,13 +6,12 @@ import pandas as pd
 from sklearn import datasets, linear_model
 
 # Function to get data
-def get_data(file_name, count=20,column='close'):
-    data = pd.read_csv(file_name)
-    li=data.index.values.tolist()
+def get_data(data_df, count=20,column='close'):
+    li=data_df.index.values.tolist()
     #print(type(data.index))
     #print(type(data['change']))
-    data['X']=pd.core.series.Series(li,index=data.index)
-    data = data.tail(count)
+    data_df['X']=pd.core.series.Series(li,index=data.index)
+    data = data_df.tail(count)
     #print(data)
     X_parameter = []
     Y_parameter = []
@@ -48,12 +47,40 @@ def show_linear_line(X_parameters,Y_parameters):
     plt.xticks(())
     plt.yticks(())
     plt.show()
- 
+
+def get_linear_result(data, count=30,col='close'):
+    X,Y,next_X = get_data(data, count=30,column= col)
+    result = linear_model_main(X,Y,next_X)
+    print('----%s--------' % col)
+    print("Intercept value " , result['intercept'])
+    print("coefficient" , result['coefficient'])
+    print("Predicted value: ",result['predicted_value'])
+    print("coefficient1 value: ",result['coefficient']/(sum(Y)/len(Y)))
+    result['uniform'] = round(result['coefficient']/(sum(Y)/len(Y)),4)
+    #show_linear_line(X,Y)
+    return
+
+def get_all_ma_linear(data, count=30):
+    columns = ['close', 'ma10', 'ma30', 'ma60','ma120']
+    all_result = {}
+    for col in columns:
+        result = get_linear_result(data, count,col)
+        all_result[col] = result
+    return all_result
+
 def linear_test():
+    file = 'C:/Users/Administrator/pytrade/temp/002060.csv'
+    data = pd.read_csv(file_name)
+    count = 30
+    all_result = get_all_ma_linear(data, count)
+    print('all_result=', all_result)
+
+def linear_test0():
     columns = ['close', 'ma10', 'ma30', 'ma60','ma120']
     file = 'C:/Users/Administrator/pytrade/temp/002060.csv'
     for col in columns:
-        X,Y,next_X = get_data(file, count=30,column= col)#'stock_300162.csv')
+        data = pd.read_csv(file_name)
+        X,Y,next_X = get_data(data, count=30,column= col)#'stock_300162.csv')
         #print(type(X))
         print(X)
         print(Y)
