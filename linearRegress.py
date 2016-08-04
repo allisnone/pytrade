@@ -19,6 +19,9 @@ def get_data(file_name):
     for single_square_feet ,single_price_value in zip(data['X'],data['ma30']):
         X_parameter.append([float(single_square_feet)])
         Y_parameter.append(float(single_price_value))
+    min_X = X_parameter[0][0]
+    for i in range(0,len(X_parameter)):
+        X_parameter[i][0] = X_parameter[0][0] - min_X + 1
     next_X = X_parameter[-1][0] + 1
     return X_parameter,Y_parameter,next_X
  
