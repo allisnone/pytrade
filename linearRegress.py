@@ -16,7 +16,7 @@ def get_data(file_name):
     print(data)
     X_parameter = []
     Y_parameter = []
-    for single_square_feet ,single_price_value in zip(data['X'],data['close']):
+    for single_square_feet ,single_price_value in zip(data['X'],data['ma30']):
         X_parameter.append([float(single_square_feet)])
         Y_parameter.append(float(single_price_value))
     next_X = X_parameter[-1][0] + 1
@@ -47,7 +47,7 @@ def show_linear_line(X_parameters,Y_parameters):
     plt.show()
  
 def linear_test():
-    X,Y,next_X = get_data('stock_300162.csv')
+    X,Y,next_X = get_data('C:/Users/Administrator/pytrade/temp/002060.csv')#'stock_300162.csv')
     print(type(X))
     print(X)
     print(Y)
