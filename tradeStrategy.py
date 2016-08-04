@@ -1499,6 +1499,7 @@ class Stockhistory:
             temp_df['ma30'] = temp_df['close'].rolling(window=30,center=False).mean().round(2)
             temp_df['ma60'] = temp_df['close'].rolling(window=60,center=False).mean().round(2)
             temp_df['ma120'] = temp_df['close'].rolling(window=120,center=False).mean().round(2)
+            temp_df['ma250'] = temp_df['close'].rolling(window=250,center=False).mean().round(2)
             temp_df['v_ma5'] = temp_df['volume'].rolling(window=5,center=False).mean().round(2)
             temp_df['v_ma10'] = temp_df['volume'].rolling(window=10,center=False).mean().round(2)
         else:#elif '3.4' in platform.python_version():
@@ -1508,6 +1509,7 @@ class Stockhistory:
             temp_df['ma30'] = pd.rolling_mean(temp_df['close'], window=30).round(2)
             temp_df['ma60'] = pd.rolling_mean(temp_df['close'], window=60).round(2)
             temp_df['ma120'] = pd.rolling_mean(temp_df['close'], window=120).round(2)
+            temp_df['ma250'] = pd.rolling_mean(temp_df['close'], window=250).round(2)
             temp_df['v_ma5'] = pd.rolling_mean(temp_df['volume'], window=5).round(2)
             temp_df['v_ma10'] = pd.rolling_mean(temp_df['volume'], window=10).round(2)
         
@@ -1709,7 +1711,7 @@ class Stockhistory:
                                        | (temp_df['chg_min4'].shift(2) >= 1.50)
                                        )
                                       & (temp_df['star']<0.20)
-                                      & (temp_df['cOma5'].abs()<0.02)
+                                      & (temp_df['cOma10']>0.015)
                                       #& ((temp_df['ma5']-temp_df['ma10'])>0)
                                       ),temp_df['rmb_rate'],0)
         """
@@ -2043,6 +2045,7 @@ class Stockhistory:
         """
         if self.temp_hist_df.empty:
             return pd.Series({})
+        self.temp_hist_df['exit_3p'] = np.where((self.temp_hist_df['l_min3'].shift(1)>self.temp_hist_df['ma10']),self.temp_hist_df['l_min3'].shift(1),self.temp_hist_df['ma10'])
         self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['high']!=self.temp_hist_df['low']) 
                                                  & (self.temp_hist_df['p_change']<0)
                                                  & (self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)),self.temp_hist_df['l_min3'].shift(1),0)

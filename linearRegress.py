@@ -50,7 +50,7 @@ def linear_test():
     print(type(X))
     print(X)
     print(Y)
-    #"""
+    """
     TRADE_FEE_PER_1W=16.23#16.23RMB fee to complete PER 10000 trade(buy&sell) if total trade amount great then 16600 RMB
     TRADE_FEE_1W=20.20#20.20RMB fee to complete 10000 trade(buy&sell)
     TRADE_FEE_8000=18.20#18.2RMB fee to complete 8000 trade(buy&sell)
@@ -59,7 +59,7 @@ def linear_test():
     X = [[3000],[5000],[8000],[10000],[16600]]
     Y = [13.2,15.2,18.2,20.2,27.0]
     print(X)
-    #"""
+    """
     #predictvalue = X[-1][-1]+1
     predictvalue = 7500
     result = linear_model_main(X,Y,predictvalue)
@@ -67,4 +67,6 @@ def linear_test():
     print("coefficient" , result['coefficient'])
     print("Predicted value: ",result['predicted_value'])
     show_linear_line(X,Y)
+    
+    #Y = X * result['coefficient'] +  result['intercept']
 linear_test()
