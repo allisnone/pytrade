@@ -19,7 +19,7 @@ def get_data(file_name):
     for single_square_feet ,single_price_value in zip(data['X'],data['close']):
         X_parameter.append([float(single_square_feet)])
         Y_parameter.append(float(single_price_value))
-    next_X = X_parameter[-1][0]
+    next_X = X_parameter[-1][0] + 1
     return X_parameter,Y_parameter,next_X
  
  # Function for Fitting our data to Linear model
