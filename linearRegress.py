@@ -31,9 +31,9 @@ def linear_model_main(X_parameters,Y_parameters,predict_value):
     regr.fit(X_parameters, Y_parameters)
     predict_outcome = regr.predict(predict_value)
     predictions = {}
-    predictions['intercept'] = regr.intercept_
-    predictions['coefficient'] = regr.coef_
-    predictions['predicted_value'] = predict_outcome
+    predictions['intercept'] = regr.intercept_.tolist()[0]
+    predictions['coefficient'] = regr.coef_.tolist()[0]
+    predictions['predicted_value'] = predict_outcome.tolist()[0]
     return predictions
  
 # Function to show the resutls of linear fit model
