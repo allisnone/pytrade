@@ -10,7 +10,7 @@ def get_data(data_df, count=20,column='close'):
     li=data_df.index.values.tolist()
     #print(type(data.index))
     #print(type(data['change']))
-    data_df['X']=pd.core.series.Series(li,index=data.index)
+    data_df['X']=pd.core.series.Series(li,index=data_df.index)
     data = data_df.tail(count)
     #print(data)
     X_parameter = []
