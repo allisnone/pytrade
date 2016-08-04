@@ -27,7 +27,6 @@ def get_data(data_df, count=20,column='close'):
  # Function for Fitting our data to Linear model
 def linear_model_main(X_parameters,Y_parameters,predict_value):
     # Create linear regression object
-    print(predict_value)
     regr = linear_model.LinearRegression()
     regr.fit(X_parameters, Y_parameters)
     predict_outcome = regr.predict(predict_value)
@@ -56,6 +55,8 @@ def get_linear_result(data, count=30,col='close'):
     print("coefficient" , result['coefficient'])
     print("Predicted value: ",result['predicted_value'])
     print("coefficient1 value: ",result['coefficient']/(sum(Y)/len(Y)))
+    print(type(result))
+    print(result)
     result['uniform'] = round(result['coefficient']/(sum(Y)/len(Y)),4)
     #show_linear_line(X,Y)
     return
