@@ -6,17 +6,17 @@ import pandas as pd
 from sklearn import datasets, linear_model
 
 # Function to get data
-def get_data(file_name):
+def get_data(file_name, count=20,column='close'):
     data = pd.read_csv(file_name)
     li=data.index.values.tolist()
     #print(type(data.index))
     #print(type(data['change']))
     data['X']=pd.core.series.Series(li,index=data.index)
-    data = data.tail(20)
+    data = data.tail(count)
     print(data)
     X_parameter = []
     Y_parameter = []
-    for single_square_feet ,single_price_value in zip(data['X'],data['ma30']):
+    for single_square_feet ,single_price_value in zip(data['X'],data[column]):
         X_parameter.append([float(single_square_feet)])
         Y_parameter.append(float(single_price_value))
     min_X = X_parameter[0][0]
@@ -50,27 +50,29 @@ def show_linear_line(X_parameters,Y_parameters):
     plt.show()
  
 def linear_test():
-    X,Y,next_X = get_data('C:/Users/Administrator/pytrade/temp/002060.csv')#'stock_300162.csv')
-    print(type(X))
-    print(X)
-    print(Y)
-    """
-    TRADE_FEE_PER_1W=16.23#16.23RMB fee to complete PER 10000 trade(buy&sell) if total trade amount great then 16600 RMB
-    TRADE_FEE_1W=20.20#20.20RMB fee to complete 10000 trade(buy&sell)
-    TRADE_FEE_8000=18.20#18.2RMB fee to complete 8000 trade(buy&sell)
-    TRADE_FEE_5000=15.20#15.2RMB fee to complete 5000 trade(buy&sell)
-    TRADE_FEE_3000=13.20#13.2RMB fee to complete 3000 trade(buy&sell)
-    X = [[3000],[5000],[8000],[10000],[16600]]
-    Y = [13.2,15.2,18.2,20.2,27.0]
-    print(X)
-    """
-    #predictvalue = X[-1][-1]+1
-    predictvalue = next_X#7500
-    result = linear_model_main(X,Y,predictvalue)
-    print("Intercept value " , result['intercept'])
-    print("coefficient" , result['coefficient'])
-    print("Predicted value: ",result['predicted_value'])
-    show_linear_line(X,Y)
+    columns = ['close', 'ma10', 'ma30', 'ma60','ma120']
+    for column in columns:
+        X,Y,next_X = get_data('C:/Users/Administrator/pytrade/temp/002060.csv', count=20,column)#'stock_300162.csv')
+        print(type(X))
+        print(X)
+        print(Y)
+        """
+        TRADE_FEE_PER_1W=16.23#16.23RMB fee to complete PER 10000 trade(buy&sell) if total trade amount great then 16600 RMB
+        TRADE_FEE_1W=20.20#20.20RMB fee to complete 10000 trade(buy&sell)
+        TRADE_FEE_8000=18.20#18.2RMB fee to complete 8000 trade(buy&sell)
+        TRADE_FEE_5000=15.20#15.2RMB fee to complete 5000 trade(buy&sell)
+        TRADE_FEE_3000=13.20#13.2RMB fee to complete 3000 trade(buy&sell)
+        X = [[3000],[5000],[8000],[10000],[16600]]
+        Y = [13.2,15.2,18.2,20.2,27.0]
+        print(X)
+        """
+        #predictvalue = X[-1][-1]+1
+        predictvalue = next_X#7500
+        result = linear_model_main(X,Y,predictvalue)
+        print("Intercept value " , result['intercept'])
+        print("coefficient" , result['coefficient'])
+        print("Predicted value: ",result['predicted_value'])
+        show_linear_line(X,Y)
     
     #Y = X * result['coefficient'] +  result['intercept']
 linear_test()
