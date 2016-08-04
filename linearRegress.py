@@ -31,11 +31,9 @@ def linear_model_main(X_parameters,Y_parameters,predict_value):
     regr.fit(X_parameters, Y_parameters)
     predict_outcome = regr.predict(predict_value)
     predictions = dict()
-    print(regr.intercept_)
-    print(type(regr.intercept_))
-    predictions['intercept'] = regr.intercept_#.tolist()[0]
-    predictions['coefficient'] = regr.coef_.tolist()[0]
-    predictions['predicted_value'] = predict_outcome.tolist()[0]
+    predictions['intercept'] = round(regr.intercept_,4)#.tolist()[0]
+    predictions['coefficient'] = round(regr.coef_.tolist()[0],4)
+    predictions['predicted_value'] = round(predict_outcome.tolist()[0],4)
     print(predictions)
     return predictions
  
