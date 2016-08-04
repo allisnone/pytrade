@@ -53,7 +53,7 @@ def get_linear_result(data, count=30,col='close'):
     result['uniform'] = round(result['coefficient']/(sum(Y)/len(Y)),6)
     print('----%s--------' % col)
     print(result)
-    #show_linear_line(X,Y)
+    show_linear_line(X,Y)
     return result
 
 def get_all_ma_linear(data, count=30):
