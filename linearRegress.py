@@ -74,6 +74,7 @@ def linear_test():
         print("Intercept value " , result['intercept'])
         print("coefficient" , result['coefficient'])
         print("Predicted value: ",result['predicted_value'])
+        print("coefficient1 value: ",result['coefficient']/(sum(Y)/len(Y)))
         #show_linear_line(X,Y)
     
     #Y = X * result['coefficient'] +  result['intercept']
