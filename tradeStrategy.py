@@ -2068,11 +2068,11 @@ class Stockhistory:
         self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)==0) 
                                                 & (self.temp_hist_df['s_price']>0)
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
-        temp_hist_df =self.temp_hist_df
+        temp_hist_df =self.temp_hist_df.tail(100)
         break_in_df = temp_hist_df[(temp_hist_df['break_in']!=0) & (temp_hist_df['break_in'].shift(1)==0)]
         #print(break_in_df)
         break_in_v_rate = 0
-        
+        tupo_count_100 = len(break_in_df)
         break_in_id = len(temp_hist_df)
         break_in_date = '1977-01-01'
         if break_in_df.empty:
@@ -2163,8 +2163,9 @@ class Stockhistory:
         summary_profit['enter'] = dynamic_buy_price
         summary_profit['position'] = this_position 
         summary_profit['break_in'] = break_in_v_rate 
-        summary_profit['break_in_count'] = last_id - break_in_id
+        summary_profit['break_in_distance'] = last_id - break_in_id
         summary_profit['break_in_date'] = break_in_date
+        summary_profit['break_in_count'] = tupo_count_100
         #summary_profit['max_rmb_rate'] = max_rmb_rate
         #summary_profit['max_rmb_rate'] = max_rmb_rate
         
