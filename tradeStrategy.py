@@ -2162,7 +2162,7 @@ class Stockhistory:
         summary_profit['enter'] = dynamic_buy_price
         summary_profit['position'] = this_position 
         summary_profit['break_in'] = break_in_v_rate 
-        summary_profit['break_in_count'] = last_id - break_in_id + 1
+        summary_profit['break_in_count'] = last_id - break_in_id
         summary_profit['break_in_date'] = break_in_date
         #summary_profit['max_rmb_rate'] = max_rmb_rate
         #summary_profit['max_rmb_rate'] = max_rmb_rate
