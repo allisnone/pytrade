@@ -2070,7 +2070,7 @@ class Stockhistory:
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         temp_hist_df =self.temp_hist_df
         break_in_df = temp_hist_df[(temp_hist_df['break_in']!=0) & (temp_hist_df['break_in'].shift(1)==0)]
-        print(break_in_df)
+        #print(break_in_df)
         break_in_v_rate = 0
         break_in_id = len(temp_hist_df)
         break_in_date = '1977-01-01'
