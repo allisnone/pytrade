@@ -13,13 +13,18 @@ def is_trade_date(given_date_str=None):
     :return: bool type 
     """
     this_day=datetime.datetime.now()
-    this_str=this_day.strftime('%Y-%m-%d')
+    date_format='%Y-%m-%d'
+    this_str=this_day.strftime(date_format)
     open_str=' 09:15:00'
     if given_date_str!=None:
         if given_date_str in except_trade_day_list:
             return False
         else:
-            this_day=datetime.datetime.strptime(given_date_str+open_str,'%Y-%m-%d %X')
+            if '-' in given_date_str:
+                pass
+            else:
+                date_format='%Y/%m/%d'
+            this_day=datetime.datetime.strptime(given_date_str+open_str,date_format + ' %X')
     else:
         if this_str in except_trade_day_list:
             return False
@@ -27,7 +32,7 @@ def is_trade_date(given_date_str=None):
             pass
     return this_day.isoweekday()<6
 
-def get_latest_trade_date(this_date=None):
+def get_latest_trade_date(this_date=None,date_format='%Y-%m-%d'):
     """
     :param this_date: datetime.datetim type, like datetime.datetime.now()
     :return: latest_day_str, str type 
@@ -36,10 +41,11 @@ def get_latest_trade_date(this_date=None):
     if this_date!=None:
             this_day=this_date
     open_str=' 09:25:00'
-    this_str=this_day.strftime('%Y-%m-%d %X')
+    time_format = date_format + ' %X'
+    this_str=this_day.strftime(time_format)
     if (this_day.hour>=0 and this_day.hour<9) or (this_day.hour==9 and this_day.minute<15):
-        this_day=datetime.datetime.strptime(this_str,'%Y-%m-%d %X')+datetime.timedelta(days=-1)
-        this_str=this_day.strftime('%Y-%m-%d')  
+        this_day=datetime.datetime.strptime(this_str,time_format)+datetime.timedelta(days=-1)
+        this_str=this_day.strftime(date_format)  
     latest_day_str=''
     this_str=this_str[:10]
     while this_str>='1990-01-01':
@@ -48,9 +54,9 @@ def get_latest_trade_date(this_date=None):
             #break
         else:
             this_day=this_day+datetime.timedelta(days=-1)
-            this_str=this_day.strftime('%Y-%m-%d')  
+            this_str=this_day.strftime(date_format)  
 
-def get_next_trade_date(given_datetime=None):
+def get_next_trade_date(given_datetime=None,date_format='%Y-%m-%d'):
     """
     :param given_datetime: datetime.datetim type, like datetime.datetime.now()
     :return: next_date_str, str type 
@@ -61,46 +67,50 @@ def get_next_trade_date(given_datetime=None):
         if isinstance(latest_datetime, str):
             latest_datetime_str=latest_datetime+' 10:00:00'
             try:
-                this_day=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
+                this_day=datetime.datetime.strptime(latest_datetime_str,time_format)
             except:
-                this_day=datetime.datetime.strptime(latest_datetime_str,'%Y/%m/%d %X')
+                this_day=datetime.datetime.strptime(latest_datetime_str,date_format + ' %X')
         elif isinstance(latest_datetime, datetime.datetime):
             pass
         else:
             pass
     this_day=this_day+datetime.timedelta(days=1)
-    next_date_str=this_day.strftime('%Y-%m-%d')
-    while next_date_str>='1990-01-01':
+    next_date_str=this_day.strftime(date_format)
+    init_date = '1990-01-01'
+    if '-' not in date_format:
+        init_date = '1990/01/01'
+    while next_date_str>=init_date:
         if is_trade_date(next_date_str):
             return next_date_str
         else:
             this_day=this_day+datetime.timedelta(days=1)
-            next_date_str=this_day.strftime('%Y-%m-%d') 
+            next_date_str=this_day.strftime(date_format) 
 
 #to get the latest trade day
-def get_last_trade_date(given_latest_datetime=None):
+def get_last_trade_date(given_latest_datetime=None,date_format='%Y-%m-%d'):
     """
     :param given_latest_datetime: datetime type
     :return: last_date_str, str type 
     """
+    time_format = date_format + ' %X'
     latest_datetime=datetime.datetime.now()
     if given_latest_datetime!=None:
         latest_datetime=given_latest_datetime
         if isinstance(latest_datetime, str):
             latest_datetime_str=latest_datetime+' 10:00:00'
             try:
-                latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
+                latest_datetime=datetime.datetime.strptime(latest_datetime_str,time_format)
             except:
-                latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y/%m/%d %X')
+                latest_datetime=datetime.datetime.strptime(latest_datetime_str,time_format)
     else:
-        latest_day_str=get_latest_trade_date()
+        latest_day_str=get_latest_trade_date(date_format=date_format)
         latest_datetime_str=latest_day_str+' 10:00:00'
         try:
-            latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
+            latest_datetime=datetime.datetime.strptime(latest_datetime_str,time_format)
         except:
-            latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y/%m/%d %X')
+            latest_datetime=datetime.datetime.strptime(latest_datetime_str,time_format)
     last_datetime=latest_datetime+datetime.timedelta(days=-1)
-    last_date_str=get_latest_trade_date(last_datetime)
+    last_date_str=get_latest_trade_date(last_datetime,date_format=date_format)
     return last_date_str
 
 def is_trade_time_now():

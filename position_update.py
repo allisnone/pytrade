@@ -26,5 +26,5 @@ holding_stocks_df = user.position#['证券代码']  #['code']
 
 
 print(holding_stocks_df)
-stock_sql.drop_table(table_name='myholding')
+#stock_sql.drop_table(table_name='myholding')
 stock_sql.insert_table(data_frame=holding_stocks_df,table_name='myholding')

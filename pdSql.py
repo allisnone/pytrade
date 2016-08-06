@@ -7,6 +7,10 @@ from pandas.io import sql
 from pandas.lib import to_datetime
 from pandas.lib import Timestamp
 import datetime,time,os
+import tushare as ts
+import tradeTime as tt
+import sendEmail as sm
+import easytrader
 #ROOT_DIR='E:/work/stockAnalyze'
 ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
@@ -99,8 +103,9 @@ def get_raw_hist_df(code_str,latest_count=None):
         #print('OSError:',e)
         return df_0
 
-def get_raw_hist_df0(code_str,latest_count=None):
+def get_yh_raw_hist_df(code_str,latest_count=None):
     file_type='csv'
+    ROOT_DIR="C:/中国银河证券海王星/T0002"
     file_name=RAW_HIST_DIR+code_str+'.'+file_type
     raw_column_list=['date','open','high','low','close','volume','rmb']
     #print('file_name=',file_name)
@@ -130,6 +135,7 @@ def get_raw_hist_df0(code_str,latest_count=None):
     except OSError as e:
         #print('OSError:',e)
         return df_0
+    
 def update_one_hist(code_str,stock_sql_obj,histdata_last_df,update_db=True):
     """
     :param code_str: string type, code string_name
@@ -237,7 +243,37 @@ def update_all_hist_data(codes,update_db=True):
     deltatime=datetime.datetime.now()-starttime
     print('update duration=',deltatime.days*24*3600+deltatime.seconds)
     print('update completed')
-        
+
+def get_position(broker='yh',user_file='yh.json'):
+    user = easytrader.use(broker)
+    user.prepare(user_file)
+    holding_stocks_df = user.position#['证券代码']  #['code']
+    user_balance = user.balance#['证券代码']  #['code']
+    account = '36005'
+    if user_file== 'yh1.json':
+        account = '38736'
+    holding_stocks_df['account'] = account
+    this_day=datetime.datetime.now()
+    date_format='%Y/%m/%d'
+    time_format = date_format + ' %X'
+    time_str=this_day.strftime(time_format)
+    holding_stocks_df['update'] = time_str
+    holding_stocks_df['valid'] = 1
+    """
+            当前持仓  股份可用     参考市值   参考市价  股份余额    参考盈亏 交易市场   参考成本价 盈亏比例(%)        股东代码  \
+            0  6300  6300  24885.0   3.95  6300  343.00   深A   3.896   1.39%  0130010635   
+            1   400   400   9900.0  24.75   400  163.00   深A  24.343   1.67%  0130010635   
+            2   600   600  15060.0  25.10   600  115.00   深A  24.908   0.77%  0130010635   
+            3  1260     0  13041.0  10.35  1260  906.06   沪A   9.631   7.47%  A732980330   
+            
+                 证券代码  证券名称  买入冻结 卖出冻结  
+            0  000932  华菱钢铁     0    0  
+            1  000977  浪潮信息     0    0  
+            2  300326   凯利泰     0    0  
+            3  601009  南京银行     0    0  
+    """
+    print(holding_stocks_df)
+    return holding_stocks_df,user_balance       
         
 class StockSQL(object):
     def __init__(self):
@@ -254,13 +290,13 @@ class StockSQL(object):
         else:
             return pd.read_sql_table(table, self.engine, columns)
         
-    def insert_table(self,data_frame,table_name):
+    def insert_table(self,data_frame,table_name,is_index=False):
         """
         :param data_frame: DataFrame type
         :param table_name: string type, name of table
         :return: 
         """
-        data_frame.to_sql(table_name, self.engine, index=False,if_exists='append')#encoding='utf-8')
+        data_frame.to_sql(table_name, self.engine, index=is_index,if_exists='append')#encoding='utf-8')
         return
     
     def query_data(self,table,fields=None,condition=None):
@@ -271,6 +307,7 @@ class StockSQL(object):
         :return: DataFrame type
         """
         query_sql=form_sql(table_name=table, oper_type='query', select_field=fields, where_condition=condition)
+        print(query_sql)
         return pd.read_sql_query(query_sql, self.engine)
     
     def insert_data(self,table,fields,data):
@@ -304,6 +341,7 @@ class StockSQL(object):
         :return: 
         """
         delete_sql=form_sql(table_name=table_name,oper_type='delete',where_condition=condition)
+        print('delete_sql=',delete_sql)
         sql.execute(delete_sql, self.engine)
     
     def drop_table(self,table_name):
@@ -331,7 +369,101 @@ class StockSQL(object):
             except KeyError as e:
                 #print('KeyError:',e)
                 return None
-            
+    
+    def update_sql_index(self, index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False):
+        index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
+                         'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
+        FIX_FACTOR = 1.0
+        scz_code_str='399001'
+        zxb_code_str='399005'
+        chy_code_str='399006'
+        shz ='999999'
+        shz_50 = '000016'
+        hs_300 = '000300'
+        zx_300 ='399008'
+        sz_300 ='399007'
+        d_format='%Y/%m/%d'
+        last_date_str = tt.get_last_trade_date(date_format=d_format)
+        latest_date_str = tt.get_latest_trade_date(date_format=d_format)
+        print('last_date_str=',last_date_str)
+        print('latest_date_str=',latest_date_str)
+        #next_date_str = tt.get_next_trade_date(date_format=d_format)
+        #print(next_date_str)
+        all_index_df = ts.get_index()
+        all_index_df[['open','high','low','close']]=all_index_df[['open','high','low','close']].round(2)
+        all_index_df['amount'] = all_index_df['amount']*(10**8)
+        all_index_df['date'] = latest_date_str
+        all_index_df['factor'] = 1.0
+        need_to_send_mail = []
+        sub = ''
+        for index_name in index_list:
+            yh_symbol = index_symbol_maps[index_name]
+            index_df = get_yh_raw_hist_df(code_str=yh_symbol)
+            index_df['amount'] = index_df['rmb']
+            del index_df['rmb']
+            index_df['factor'] = FIX_FACTOR
+            try:
+                date_data = self.query_data(table=index_name,fields='date',condition="date>='%s'" % last_date_str)
+                data_len = len(date_data)
+                #print(data_len)
+                if len(date_data)==0: #no update more than two day
+                    print('Need to manual update %s index from YH APP' % index_name)
+                    need_to_send_mail.append(index_name)
+                    sub = '多于两天没有更新指数数据库'
+                elif len(date_data) == 1: # update by last date
+                    self.update_sql_index_today(index_name,latest_date_str,all_index_df,index_symbol_maps)
+                    pass
+                elif len(date_data) == 2: #update to  latest date
+                    print(' %s index updated to %s.' % (index_name,latest_date_str))
+                    if force_update:
+                        print(' force update %s index' % index_name)
+                        self.delete_data(table_name=index_name,condition="date='%s'" % latest_date_str)
+                        self.update_sql_index_today(index_name,latest_date_str,all_index_df,index_symbol_maps)
+                        pass
+                    else:
+                        pass
+                else:
+                    pass
+            #print(date_data)
+            except:
+                sub = '数据表不存在'
+                need_to_send_mail.append(index_name)
+                print('Table %s not exist.'% index_name)
+                self.insert_table(data_frame=index_df,table_name=index_name,is_index=False)
+                print('Created the table %s.' % index_name)
+        if need_to_send_mail:
+            content = '%s 数据表更新可能异常' % need_to_send_mail
+            sm.send_mail(sub,content,mail_to_list=None)
+    
+    def update_sql_index_today(self,index_name,latest_date_str,all_index_df,index_symbol_maps):
+        index_sybol = index_symbol_maps[index_name]
+        if index_name=='sh':
+            index_sybol = '000001'
+        columns = ['date','open','high','low','close','volume','amount','factor']
+        single_index_df = all_index_df[all_index_df['code']==index_sybol]
+        single_index_df = single_index_df[columns]
+        if single_index_df.empty:
+            return
+        self.insert_table(data_frame=single_index_df,table_name=index_name,is_index=False)
+        
+        
+    def update_sql_position(self, users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}}):
+        sub = '持仓更异常'
+        position_check = []
+        for account in list(users.keys()):
+            #stock_sql.drop_table(table_name='myholding')
+            try:
+                broker = users[account]['broker']
+                user_file = users[account]['json']
+                position_df,balance =get_position(broker, user_file)
+                stock_sql.insert_table(data_frame=position_df,table_name='hold')
+            except:
+                position_check.append(account)
+            #stock_sql.insert_table(data_frame=position_df,table_name='balance')
+        if position_check:
+            content = '%s 持仓表更新可能异常' % position_check
+            sm.send_mail(sub,content,mail_to_list=None)
+        
     def update_last_db_date(self,code_str,last_date,update_date):
         """
         :param code_str: string type, code_name
