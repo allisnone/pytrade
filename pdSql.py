@@ -452,12 +452,12 @@ class StockSQL(object):
         position_check = []
         for account in list(users.keys()):
             #stock_sql.drop_table(table_name='myholding')
-            #try:
+            try:
                 broker = users[account]['broker']
                 user_file = users[account]['json']
                 position_df,balance =get_position(broker, user_file)
                 stock_sql.insert_table(data_frame=position_df,table_name='hold')
-            #except:
+            except:
                 position_check.append(account)
             #stock_sql.insert_table(data_frame=position_df,table_name='balance')
         if position_check:

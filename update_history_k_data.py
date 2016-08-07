@@ -26,6 +26,7 @@ if __name__ == "__main__":
     print('First update completed: ', datetime.datetime.now())
     
     updated_date_count = 1
+    stock_sql = pds.StockSQL()
     while True:
         #this_time=datetime.datetime.now()
         #hour=this_time.hour
@@ -35,7 +36,12 @@ if __name__ == "__main__":
         sleep_seconds = 60*60
         if tt.is_trade_date():
             if tt.is_trade_time_now():
-                pass
+                if datetime.datetime.now().minute%2==0:
+                    """跟新持仓信息到数据库"""
+                    stock_sql.update_sql_position()
+                    """跟新指数历史数据到数据库"""
+                    stock_sql.update_sql_index(force_update=True)#,'sz','zxb','cyb','hs300','sh50'])
+                    sleep_seconds=30
             else:
                 if datetime.datetime.now().hour==18:
                     #easyhistory.init('D', export='csv', path="C:/hist")
@@ -43,7 +49,7 @@ if __name__ == "__main__":
                     updated_date_count = updated_date_count +1
                     print('update count %s at: ' % updated_date_count, datetime.datetime.now() )
                     mybt.back_test(k_num=date_str, given_codes=[],except_stocks=except_stocks)
-                    stock_sql = pds.StockSQL()
+                    
                     """跟新持仓信息到数据库"""
                     stock_sql.update_sql_position()
                     """跟新指数历史数据到数据库"""
