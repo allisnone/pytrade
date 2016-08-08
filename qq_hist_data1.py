@@ -5,6 +5,7 @@ Created on 2016-8-1
 '''
 import urllib.request
 import csv
+import pandas as pd
 #http://hq.sinajs.cn/list=sh000001
 #http://qt.gtimg.cn/q=sh000001
 #http://qt.gtimg.cn/q=sh000001
@@ -31,8 +32,10 @@ data_list = []
 data =[]
 fields = data_str[0].split(',')
 dict_len = len(fields)
+"""
 for i in range(0,dict_len):
     fields[i] = fields[i].strip('\00').encode()
+"""
 print('fields=',fields)
 for one_str in data_str[1:-1]:
     one_data = one_str.split(',')
@@ -40,8 +43,8 @@ for one_str in data_str[1:-1]:
     
     one_dict = dict()
     for i in range(dict_len):
-        one_data[i] = one_data[i].strip('\00').encode()
-        one_data[i] = bytes(one_data[i],encoding="utf-8")
+        #one_data[i] = one_data[i].strip('\00').encode()
+        #one_data[i] = bytes(one_data[i],encoding="utf-8")
         one_dict[fields[i]] = one_data[i]
     data_list.append(one_data)
     data.append(one_dict)
@@ -57,4 +60,7 @@ with open('sh0001.csv', 'wb') as csvfile:
 #fields = [1,2,3,4,5,6]
 #csv_writer.writerow(fields)
 #csv_writer.writerow(the_page)
-csv_writer.writerows(data_list)
+#csv_writer.writerows(data_list)
+
+df = pd.DataFrame(data,columns=fields)
+print(df)
