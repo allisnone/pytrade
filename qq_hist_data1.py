@@ -23,7 +23,7 @@ url = 'http://ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=
 req = urllib.request.Request(url)
 response = urllib.request.urlopen(req)
 #the_page = response.read() 
-the_page = response.read().decode('utf-8')#.encode('utf-8') 
+the_page = response.read()#.decode('utf-8')#.encode('utf-8') 
 print(the_page)
 data_str = the_page.split('\n')
 data =[]
