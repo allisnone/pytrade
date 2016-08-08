@@ -389,7 +389,22 @@ class StockSQL(object):
         print('latest_date_str=',latest_date_str)
         #next_date_str = tt.get_next_trade_date(date_format=d_format)
         #print(next_date_str)
-        all_index_df = ts.get_index()
+        try:
+            #http://hq.sinajs.cn/list=sh000001
+            #http://qt.gtimg.cn/q=sh000001
+            #http://qt.gtimg.cn/q=sh000001
+            #http://qt.gtimg.cn/q=sh000016
+            #http://qt.gtimg.cn/q=sz399001
+            #http://qt.gtimg.cn/q=sz399005
+            #http://qt.gtimg.cn/q=sz399006
+            #http://www.07net01.com/2015/10/953702.html
+            #ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=2016&g=d
+            #ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=2016&g=d
+            #http://qt.gtimg.cn/q=sh000001
+            all_index_df = ts.get_index()
+        except:
+            sleep(3)
+            all_index_df = ts.get_index()
         all_index_df[['open','high','low','close']]=all_index_df[['open','high','low','close']].round(2)
         all_index_df['amount'] = all_index_df['amount']*(10**8)
         all_index_df['date'] = latest_date_str
