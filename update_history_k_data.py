@@ -40,7 +40,7 @@ if __name__ == "__main__":
                     """更新持仓信息到数据库"""
                     stock_sql.update_sql_position()
                     """更新指数历史数据到数据库"""
-                    stock_sql.update_sql_index(force_update=True)#,'sz','zxb','cyb','hs300','sh50'])
+                    #stock_sql.update_sql_index(force_update=True)#,'sz','zxb','cyb','hs300','sh50'])
                     sleep_seconds=30
             else:
                 if datetime.datetime.now().hour==18:
@@ -54,7 +54,7 @@ if __name__ == "__main__":
                     """更新持仓信息到数据库"""
                     stock_sql.update_sql_position()
                     """更新指数历史数据到数据库"""
-                    stock_sql.update_sql_index(force_update=True)#,'sz','zxb','cyb','hs300','sh50'])
+                    #stock_sql.update_sql_index(force_update=True)#,'sz','zxb','cyb','hs300','sh50'])
                     sleep_seconds = tt.get_remain_time_to_trade()
                 else:
                     pass
