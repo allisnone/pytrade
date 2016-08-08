@@ -76,11 +76,11 @@ def get_yahoo_hist(symbol,from_date,to_date): #2016-01-25  or 2016/01/25
     print(hist_df)
     return hist_df
 
-def get_url_content(url):
+def get_url_content(url, decode_type='gbk'):  #qq: decode_type='gbk'
     req = urllib.request.Request(url)
     response = urllib.request.urlopen(req)
     #the_page = response.read() 
-    the_page = response.read().decode('gbk')#('utf-8')#.encode('utf-8') 
+    the_page = response.read().decode(decode_type)#('utf-8')#.encode('utf-8') 
     return the_page
 
 def get_hangqing(symbol='000858'):
