@@ -4,7 +4,7 @@ import pdSql as pds
 
 
 stock_sql = pds.StockSQL()
-update_data = get_table_update_time()
+update_data = stock_sql.get_table_update_time()
 
 print(update_data)
 broker = 'yh'
