@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 #import easytrader
+import easyhistory
 import pdSql as pds
 import sys
 update_type = ''
@@ -17,6 +18,8 @@ if update_type == 'index':
     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
 elif  update_type == 'position':
     stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
+elif update_type == 'stock':
+    easyhistory.update(path="C:/hist",stock_codes=[])
 else:
     pass
 
