@@ -370,6 +370,18 @@ class StockSQL(object):
             except KeyError as e:
                 #print('KeyError:',e)
                 return None
+            
+    def get_table_update_time(self):
+        update_time_sql = "select TABLE_NAME,UPDATE_TIME from information_schema.TABLES where TABLE_SCHEMA='stock';"
+        update_datas = pd.read_sql_query(update_time_sql, self.engine)
+        data = {}
+        if update_datas:
+            for update_data in update_datas:
+                if len(update_data)>=2:
+                    table_name = update_data[0]
+                    update_time = update_data[1]
+                    data.update({table_name:update_time})
+        return data
     
     def update_sql_index(self, index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False):
         index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
@@ -452,12 +464,12 @@ class StockSQL(object):
             content = '%s 数据表更新可能异常' % need_to_send_mail
             sm.send_mail(sub,content,mail_to_list=None)
     
-    def update_sql_index_today(self,index_name,latest_date_str,all_index_df,index_symbol_maps):
-        index_sybol = index_symbol_maps[index_name]
-        if index_name=='sh':
-            index_sybol = '000001'
+    def update_sql_index_today(self,index_name,latest_date_str,all_index_df):
+        #index_sybol = index_symbol_maps[index_name]
+        #if index_name=='sh':
+        #   index_sybol = '000001'
         columns = ['date','open','high','low','close','volume','amount','factor']
-        single_index_df = all_index_df[all_index_df['code']==index_sybol]
+        single_index_df = all_index_df[all_index_df['code']==index_name]
         single_index_df = single_index_df[columns]
         if single_index_df.empty:
             return

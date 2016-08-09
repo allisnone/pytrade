@@ -4,6 +4,9 @@ import pdSql as pds
 
 
 stock_sql = pds.StockSQL()
+update_data = get_table_update_time()
+
+print(update_data)
 broker = 'yh'
 need_data = 'yh.json'
 user = easytrader.use('yh')
@@ -26,5 +29,7 @@ holding_stocks_df = user.position#['证券代码']  #['code']
 
 
 print(holding_stocks_df)
+
+
 #stock_sql.drop_table(table_name='myholding')
-stock_sql.insert_table(data_frame=holding_stocks_df,table_name='myholding')
+#stock_sql.insert_table(data_frame=holding_stocks_df,table_name='myholding')

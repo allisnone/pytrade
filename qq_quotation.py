@@ -41,7 +41,6 @@ g – 时间周期。Example: g=w, 表示周期是’周’。d->’日’(day),
 
 """
 
-
 def get_yahoo_hist(symbol,from_date,to_date): #2016-01-25  or 2016/01/25
     from_date_list = from_date.split('-')
     to_date_list = to_date.split('-')
