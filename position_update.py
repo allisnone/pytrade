@@ -1,17 +1,34 @@
 # -*- coding:utf-8 -*-
-import easytrader
+#import easytrader
 import pdSql as pds
-
+import sys
+update_type = ''
+#update_type = 'index'
+#update_type = 'position'
+if len(sys.argv)>=2:
+    if sys.argv[1] and isinstance(sys.argv[1], str):
+        update_type = sys.argv[1]  #start date string   
 
 stock_sql = pds.StockSQL()
 update_data = stock_sql.get_table_update_time()
+print('last_position_update_time=',update_data['hold'])
+print('last_index_update_time=',update_data['sh'])
+if update_type == 'index':
+    stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
+elif  update_type == 'position':
+    stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
+else:
+    pass
 
+"""
 print(update_data)
 broker = 'yh'
 need_data = 'yh.json'
 user = easytrader.use('yh')
 user.prepare('yh.json')
 holding_stocks_df = user.position#['证券代码']  #['code']
+print(holding_stocks_df)
+"""
 """
 当前持仓  股份可用     参考市值   参考市价  股份余额    参考盈亏 交易市场   参考成本价 盈亏比例(%)        股东代码  \
 0  6300  6300  24885.0   3.95  6300  343.00   深A   3.896   1.39%  0130010635   
@@ -28,7 +45,6 @@ holding_stocks_df = user.position#['证券代码']  #['code']
 
 
 
-print(holding_stocks_df)
 
 
 #stock_sql.drop_table(table_name='myholding')

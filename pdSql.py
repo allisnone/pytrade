@@ -273,7 +273,7 @@ def get_position(broker='yh',user_file='yh.json'):
             2  300326   凯利泰     0    0  
             3  601009  南京银行     0    0  
     """
-    print(holding_stocks_df)
+    #print(holding_stocks_df)
     return holding_stocks_df,user_balance       
         
 class StockSQL(object):
@@ -374,21 +374,15 @@ class StockSQL(object):
     def get_table_update_time(self):
         update_time_sql = "select TABLE_NAME,UPDATE_TIME from information_schema.TABLES where TABLE_SCHEMA='stock';"
         update_datas = pd.read_sql_query(update_time_sql, self.engine)
-        print(update_datas)
         update_datas = update_datas.set_index('TABLE_NAME')
-        print(update_datas.index.values.tolist())
-        print(update_datas['cyb'])
-        print(update_datas['cyb'].iloc[0].UPDATE_TIME)
-        data = {}
+        table_time = {}
         if update_datas.empty:
             pass
         else:
-            for update_data in update_datas:
-                if len(update_data)>=2:
-                    table_name = update_data[0]
-                    update_time = update_data[1]
-                    data.update({table_name:update_time})
-        return data
+            for index in update_datas.index.values.tolist():
+                update_time = update_datas.loc[index].UPDATE_TIME
+                table_time.update({index:update_time})
+        return table_time
     
     def update_sql_index(self, index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False):
         index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
@@ -410,28 +404,19 @@ class StockSQL(object):
         #next_date_str = tt.get_next_trade_date(date_format=d_format)
         #print(next_date_str)
         try:
-            #http://hq.sinajs.cn/list=sh000001
-            #http://qt.gtimg.cn/q=sh000001
-            #http://qt.gtimg.cn/q=sh000001
-            #http://qt.gtimg.cn/q=sh000016
-            #http://qt.gtimg.cn/q=sz399001
-            #http://qt.gtimg.cn/q=sz399005
-            #http://qt.gtimg.cn/q=sz399006
-            #http://www.07net01.com/2015/10/953702.html
-            #ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=2016&g=d
-            #ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=2016&g=d
-            #http://qt.gtimg.cn/q=sh000001
             all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'])
             #all_index_df = ts.get_index()
         except:
             sleep(3)
             all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'])
-        all_index_df[['open','high','low','close']]=all_index_df[['open','high','low','close']].round(2)
-        all_index_df['amount'] = all_index_df['amount']*(10**8)
-        all_index_df['date'] = latest_date_str
+        #all_index_df[['open','high','low','close']]=all_index_df[['open','high','low','close']].round(2)
+        #all_index_df['amount'] = all_index_df['amount']*(10**8)
+        #all_index_df['date'] = latest_date_str
         all_index_df['factor'] = 1.0
+        print(all_index_df)
         need_to_send_mail = []
         sub = ''
+        #table_update_times = self.get_table_update_time()
         for index_name in index_list:
             yh_symbol = index_symbol_maps[index_name]
             index_df = get_yh_raw_hist_df(code_str=yh_symbol)
@@ -442,10 +427,14 @@ class StockSQL(object):
                 date_data = self.query_data(table=index_name,fields='date',condition="date>='%s'" % last_date_str)
                 data_len = len(date_data)
                 #print(data_len)
+                #this_table_update_time = table_update_times[index_name]
+                #print('this_table_update_time=', this_table_update_time)
                 if len(date_data)==0: #no update more than two day
-                    print('Need to manual update %s index from YH APP' % index_name)
+                    print('Need to manual update %s index from YH APP! Please make suere you have sync up YH data' % index_name)
                     need_to_send_mail.append(index_name)
                     sub = '多于两天没有更新指数数据库'
+                    self.drop_table(table_name=index_name)
+                    self.insert_table(data_frame=index_df,table_name=index_name)
                 elif len(date_data) == 1: # update by last date
                     self.update_sql_index_today(index_name,latest_date_str,all_index_df,index_symbol_maps)
                     pass
@@ -491,11 +480,12 @@ class StockSQL(object):
             try:
                 broker = users[account]['broker']
                 user_file = users[account]['json']
-                position_df,balance =get_position(broker, user_file)
-                stock_sql.insert_table(data_frame=position_df,table_name='hold')
+                position_df,balance = get_position(broker, user_file)
+                self.insert_table(data_frame=position_df,table_name='hold')
             except:
                 position_check.append(account)
-            #stock_sql.insert_table(data_frame=position_df,table_name='balance')
+            #self.insert_table(data_frame=position_df,table_name='balance')
+            sleep(10)
         if position_check:
             content = '%s 持仓表更新可能异常' % position_check
             sm.send_mail(sub,content,mail_to_list=None)

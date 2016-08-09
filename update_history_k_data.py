@@ -26,11 +26,11 @@ if __name__ == "__main__":
     print('First update completed: ', datetime.datetime.now())
     
     updated_date_count = 1
-    stock_sql = pds.StockSQL()
     while True:
         #this_time=datetime.datetime.now()
         #hour=this_time.hour
         #minute=this_time.minute
+        stock_sql = pds.StockSQL()
         last_year_date =datetime.datetime.now() + datetime.timedelta(days=-365)
         date_str = last_year_date.strftime('%Y-%m-%d')
         sleep_seconds = 60*60
@@ -38,9 +38,9 @@ if __name__ == "__main__":
             if tt.is_trade_time_now():
                 if datetime.datetime.now().minute%2==0:
                     """更新持仓信息到数据库"""
-                    stock_sql.update_sql_position()
+                    stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
                     """更新指数历史数据到数据库"""
-                    #stock_sql.update_sql_index(force_update=True)#,'sz','zxb','cyb','hs300','sh50'])
+                    stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=True)
                     sleep_seconds=30
             else:
                 if datetime.datetime.now().hour==18:
@@ -52,9 +52,9 @@ if __name__ == "__main__":
                     mybt.back_test(k_num=date_str, given_codes=[],except_stocks=except_stocks)
                     
                     """更新持仓信息到数据库"""
-                    stock_sql.update_sql_position()
+                    stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
                     """更新指数历史数据到数据库"""
-                    #stock_sql.update_sql_index(force_update=True)#,'sz','zxb','cyb','hs300','sh50'])
+                    stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
                     sleep_seconds = tt.get_remain_time_to_trade()
                 else:
                     pass

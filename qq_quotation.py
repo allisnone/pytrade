@@ -90,9 +90,9 @@ def format_symbol(code):
                          'sh50':'000016','sz300':'399007','zx300':'399008'}#'hs300':'000300'}
     if code in list(index_symbol_maps.keys()): #index
         symbol = 'sz%s' % index_symbol_maps[code]
-        if code<'000020':
+        if index_symbol_maps[code]<'100000':
             symbol = symbol.replace('sz', 'sh')
-    elif code>='600000':  #stock or fund
+    elif code>='500000':  #stock or fund
         symbol = symbol.replace('sz', 'sh')
     else:
         pass
@@ -147,14 +147,77 @@ def get_qq_quotation(symbol='000858',decode_type='gbk'):
     48: 跌停价  
     """
     base_url ='http://qt.gtimg.cn/q='
+    #symbol = format_symbol(symbol)
     content = get_url_content(base_url,symbol)
     if len(content.split('"'))==1:
         return list()
     data = content.split('"')[1].split('~')
     return data
 
-def format_quotation_data(q_data):
-    return
+def format_quotation_data(q_data, code_str):
+    data_dict = dict()
+    if len(q_data)>=48:
+        symbol = q_data[2]
+        index_symbol_maps = {'sh':'000001','sz':'399001','zxb':'399005','cyb':'399006',
+                         'sh50':'000016','sz300':'399007','zx300':'399008'}#'hs300':'000300'}
+        if code_str in list(index_symbol_maps.keys()): #index
+            symbol = code_str
+        else:
+            pass
+        data_dict={
+                'name': q_data[1],
+                'code': symbol,
+                'now': float(q_data[3]),
+                'close': float(q_data[4]),
+                'open': float(q_data[5]),
+                'volume': float(q_data[6]) * 100,
+                'bid_volume': int(q_data[7]) * 100,
+                'ask_volume': float(q_data[8]) * 100,
+                'bid1': float(q_data[9]),
+                'bid1_volume': int(q_data[10]) * 100,
+                'bid2': float(q_data[11]),
+                'bid2_volume': int(q_data[12]) * 100,
+                'bid3': float(q_data[13]),
+                'bid3_volume': int(q_data[14]) * 100,
+                'bid4': float(q_data[15]),
+                'bid4_volume': int(q_data[16]) * 100,
+                'bid5': float(q_data[17]),
+                'bid5_volume': int(q_data[18]) * 100,
+                'ask1': float(q_data[19]),
+                'ask1_volume': int(q_data[20]) * 100,
+                'ask2': float(q_data[21]),
+                'ask2_volume': int(q_data[22]) * 100,
+                'ask3': float(q_data[23]),
+                'ask3_volume': int(q_data[24]) * 100,
+                'ask4': float(q_data[25]),
+                'ask4_volume': int(q_data[26]) * 100,
+                'ask5': float(q_data[27]),
+                'ask5_volume': int(q_data[28]) * 100,
+                'recent_trade': q_data[29],  # 换成英文  # 最近逐笔成交
+                'datetime': dt.datetime.strptime(q_data[30], '%Y%m%d%H%M%S'),
+                'date': dt.datetime.strptime(q_data[30], '%Y%m%d%H%M%S').strftime('%Y/%m/%d'),
+                'increase': float(q_data[31]),  # 换成英文 #涨跌
+                'increase_rate': float(q_data[32]),  # 换成英文  #涨跌(%)
+                'high': float(q_data[33]),
+                'low': float(q_data[34]),
+                '价格/成交量(手)/成交额': q_data[35],  # 换成英文
+                '成交量(手)': int(q_data[36]) * 100,  # 换成英文
+                'amount': float(q_data[37]) * 10000,  # 换成英文  #成交额(万)
+                'turnover': float(q_data[38]) if q_data[38] != '' else None,
+                'PE': float(q_data[39]) if q_data[39] != '' else None,
+                'unknown': q_data[40],
+                'high_2': float(q_data[41]),  # 意义不明
+                'low_2': float(q_data[42]),  # 意义不明
+                '振幅': float(q_data[43]),  # 换成英文
+                '流通市值': float(q_data[44]) if q_data[44] != '' else None,  # 换成英文
+                '总市值': float(q_data[45]) if q_data[44] != '' else None,  # 换成英文
+                'PB': float(q_data[46]),
+                '涨停价': float(q_data[47]),  # 换成英文
+                '跌停价': float(q_data[48])  # 换成英文
+                }
+    else:
+        pass
+    return data_dict
 
 def get_zijin():
     #http://qt.gtimg.cn/q=ff_sz000858
@@ -232,6 +295,7 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50']):
         index_data = get_qq_quotation(index)
         if not index_data:
             continue
+        """
         this_data = {}
         date_str = index_data[30]
         date = date_str[:4] + '-' + date_str[4:6] + '-' + date_str[6:8]
@@ -245,8 +309,10 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50']):
         this_data['amount'] = index_data[37]
         print(this_data)
         #data.update({symbol:this_data})
+        """
+        this_data = format_quotation_data(index_data,index)
         data.append(this_data)
-    print(data)
+    #print(data)
     data_df = pd.DataFrame(data,columns=columns)
     return data_df
 
