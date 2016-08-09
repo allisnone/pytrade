@@ -374,8 +374,11 @@ class StockSQL(object):
     def get_table_update_time(self):
         update_time_sql = "select TABLE_NAME,UPDATE_TIME from information_schema.TABLES where TABLE_SCHEMA='stock';"
         update_datas = pd.read_sql_query(update_time_sql, self.engine)
+        print(update_datas)
         data = {}
-        if update_datas:
+        if update_datas.empty:
+            pass
+        else:
             for update_data in update_datas:
                 if len(update_data)>=2:
                     table_name = update_data[0]
