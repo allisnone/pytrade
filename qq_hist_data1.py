@@ -83,7 +83,7 @@ def get_url_content(url, decode_type='gbk'):  #qq: decode_type='gbk'
     the_page = response.read().decode(decode_type)#('utf-8')#.encode('utf-8') 
     return the_page
 
-def get_hangqing(symbol='000858'):
+def get_hangqing(symbol='000858',type='stock'):
     #http://blog.csdn.net/ustbhacker/article/details/8365756
     """
     v_sz000858="51~五 粮 液~000858~
@@ -132,9 +132,17 @@ def get_hangqing(symbol='000858'):
     48: 跌停价  
     """
     url ='http://qt.gtimg.cn/q=sz%s' % symbol
-    if symbol>='600000':
-        url = url.replace('sz', 'sh')
+    if type=='stock':
+        if symbol>='600000':
+            url = url.replace('sz', 'sh')
+    elif type == 'index':
+        if symbol<'000020':
+            url = url.replace('sz', 'sh')
+    else:
+        return list()
+    print(url)
     content = get_url_content(url)
+    print(content.split('"'))
     data = content.split('"')[1].split('~')
     print(data)
     print(data[48])
@@ -201,8 +209,74 @@ def get_zhaiyao():
     
     return
 
-get_zijin()
 
+def ge_index_hangqing(indexs=['sh','sz','zxb','cyb','sz300','sh50'],force_update=False):
+    #http://qt.gtimg.cn/q=sh000001
+    #http://qt.gtimg.cn/q=sh000016
+    #http://qt.gtimg.cn/q=sz399001
+    #http://qt.gtimg.cn/q=sz399005
+    #http://qt.gtimg.cn/q=sz399006
+    #http://qt.gtimg.cn/q=sz399006
+    index_symbol_maps = {'sh':'000001','sz':'399001','zxb':'399005','cyb':'399006',
+                         'sh50':'000016','sz300':'399007','zx300':'399008'}#'hs300':'000300'}
+    data = list()
+    columns = ['code','date','open','high','low','close','volume','amount']#,'factor']
+    for index in indexs:
+        symbol = index_symbol_maps[index]
+        index_data = get_hangqing(symbol,type='index')
+        this_data = {}
+        date_str = index_data[30]
+        date = date_str[:4] + '-' + date_str[4:6] + '-' + date_str[6:8]
+        this_data['code'] = symbol
+        this_data['date'] = date
+        this_data['open'] = index_data[5]
+        this_data['high'] = index_data[33]
+        this_data['low'] = index_data[34]
+        this_data['close'] = index_data[3]
+        this_data['volume'] = index_data[36]
+        this_data['amount'] = index_data[37]
+        print(this_data)
+        #data.update({symbol:this_data})
+        data.append(this_data)
+    print(data)
+    data_df = pd.DataFrame(data,columns=columns)
+    return data_df
+
+
+def index_quotation(indexs=['sh','sz','zxb','cyb','sz300','sh50'],force_update=False):
+    #http://qt.gtimg.cn/q=sh000001
+    #http://qt.gtimg.cn/q=sh000016
+    #http://qt.gtimg.cn/q=sz399001
+    #http://qt.gtimg.cn/q=sz399005
+    #http://qt.gtimg.cn/q=sz399006
+    #http://qt.gtimg.cn/q=sz399006
+    index_symbol_maps = {'sh':'000001','sz':'399001','zxb':'399005','cyb':'399006',
+                         'sh50':'000016','sz300':'399007','zx300':'399008'}#'hs300':'000300'}
+    data = {}
+    import easyquotation
+    quotation = easyquotation.use('qq')
+    for index in indexs:
+        symbol = index_symbol_maps[index]
+        url ='http://qt.gtimg.cn/q=sz%s' % symbol
+        if type=='stock':
+            if symbol>='600000':
+                url = url.replace('sz', 'sh')
+        elif type == 'index':
+            if symbol<'000020':
+                url = url.replace('sz', 'sh')
+        else:
+            pass
+        #index_data = get_hangqing(symbol)
+        index_data = get_url_content(url, decode_type='gbk')
+        print(index_data)
+        q_data = quotation.format_response_data(index_data)
+        print( q_data)
+    #quotation.stocks(['000001', '162411'])
+    
+#get_zijin()
+#index_quotation(indexs=['sh','sz','zxb','cyb','hs300','sh50'])
+
+print(ge_index_hangqing())
 """
 url = 'http://qt.gtimg.cn/q=sh000001'
 url = 'http://ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=2016&g=d'
