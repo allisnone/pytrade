@@ -16,6 +16,7 @@ ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
 RAW_HIST_DIR=ROOT_DIR+'/export/'  
 #HIST_DIR=ROOT_DIR+'/update/'
+import qq_quotation as qq
 
 def form_sql(table_name,oper_type='query',select_field=None,where_condition=None,insert_field=None,update_field=None,update_value=None):
     """
@@ -401,10 +402,11 @@ class StockSQL(object):
             #ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=2016&g=d
             #ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=2016&g=d
             #http://qt.gtimg.cn/q=sh000001
-            all_index_df = ts.get_index()
+            all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'])
+            #all_index_df = ts.get_index()
         except:
             sleep(3)
-            all_index_df = ts.get_index()
+            all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'])
         all_index_df[['open','high','low','close']]=all_index_df[['open','high','low','close']].round(2)
         all_index_df['amount'] = all_index_df['amount']*(10**8)
         all_index_df['date'] = latest_date_str
