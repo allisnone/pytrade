@@ -376,7 +376,7 @@ class StockSQL(object):
         update_datas = pd.read_sql_query(update_time_sql, self.engine)
         print(update_datas)
         update_datas = update_datas.set_index('TABLE_NAME')
-        print(update_datas)
+        print(update_datas.index.values.tolist())
         print(update_datas['cyb'])
         print(update_datas['cyb'].iloc[0].UPDATE_TIME)
         data = {}
