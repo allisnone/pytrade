@@ -26,8 +26,10 @@ def get_hist_indicator(easyhistory_obj,code_str):
     res = easyhistory_obj[code_str].MFI(timeperiod=14)  #MFI
     res = easyhistory_obj[code_str].ATR(timeperiod=14)  #Average True Range 
     res = easyhistory_obj[code_str].NATR(timeperiod=14)  #Normalized Average True Range 
+    res = easyhistory_obj[code_str].MOM(timeperiod=12)  #Momentum Indicators
     return res
 res = get_hist_indicator(easyhistory_obj=his,code_str=test_code)
+res['MTM'] = 100*res['MOM']/(res['close'].shift(12))
 print( res)
 res.to_csv('%s.csv' % test_code)
 describe_df = his[test_code].MA(1).tail(3).describe()
