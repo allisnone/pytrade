@@ -25,7 +25,6 @@ def get_index():
         houyue = 0.0
         dapan = 0.3
         chengzhang = 0.0
-        
     return
 
 def update_db_category():
