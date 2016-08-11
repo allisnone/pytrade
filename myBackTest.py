@@ -138,9 +138,13 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
         consider_df = all_result_df[(all_result_df['max_rmb_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & (all_result_df['invalid']==0)]# & (all_result_df['last_trade_price'] ==0)]
         consider_df.to_csv('./temp/consider_%s.csv' % k_num )
         
+        active_df = all_result_df[(all_result_df['max_r']<0.4)  & (all_result_df['name']!='NA') & # (all_result_df['min']>-0.08)  & (all_result_df['position']>0.35) &
+                                  (all_result_df['max']>(4 *all_result_df['min'].abs())) & (all_result_df['invalid']==0) &(all_result_df['stopped']==0)]
+        active_df.to_csv('./temp/active_%s.csv' % k_num )
+        
         tupo_df = all_result_df[(all_result_df['break_in_distance']!=0) &(all_result_df['break_in_distance']<=20) & 
                                 (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & 
-                                (all_result_df['invalid']==0 & all_result_df['name'])!='NA' & all_result_df['last_trade_price']!=0]# & (all_result_df['last_trade_price'] ==0)]
+                                (all_result_df['invalid']==0) & (all_result_df['name']!='NA') & (all_result_df['last_trade_price']!=0)]# & (all_result_df['last_trade_price'] ==0)]
         tupo_df.to_csv('./temp/tupo_%s.csv' % k_num )
         
     result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
