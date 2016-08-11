@@ -296,6 +296,16 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
     else:
         d_data = format_quotation_data(get_qq_quotation(symbol='000858'), code_str='000858')
         set_columns = list(d_data.keys())
+        """
+        set_columns= ['ask1', 'bid1_volume', 'code', 'price_volume_amount', 'ask5_volume', 'ask5', 
+                      'PE', 'now', 'bid2_volume', 'bid5', 'recent_trade', 'wave', 'high', 'close', 
+                      'circulation', 'bid2', 'bid3', 'ask1_volume', 'increase', 'name', 'low', 
+                      'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 
+                      'datetime', 'open', 'total_market', 'low_2', 'topest', 'ask2_volume', 'turnover', 
+                      'ask_volume', 'bid1', 'amount', 'increase_rate', 'PB', 'ask2', 'lowest', 
+                      'ask4_volume', 'date', 'bid4_volume', 'ask4', 'volume', 'unknown', 'bid4']
+        """
+        #print('set_columns=',set_columns)
     for code in codes:
         #symbol = index_symbol_maps[index]
         quo_data = get_qq_quotation(code)
@@ -306,8 +316,9 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
     #print(data)
     data_df = pd.DataFrame(data,columns=set_columns)
     return data_df
-
+#print(get_qq_quotations(codes=['sh','000001']))
 #print(get_qq_quotations(codes=['sh','000001'],set_columns=['code','date','open','high','low','close','volume','amount']))
+
 def index_quotation(indexs=['sh','sz','zxb','cyb','sz300','sh50'],force_update=False):
     #http://qt.gtimg.cn/q=sh000001
     #http://qt.gtimg.cn/q=sh000016
