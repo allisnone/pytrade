@@ -23,6 +23,7 @@ elif update_type == 'stock':
 else:
     pass
 
+
 """
 print(update_data)
 broker = 'yh'
