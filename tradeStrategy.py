@@ -13,7 +13,7 @@ import datetime
 import threading
 import smtplib
 
-import pdSql as ps
+import pdSql as pds
 import tradeTime as tt
 import easyquotation
 
@@ -678,7 +678,7 @@ class Stockhistory:
         self.code=code_str
         self.ktype=ktype
         self.DEBUG_ENABLED=False
-        self.h_df=ps.get_raw_hist_df(code_str)             #the history data frame data set
+        self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
         self.alarm_trigger_timestamp=0
         self.max_price=-1
         self.min_price=1000
@@ -704,7 +704,7 @@ class Stockhistory:
         
         """
         if k_data==None:
-            self.h_df = ps.get_raw_hist_df(code_str)
+            self.h_df = pds.get_raw_hist_df(code_str)
             if feed_type=='temp':
                 self.temp_hist_df = self._form_temp_df()
             else:
@@ -2181,7 +2181,7 @@ class Stockhistory:
     
     def form_temp_df(self,code_str):
         #self.set_code(code_str)
-        #self.h_df = ps.get_raw_hist_df(code_str)
+        #self.h_df = pds.get_raw_hist_df(code_str)
         #print(self.h_df)
         #self.temp_hist_df = self._form_temp_df()
         self.get_market_score()
@@ -4614,7 +4614,7 @@ def mini_atr_market():
             atr_in_codes_last.append([code,atr_in_rate_last])
     atr_min_df=atr_min_df.sort_index(axis=0, by='atr_in_rate', ascending=False)
     atr_min_df.to_csv(ROOT_DIR+'/result_temp1/mini_atr_market_%s.csv' % latest_day_str)
-    stocksql_obj=ps.StockSQL()
+    stocksql_obj=pds.StockSQL()
     stocksql_obj.insert_table(data_frame=atr_min_df,table_name='mini_atr')
     print(atr_min_df)
     print('atr_in_codes=',atr_in_codes)

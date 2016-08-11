@@ -65,6 +65,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
     ma_num = 20
     for stock_synbol in all_codes:
+        print(i,stock_synbol)
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=k_num)
         result_df = s_stock.form_temp_df(stock_synbol)
         test_result = s_stock.regression_test()
@@ -72,7 +73,6 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
         #print(test_result)
         #print(recent_trend)
         i = i+1
-        print(i,stock_synbol)
         if test_result.empty:
             pass
         else: 

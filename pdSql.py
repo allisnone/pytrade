@@ -405,11 +405,11 @@ class StockSQL(object):
         #next_date_str = tt.get_next_trade_date(date_format=d_format)
         #print(next_date_str)
         try:
-            all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'])
+            all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'], ['code','date','open','high','low','close','volume','amount'])
             #all_index_df = ts.get_index()
         except:
             sleep(3)
-            all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'])
+            all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'], ['code','date','open','high','low','close','volume','amount'])
         #all_index_df[['open','high','low','close']]=all_index_df[['open','high','low','close']].round(2)
         #all_index_df['amount'] = all_index_df['amount']*(10**8)
         #all_index_df['date'] = latest_date_str

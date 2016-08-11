@@ -200,24 +200,25 @@ def format_quotation_data(q_data, code_str):
                 'increase_rate': float(q_data[32]),  # 换成英文  #涨跌(%)
                 'high': float(q_data[33]),
                 'low': float(q_data[34]),
-                '价格/成交量(手)/成交额': q_data[35],  # 换成英文
-                '成交量(手)': int(q_data[36]) * 100,  # 换成英文
+                'price_volume_amount': q_data[35],  # 换成英文  价格/成交量(手)/成交额
+                'volume': int(q_data[36]) * 100,  # 换成英文
                 'amount': float(q_data[37]) * 10000,  # 换成英文  #成交额(万)
                 'turnover': float(q_data[38]) if q_data[38] != '' else None,
                 'PE': float(q_data[39]) if q_data[39] != '' else None,
                 'unknown': q_data[40],
                 'high_2': float(q_data[41]),  # 意义不明
                 'low_2': float(q_data[42]),  # 意义不明
-                '振幅': float(q_data[43]),  # 换成英文
-                '流通市值': float(q_data[44]) if q_data[44] != '' else None,  # 换成英文
-                '总市值': float(q_data[45]) if q_data[44] != '' else None,  # 换成英文
+                'wave': float(q_data[43]),  # 换成英文  振幅
+                'circulation': float(q_data[44]) if q_data[44] != '' else None,  # 换成英文  流通市值
+                'total_market': float(q_data[45]) if q_data[44] != '' else None,  # 换成英文, 总市值
                 'PB': float(q_data[46]),
-                '涨停价': float(q_data[47]),  # 换成英文
-                '跌停价': float(q_data[48])  # 换成英文
+                'topest': float(q_data[47]),  # 换成英文  涨停价
+                'lowest': float(q_data[48])  # 换成英文     跌停价
                 }
     else:
         pass
     return data_dict
+
 
 def get_zijin():
     #http://qt.gtimg.cn/q=ff_sz000858
@@ -281,7 +282,7 @@ def get_zhaiyao():
     return
 
 
-def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50']):
+def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns = []):
     #http://qt.gtimg.cn/q=sh000001
     #http://qt.gtimg.cn/q=sh000016
     #http://qt.gtimg.cn/q=sz399001
@@ -289,31 +290,21 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50']):
     #http://qt.gtimg.cn/q=sz399006
     #http://qt.gtimg.cn/q=sz399006
     data = list()
-    columns = ['code','date','open','high','low','close','volume','amount']#,'factor']
-    for index in codes:
+    #columns = ['code','date','open','high','low','close','volume','amount']#,'factor']
+    if set_columns:
+        pass
+    else:
+        d_data = format_quotation_data(get_qq_quotation(symbol='000858'), code_str='000858')
+        set_columns = list(d_data.keys())
+    for code in codes:
         #symbol = index_symbol_maps[index]
-        index_data = get_qq_quotation(index)
-        if not index_data:
+        quo_data = get_qq_quotation(code)
+        if not quo_data:
             continue
-        """
-        this_data = {}
-        date_str = index_data[30]
-        date = date_str[:4] + '-' + date_str[4:6] + '-' + date_str[6:8]
-        this_data['code'] = index
-        this_data['date'] = date
-        this_data['open'] = index_data[5]
-        this_data['high'] = index_data[33]
-        this_data['low'] = index_data[34]
-        this_data['close'] = index_data[3]
-        this_data['volume'] = index_data[36]
-        this_data['amount'] = index_data[37]
-        print(this_data)
-        #data.update({symbol:this_data})
-        """
-        this_data = format_quotation_data(index_data,index)
+        this_data = format_quotation_data(quo_data,index)
         data.append(this_data)
     #print(data)
-    data_df = pd.DataFrame(data,columns=columns)
+    data_df = pd.DataFrame(data,columns=set_columns)
     return data_df
 
 
