@@ -35,12 +35,16 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[]):
             else:
                 pass
     all_stocks = list(this_quotation.keys())
+    exist_codes = tds.get_all_code(hist_dir='C:/hist/day/data/')
+    all_codes = list(set(all_stocks).intersection(set(exist_codes)))
+    stop_stocks = list(set(stop_stocks).intersection(set(exist_codes)))
     #print('stop_stocks=', stop_stocks)
     #print(len(stop_stocks))
     #print('all_stocks=',all_stocks)
     #print(len(all_stocks))
     return stop_stocks,all_stocks
 
+#get_stopped_stocks()
 
 def back_test(k_num=0,given_codes=[],except_stocks=[]):
     all_codes = []

@@ -53,6 +53,7 @@ if __name__ == "__main__":
     stock_synbol = '603398'
     stock_synbol = '002253'
     stock_synbol = '002371'
+    stock_synbol = '000029'
     #file_time = tds.get_file_timestamp('c:/hist/day/data/000060.csv')
     #print(file_time)
     num = 0
@@ -65,6 +66,7 @@ if __name__ == "__main__":
     else:
         pass
     num = 120
+    stock_synbol = '000029'
     s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
     #s_stock.temp_hist_df.to_csv('./temp/%s_01.csv' % stock_synbol)
     result_df = s_stock.form_temp_df(stock_synbol)

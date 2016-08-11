@@ -33,9 +33,14 @@ HIST_FILE_TYPE='.csv'
 def get_all_code(hist_dir):
     all_code=[]
     for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
+        """
         code=filename[:-4]
         if len(code)==6:
             all_code.append(code)
+        """
+        code = filename.split('.')
+        if len(code)>=1:
+            all_code.append(code[0])
     return all_code
 
 #get the history raw data for certain code: ['date','open','high','low','close','volume','rmb']
@@ -1489,6 +1494,8 @@ class Stockhistory:
         temp_df=df[1:]
         temp_df.insert(4, 'last_close', last_close)
         #temp_df.insert(7, 'p_change', 100.00*(temp_df.close-temp_df.last_close)/temp_df.last_close)
+        #temp_df['close'] = temp_df['close'].astype(float)
+        #print(type(temp_df.close))
         temp_df.insert(6, 'p_change', 100.00*((temp_df.close-temp_df.last_close)/temp_df.last_close).round(4))
         
         temp_df.is_copy=False
