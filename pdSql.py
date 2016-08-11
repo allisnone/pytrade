@@ -11,6 +11,7 @@ import tushare as ts
 import tradeTime as tt
 import sendEmail as sm
 import easytrader
+import time
 #ROOT_DIR='E:/work/stockAnalyze'
 ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
@@ -485,7 +486,7 @@ class StockSQL(object):
             except:
                 position_check.append(account)
             #self.insert_table(data_frame=position_df,table_name='balance')
-            sleep(10)
+            time.sleep(10)
         if position_check:
             content = '%s 持仓表更新可能异常' % position_check
             sm.send_mail(sub,content,mail_to_list=None)

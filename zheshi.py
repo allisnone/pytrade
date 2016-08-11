@@ -2,7 +2,7 @@
 
 def get_index():
     index_postion =0.8
-    delta_position = 0.2
+    delta_position = -0.2
     category_data = []
     if index_postion>=0.6:
         lanchou = 0.2
