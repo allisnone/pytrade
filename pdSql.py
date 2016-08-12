@@ -490,7 +490,11 @@ class StockSQL(object):
         if position_check:
             content = '%s 持仓表更新可能异常' % position_check
             sm.send_mail(sub,content,mail_to_list=None)
-        
+    
+    def get_forvary_stocks(self):
+        return    
+    
+    
     def update_last_db_date(self,code_str,last_date,update_date):
         """
         :param code_str: string type, code_name

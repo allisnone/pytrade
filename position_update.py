@@ -12,6 +12,12 @@ if len(sys.argv)>=2:
 
 stock_sql = pds.StockSQL()
 update_data = stock_sql.get_table_update_time()
+"""
+potential_df = stock_sql.query_data(table='potential',fields='category_id,code,valid,name',condition='valid>=1')
+print(potential_df)
+lanchou_df = potential_df[potential_df['category_id']==1]
+print(lanchou_df['code'].values.tolist())
+"""
 print('last_position_update_time=',update_data['hold'])
 print('last_index_update_time=',update_data['sh'])
 if update_type == 'index':
