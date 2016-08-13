@@ -405,25 +405,25 @@ class StockSQL(object):
         #next_date_str = tt.get_next_trade_date(date_format=d_format)
         #print(next_date_str)
         try:
-            all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'], ['code','date','open','high','low','close','volume','amount'])
-            #all_index_df = ts.get_index()
+            quotation_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'], ['code','date','open','high','low','close','volume','amount'])
+            #quotation_index_df = ts.get_index()
         except:
             sleep(3)
-            all_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'], ['code','date','open','high','low','close','volume','amount'])
-        #all_index_df[['open','high','low','close']]=all_index_df[['open','high','low','close']].round(2)
-        #all_index_df['amount'] = all_index_df['amount']*(10**8)
-        #all_index_df['date'] = latest_date_str
-        all_index_df['factor'] = 1.0
-        print(all_index_df)
+            quotation_index_df = qq.get_qq_quotations(['sh','sz','zxb','cyb','hs300','sh50'], ['code','date','open','high','low','close','volume','amount'])
+        #quotation_index_df[['open','high','low','close']]=quotation_index_df[['open','high','low','close']].round(2)
+        #quotation_index_df['amount'] = quotation_index_df['amount']*(10**8)
+        #quotation_index_df['date'] = latest_date_str
+        quotation_index_df['factor'] = 1.0
+        print(quotation_index_df)
         need_to_send_mail = []
         sub = ''
         #table_update_times = self.get_table_update_time()
         for index_name in index_list:
             yh_symbol = index_symbol_maps[index_name]
-            index_df = get_yh_raw_hist_df(code_str=yh_symbol)
-            index_df['amount'] = index_df['rmb']
-            del index_df['rmb']
-            index_df['factor'] = FIX_FACTOR
+            yh_index_df = get_yh_raw_hist_df(code_str=yh_symbol)
+            yh_index_df['amount'] = yh_index_df['rmb']
+            del yh_index_df['rmb']
+            yh_index_df['factor'] = FIX_FACTOR
             try:
                 date_data = self.query_data(table=index_name,fields='date',condition="date>='%s'" % last_date_str)
                 data_len = len(date_data)
@@ -435,16 +435,16 @@ class StockSQL(object):
                     need_to_send_mail.append(index_name)
                     sub = '多于两天没有更新指数数据库'
                     self.drop_table(table_name=index_name)
-                    self.insert_table(data_frame=index_df,table_name=index_name)
+                    self.insert_table(data_frame=yh_index_df,table_name=index_name)
                 elif len(date_data) == 1: # update by last date
-                    self.update_sql_index_today(index_name,latest_date_str,all_index_df,index_symbol_maps)
+                    self.update_sql_index_today(index_name,latest_date_str,quotation_index_df,index_symbol_maps)
                     pass
                 elif len(date_data) == 2: #update to  latest date
                     print(' %s index updated to %s.' % (index_name,latest_date_str))
                     if force_update:
                         print(' force update %s index' % index_name)
                         self.delete_data(table_name=index_name,condition="date='%s'" % latest_date_str)
-                        self.update_sql_index_today(index_name,latest_date_str,all_index_df,index_symbol_maps)
+                        self.update_sql_index_today(index_name,latest_date_str,quotation_index_df,index_symbol_maps)
                         pass
                     else:
                         pass
@@ -455,18 +455,19 @@ class StockSQL(object):
                 sub = '数据表不存在'
                 need_to_send_mail.append(index_name)
                 print('Table %s not exist.'% index_name)
-                self.insert_table(data_frame=index_df,table_name=index_name,is_index=False)
+                self.insert_table(data_frame=yh_index_df,table_name=index_name,is_index=False)
                 print('Created the table %s.' % index_name)
         if need_to_send_mail:
             content = '%s 数据表更新可能异常' % need_to_send_mail
             sm.send_mail(sub,content,mail_to_list=None)
     
-    def update_sql_index_today(self,index_name,latest_date_str,all_index_df):
+    def update_sql_index_today(self,index_name,latest_date_str,quotation_index_df):
+        """添加今天的更新"""
         #index_sybol = index_symbol_maps[index_name]
         #if index_name=='sh':
         #   index_sybol = '000001'
         columns = ['date','open','high','low','close','volume','amount','factor']
-        single_index_df = all_index_df[all_index_df['code']==index_name]
+        single_index_df = quotation_index_df[quotation_index_df['code']==index_name]
         single_index_df = single_index_df[columns]
         if single_index_df.empty:
             return
