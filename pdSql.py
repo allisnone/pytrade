@@ -431,15 +431,18 @@ class StockSQL(object):
                 #this_table_update_time = table_update_times[index_name]
                 #print('this_table_update_time=', this_table_update_time)
                 if len(date_data)==0: #no update more than two day
+                    """需要手动下载银河客户端数据"""
                     print('Need to manual update %s index from YH APP! Please make suere you have sync up YH data' % index_name)
                     need_to_send_mail.append(index_name)
                     sub = '多于两天没有更新指数数据库'
                     self.drop_table(table_name=index_name)
                     self.insert_table(data_frame=yh_index_df,table_name=index_name)
                 elif len(date_data) == 1: # update by last date
+                    """只需要更新当天数据"""
                     self.update_sql_index_today(index_name,latest_date_str,quotation_index_df,index_symbol_maps)
                     pass
                 elif len(date_data) == 2: #update to  latest date
+                    """要更新盘中获取的当天数据"""
                     print(' %s index updated to %s.' % (index_name,latest_date_str))
                     if force_update:
                         print(' force update %s index' % index_name)
