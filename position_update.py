@@ -4,12 +4,12 @@ import easyhistory
 import pdSql as pds
 import sys
 #update_type = ''
-#update_type = 'index'
+update_type = 'index'
 #update_type = 'position'
 if len(sys.argv)>=2:
     if sys.argv[1] and isinstance(sys.argv[1], str):
         update_type = sys.argv[1]  #start date string   
-update_type = 'index'
+#update_type = 'index'
 #update_type = 'position'
 stock_sql = pds.StockSQL()
 update_data = stock_sql.get_table_update_time()

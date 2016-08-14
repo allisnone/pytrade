@@ -427,7 +427,6 @@ class StockSQL(object):
             try:
                 date_data = self.query_data(table=index_name,fields='date',condition="date>='%s'" % last_date_str)
                 data_len = len(date_data)
-                #print(data_len)
                 #this_table_update_time = table_update_times[index_name]
                 #print('this_table_update_time=', this_table_update_time)
                 if len(date_data)==0: #no update more than two day
