@@ -19,17 +19,18 @@ print(potential_df)
 lanchou_df = potential_df[potential_df['category_id']==1]
 print(lanchou_df['code'].values.tolist())
 """
-print('last_position_update_time=',update_data['hold'])
-#print('last_index_update_time=',update_data['sh'])
+
 if update_type == 'index':
     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
+    stock_sql.download_hist_as_csv(indexs = ['sh','sz','zxb','cyb','hs300','sh50'],dir='C:/hist/day/data/')
 elif  update_type == 'position':
     stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
 elif update_type == 'stock':
     easyhistory.update(path="C:/hist",stock_codes=[])
 else:
     pass
-
+print('last_position_update_time=',update_data['hold'])
+print('last_index_update_time=',update_data['sh'])
 
 """
 print(update_data)
