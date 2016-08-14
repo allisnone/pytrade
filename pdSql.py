@@ -507,6 +507,7 @@ class StockSQL(object):
             file_name = dir+ '%s.csv' % index
             try:
                 os.remove(file_name)
+                print('Delete and update the csv file')
             except:
                 pass
             index_df.to_csv(file_name ,encoding='utf-8')
