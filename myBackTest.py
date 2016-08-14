@@ -37,6 +37,8 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[]):
     all_stocks = list(this_quotation.keys())
     exist_codes = tds.get_all_code(hist_dir='C:/hist/day/data/')
     all_codes = list(set(all_stocks).intersection(set(exist_codes)))
+    if except_stocks:
+        all_codes = list(set(all_codes).difference(set(except_stocks)))
     stop_stocks = list(set(stop_stocks).intersection(set(exist_codes)))
     #print('stop_stocks=', stop_stocks)
     #print(len(stop_stocks))
@@ -46,10 +48,13 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[]):
 
 #get_stopped_stocks()
 
-def back_test(k_num=0,given_codes=[],except_stocks=[]):
+def back_test(k_num=0,given_codes=[],except_stocks=[], type='stock'):
+    addition_name = ''
+    if type == 'index':
+        addition_name = type
     all_codes = []
     all_stop_codes = []
-    all_stop_codes,all_stocks = get_stopped_stocks()
+    all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks)
     all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     if given_codes:
         all_codes = list(set(given_codes).difference(set(all_stop_codes)))
@@ -141,25 +146,25 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
     print(all_result_df.describe())
     if isinstance(k_num, str):
         k_num = k_num.replace('/','').replace('-','')
-    all_result_df.to_csv('./temp/regression_test_%s.csv' % k_num)
+    all_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % k_num)
     if all_result_df.empty:
         pass
     else:
         consider_df = all_result_df[(all_result_df['max_rmb_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & (all_result_df['invalid']==0)]# & (all_result_df['last_trade_price'] ==0)]
-        consider_df.to_csv('./temp/consider_%s.csv' % k_num )
+        consider_df.to_csv('./temp/consider_' + addition_name +'%s.csv' % k_num )
         
         active_df = all_result_df[(all_result_df['max_r']<0.4)  & (all_result_df['name']!='NA') & # (all_result_df['min']>-0.08)  & (all_result_df['position']>0.35) &
                                   (all_result_df['max']>(3.9 *all_result_df['min'].abs())) & (all_result_df['invalid']==0) &(all_result_df['stopped']==0)]
         active_df['active_score'] = active_df['fuli_prf']/active_df['max_r']/active_df['std']*active_df['fuli_prf']/active_df['cum_prf']
         active_df = active_df.sort_values(axis=0, by='active_score', ascending=False)
-        active_df.to_csv('./temp/active_%s.csv' % k_num )
+        active_df.to_csv('./temp/active_' + addition_name +'%s.csv' % k_num )
         
         tupo_df = all_result_df[(all_result_df['break_in_distance']!=0) &(all_result_df['break_in_distance']<=20) & 
                                 (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & 
                                 (all_result_df['invalid']==0) & (all_result_df['name']!='NA') & (all_result_df['last_trade_price']!=0)]# & (all_result_df['last_trade_price'] ==0)]
-        tupo_df.to_csv('./temp/tupo_%s.csv' % k_num )
+        tupo_df.to_csv('./temp/tupo_' + addition_name +'%s.csv' % k_num )
         
-    result_summary.to_csv('./temp/result_summary_%s.csv' % k_num )
-    all_trend_result_df_chinese.to_csv('./temp/trend_result_%s.csv' % ma_num)
+    result_summary.to_csv('./temp/result_summary_' + addition_name +'%s.csv' % k_num )
+    all_trend_result_df_chinese.to_csv('./temp/trend_result_' + addition_name +'%s.csv' % ma_num)
     
     return
