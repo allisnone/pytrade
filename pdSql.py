@@ -11,7 +11,7 @@ import tushare as ts
 import tradeTime as tt
 import sendEmail as sm
 import easytrader
-import time
+import time,os
 #ROOT_DIR='E:/work/stockAnalyze'
 ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
@@ -455,6 +455,7 @@ class StockSQL(object):
                 sub = '数据表不存在'
                 need_to_send_mail.append(index_name)
                 print('Table %s not exist.'% index_name)
+                self.drop_table(table_name=yh_index_df)
                 self.insert_table(data_frame=yh_index_df,table_name=index_name,is_index=False)
                 print('Created the table %s.' % index_name)
         if need_to_send_mail:
@@ -495,6 +496,18 @@ class StockSQL(object):
     def get_forvary_stocks(self):
         return    
     
+    def download_hist_as_csv(self,indexs = ['sh','sz','zxb','cyb','hs300','sh50'],dir='C:/hist/day/data/'):
+        for index in indexs:
+            index_df = self.get_table_df(table=index)
+            index_df = index_df.set_index('date')
+            #print(index_df)
+            file_name = dir+ '%s.csv' % index
+            try:
+                os.remove(file_name)
+            except:
+                pass
+            index_df.to_csv(file_name ,encoding='utf-8')
+        return
     
     def update_last_db_date(self,code_str,last_date,update_date):
         """

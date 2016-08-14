@@ -18,6 +18,8 @@ if __name__ == "__main__":
     #all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     #all_stop_codes = []
     given_codes = []
+    indexs = ['sh','sz','zxb','cyb','hs300','sh50']
+    given_codes = indexs
     if len(sys.argv)>=2:
         if sys.argv[1] and isinstance(sys.argv[1], str):
             k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25

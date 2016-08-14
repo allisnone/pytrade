@@ -73,7 +73,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
     for stock_synbol in all_codes:
         print(i,stock_synbol)
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=k_num)
-        try:
+        if True:
+        #try:
             result_df = s_stock.form_temp_df(stock_synbol)
             test_result = s_stock.regression_test()
             recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
@@ -90,8 +91,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=[]):
             else:
                 trend_result_df = tds.pd.DataFrame(recent_trend.to_dict(), columns=trend_column_list, index=[stock_synbol])
                 all_trend_result_df = all_trend_result_df.append(trend_result_df,ignore_index=False)
-        except:
-            print('Regression test exception for stock: %s' % stock_synbol)
+        #except:
+        #    print('Regression test exception for stock: %s' % stock_synbol)
         
         
     #print(result_df.tail(20))

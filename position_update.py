@@ -9,7 +9,8 @@ update_type = 'position'
 if len(sys.argv)>=2:
     if sys.argv[1] and isinstance(sys.argv[1], str):
         update_type = sys.argv[1]  #start date string   
-
+update_type = 'index'
+#update_type = 'position'
 stock_sql = pds.StockSQL()
 update_data = stock_sql.get_table_update_time()
 """
@@ -19,7 +20,7 @@ lanchou_df = potential_df[potential_df['category_id']==1]
 print(lanchou_df['code'].values.tolist())
 """
 print('last_position_update_time=',update_data['hold'])
-print('last_index_update_time=',update_data['sh'])
+#print('last_index_update_time=',update_data['sh'])
 if update_type == 'index':
     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
 elif  update_type == 'position':

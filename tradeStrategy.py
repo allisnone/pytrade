@@ -1484,6 +1484,7 @@ class Stockhistory:
         if self.h_df.empty:
             return self.h_df
         df=self.h_df
+        #df.to_csv('aa.csv')
         close_c=df['close']
         idx=close_c.index.values.tolist()
         va=df['close'].values.tolist()
@@ -1763,6 +1764,7 @@ class Stockhistory:
             temp_df=self._form_temp_df()
         #if len(temp_df)<5:
         #    return temp_df
+        #temp_df.to_csv('aa.csv')
         ma_offset=0.002
         WINDOW=3
         ma_type_list=['ma5','ma10','ma20','ma30','ma60','ma120']
@@ -1913,6 +1915,7 @@ class Stockhistory:
         #print(temp_df)
         #self.data_feed(k_data=temp_df, feed_type='temp')
         self.temp_hist_df = temp_df
+        #self.temp_hist_df.to_csv('aa.csv')
         #print(temp_df)
         return temp_df
     
@@ -2095,6 +2098,8 @@ class Stockhistory:
             temp_hist_df =self.temp_hist_df[self.temp_hist_df['date']>self.test_num]
         else:
             pass
+        #print(temp_hist_df)
+        #self.temp_hist_df.to_csv('aa.csv')
         temp_df = temp_hist_df[(temp_hist_df['s_price']>0) | (temp_hist_df['b_price']<0)]
         temp_df = temp_df[['date','close','p_change', 'position','operation','s_price','b_price']]
         temp_df['b_price'] = np.where(((temp_df['b_price'].shift(1)==0) 
@@ -2182,7 +2187,7 @@ class Stockhistory:
         summary_profit['max_rmb_rate'] = max_rmb_rate_min2 
         summary_profit['max_rmb_distance'] = last_id - id_rmb_rate_min2_max20 + 1
         
-        #print(summary_profit)
+        #print(temp_df)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
     
