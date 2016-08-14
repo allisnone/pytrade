@@ -414,7 +414,7 @@ class StockSQL(object):
         #quotation_index_df['amount'] = quotation_index_df['amount']*(10**8)
         #quotation_index_df['date'] = latest_date_str
         quotation_index_df['factor'] = 1.0
-        print(quotation_index_df)
+        #print(quotation_index_df)
         need_to_send_mail = []
         sub = ''
         #table_update_times = self.get_table_update_time()
