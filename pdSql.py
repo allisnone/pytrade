@@ -280,6 +280,7 @@ def get_position(broker='yh',user_file='yh.json'):
 class StockSQL(object):
     def __init__(self):
         self.engine = create_engine('mysql+pymysql://emsadmin:Ems4you@112.74.101.126/stock?charset=utf8')#,encoding='utf-8',echo=True,convert_unicode=True)
+        self.hold = {}
         #self.engine = create_engine('mysql+pymysql://emsadmin:Ems4you@112.74.101.126/stock?charset=gbk')
     def get_table_df(self,table,columns=None):
         """
@@ -479,21 +480,34 @@ class StockSQL(object):
         
     def update_sql_position(self, users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}}):
         sub = '持仓更异常'
-        position_check = []
+        fail_check = []
         for account in list(users.keys()):
             #stock_sql.drop_table(table_name='myholding')
             try:
                 broker = users[account]['broker']
                 user_file = users[account]['json']
                 position_df,balance = get_position(broker, user_file)
+                self.hold = {'account': position_df}
                 self.insert_table(data_frame=position_df,table_name='hold')
             except:
-                position_check.append(account)
+                fail_check.append(account)
             #self.insert_table(data_frame=position_df,table_name='balance')
-            time.sleep(10)
-        if position_check:
-            content = '%s 持仓表更新可能异常' % position_check
+            time.sleep(2)
+        if fail_check:
+            content = '%s 持仓表更新可能异常' % fail_check
             sm.send_mail(sub,content,mail_to_list=None)
+            """再次尝试获取异常持仓"""
+            for account in fail_check:
+                #stock_sql.drop_table(table_name='myholding')
+                try:
+                    broker = users[account]['broker']
+                    user_file = users[account]['json']
+                    position_df,balance = get_position(broker, user_file)
+                    self.hold = {'account': position_df}
+                    self.insert_table(data_frame=position_df,table_name='hold')
+                except:
+                    pass
+                #self.insert_table(data_frame=position_df,table_name='balance')
     
     def get_forvary_stocks(self):
         return    

@@ -31,6 +31,7 @@ else:
     pass
 print('last_position_update_time=',update_data['hold'])
 print('last_index_update_time=',update_data['sh'])
+print(stock_sql.hold)
 
 """
 print(update_data)
