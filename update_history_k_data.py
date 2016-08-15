@@ -8,7 +8,7 @@ import pdSql as pds
 import myBackTest as mybt
 
 if __name__ == "__main__":
-    except_stocks = ['002548','002220','300467','300459','300238','603588','300379','002528',
+    except_stock = ['002548','002220','300467','300459','300238','603588','300379','002528',
                        '603026','002615','603609','603010','300459','300378','002709','300438',
                        '300277','002752','002613','300337','603005','603718','600666','002350',
                        '300451','300003','603022','300030','300240','603789','300433','300295',
@@ -53,8 +53,8 @@ if __name__ == "__main__":
                     easyhistory.update(path="C:/hist",stock_codes=given_codes)
                     
                     print('update count %s at: ' % updated_date_count, datetime.datetime.now() )
-                    mybt.back_test(k_num=date_str, given_codes=[],except_stocks=except_stocks,type='stock')
-                    mybt。back_test(k_num=date_str,given_codes=['sh','sz','zxb','cyb','hs300','sh50'],except_stocks=[], type='index')
+                    mybt.back_test(k_num=date_str, given_codes=[],except_stocks=except_stock,type='stock')
+                    mybt。back_test(k_num=date_str, given_codes=['sh','sz','zxb','cyb','hs300','sh50'],except_stocks=[], type='index')
                     """更新持仓信息到数据库"""
                     stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
                     """更新指数历史数据到数据库"""
