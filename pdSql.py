@@ -487,7 +487,7 @@ class StockSQL(object):
                 broker = users[account]['broker']
                 user_file = users[account]['json']
                 position_df,balance = get_position(broker, user_file)
-                self.hold = {'account': position_df}
+                self.hold[account] =  position_df
                 self.insert_table(data_frame=position_df,table_name='hold')
             except:
                 fail_check.append(account)
@@ -503,7 +503,7 @@ class StockSQL(object):
                     broker = users[account]['broker']
                     user_file = users[account]['json']
                     position_df,balance = get_position(broker, user_file)
-                    self.hold = {'account': position_df}
+                    self.hold[account] =  position_df
                     self.insert_table(data_frame=position_df,table_name='hold')
                 except:
                     pass
