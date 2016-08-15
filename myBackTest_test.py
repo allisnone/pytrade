@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 from myBackTest import *
+#import pdSql as pds
 
 if __name__ == "__main__":
     import easyhistory
     """
-    import pdSql as pds
+    
     import sys
     #update_type = ''
     update_type = 'index'
@@ -16,6 +17,14 @@ if __name__ == "__main__":
     #update_type = 'position'
     stock_sql = pds.StockSQL()
     """
+    stock_sql = pds.StockSQL()
+    stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
+    all_hold_stocks = []
+    for account in list(stock_sql.hold.keys()):
+        pos_df = stock_sql.hold[account]
+        hold_stocks = pos_df[' 股票代码'].values.tolist()
+        all_hold_stocks = list(set(all_hold_stocks)|set(hold_stocks))
+    print("all_hold_stocks=",all_hold_stocks)    
     #easyhistory.init('D', export='csv', path="C:/hist")
     #easyhistory.update(path="C:/hist")
     stock_synbol = '300162'
