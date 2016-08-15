@@ -22,7 +22,7 @@ if __name__ == "__main__":
     all_hold_stocks = []
     for account in list(stock_sql.hold.keys()):
         pos_df = stock_sql.hold[account]
-        hold_stocks = pos_df[' 股票代码'].values.tolist()
+        hold_stocks = pos_df['股票代码'].values.tolist()
         all_hold_stocks = list(set(all_hold_stocks)|set(hold_stocks))
     print("all_hold_stocks=",all_hold_stocks)    
     #easyhistory.init('D', export='csv', path="C:/hist")
@@ -67,6 +67,6 @@ if __name__ == "__main__":
                        '300135','300143','300380','300399','300117']
     #given_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
-    back_test(k_num,given_codes,except_stocks=['000029'])#except_stocks)
+    back_test(k_num,given_codes,except_stocks=['000029'],type='index')#except_stocks)
     #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))
