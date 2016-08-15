@@ -22,7 +22,7 @@ if __name__ == "__main__":
     all_hold_stocks = []
     for account in list(stock_sql.hold.keys()):
         pos_df = stock_sql.hold[account]
-        hold_stocks = pos_df['股票代码'].values.tolist()
+        hold_stocks = pos_df['证券代码'].values.tolist()
         all_hold_stocks = list(set(all_hold_stocks)|set(hold_stocks))
     print("all_hold_stocks=",all_hold_stocks)    
     #easyhistory.init('D', export='csv', path="C:/hist")
