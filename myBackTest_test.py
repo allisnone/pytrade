@@ -68,8 +68,14 @@ if __name__ == "__main__":
     #given_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     back_test(k_num,given_codes,except_stocks=['000029'],type='index')#except_stocks)
-    back_test(k_num,all_hold_stocks,except_stocks=['000029'],type='stock')#except_stocks)
+    all_result_df = back_test(k_num,[],except_stocks=['000029'],type='stock')#except_stocks)
     if all_hold_stocks:
-        back_test(k_num,[],except_stocks=['000029'],type='stock')#except_stocks)
+        hold_result = all_result_df[all_result_df.index.isin(all_hold_stocks)]
+        addition_name = 'hold'
+        if len(sys.argv)>=2:
+            if sys.argv[1] and isinstance(sys.argv[1], str):
+                k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
+                k_num = k_num.replace('/', '')
+        hold_result.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % k_num)
     #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))

@@ -167,4 +167,4 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
     result_summary.to_csv('./temp/result_summary_' + addition_name +'%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_' + addition_name +'%s.csv' % ma_num)
     
-    return
+    return all_result_df
