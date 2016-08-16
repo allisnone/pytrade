@@ -458,7 +458,10 @@ class StockSQL(object):
                 sub = '数据表不存在'
                 need_to_send_mail.append(index_name)
                 print('Table %s not exist.'% index_name)
-                self.drop_table(table_name=yh_index_df)
+                try:
+                    self.drop_table(table_name=yh_index_df)
+                except:
+                    pass
                 self.insert_table(data_frame=yh_index_df,table_name=index_name,is_index=False)
                 print('Created the table %s.' % index_name)
         if need_to_send_mail:
