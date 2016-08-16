@@ -48,7 +48,7 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[]):
 
 #get_stopped_stocks()
 
-def back_test(k_num=0,given_codes=[],except_stocks=[], type='stock'):
+def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
     addition_name = ''
     if type == 'index':
         addition_name = type
