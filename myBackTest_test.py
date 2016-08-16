@@ -69,5 +69,7 @@ if __name__ == "__main__":
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     back_test(k_num,given_codes,except_stocks=['000029'],type='index')#except_stocks)
     back_test(k_num,all_hold_stocks,except_stocks=['000029'],type='stock')#except_stocks)
+    if all_hold_stocks:
+        back_test(k_num,[],except_stocks=['000029'],type='stock')#except_stocks)
     #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))
