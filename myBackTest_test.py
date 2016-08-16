@@ -39,10 +39,12 @@ if __name__ == "__main__":
     #all_stop_codes,all_stocks = get_stopped_stocks()
     #all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     #all_stop_codes = []
+    date_str ='19970101'
     givens = []
     if len(sys.argv)>=2:
         if sys.argv[1] and isinstance(sys.argv[1], str):
             k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
+            date_str = k_num.replace('/', '')
             try:
                 k_num = int(k_num)
             except:
@@ -74,10 +76,6 @@ if __name__ == "__main__":
     if all_hold_stocks:
         hold_result = all_result_df[all_result_df.index.isin(all_hold_stocks)]
         addition_name = 'hold'
-        if len(sys.argv)>=2:
-            if sys.argv[1] and isinstance(sys.argv[1], str):
-                k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
-                k_num = k_num.replace('/', '')
-        hold_result.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % k_num)
+        hold_result.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
     #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))
