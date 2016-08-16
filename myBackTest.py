@@ -76,6 +76,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
     ma_num = 20
     for stock_synbol in all_codes:
+        if stock_synbol=='000029':
+            continue
         print(i,stock_synbol)
         s_stock=tds.Stockhistory(stock_synbol,'D',test_num=k_num)
         if True:
