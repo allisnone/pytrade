@@ -39,9 +39,7 @@ if __name__ == "__main__":
     #all_stop_codes,all_stocks = get_stopped_stocks()
     #all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     #all_stop_codes = []
-    given_codes = []
-    indexs = ['sh','sz','zxb','cyb','hs300','sh50']
-    given_codes = indexs
+    givens = []
     if len(sys.argv)>=2:
         if sys.argv[1] and isinstance(sys.argv[1], str):
             k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
@@ -53,10 +51,14 @@ if __name__ == "__main__":
         if len(sys.argv)>=3:
             if sys.argv[2] and isinstance(sys.argv[2], str) and (int(sys.argv[2])==1): #just test for a few stocks
                 is_few_test = int(sys.argv[2])==1
-                given_codes = ['000525','300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418','600103','000029']
+                givens = ['000525','300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418','600103','000029']
                 #             '002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']# '300476', '002548', '002799']
     else:
         pass
+    
+    indexs = ['sh','sz','zxb','cyb','hs300','sh50']
+    back_test(k_num,given_codes=indexs,except_stocks=[],type='index')#except_stocks)
+    
     except_stocks = ['002548','002220','300467','300459','300238','603588','300379','002528',
                        '603026','002615','603609','603010','300459','300378','002709','300438',
                        '300277','002752','002613','300337','603005','603718','600666','002350',
@@ -65,10 +67,10 @@ if __name__ == "__main__":
                        '300413','002285','002312','002509','600305','002631','603718','002496',
                        '002600','603198','002444','300238','300467','300028','300033','300126',
                        '300135','300143','300380','300399','300117']
-    #given_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
+    #givens = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
-    back_test(k_num,given_codes,except_stocks=['000029'],type='index')#except_stocks)
-    all_result_df = back_test(k_num,[],except_stocks=['000029'],type='stock')#except_stocks)
+    
+    all_result_df = back_test(k_num,given_codes=givens,except_stocks=['000029'],type='stock')#except_stocks)
     if all_hold_stocks:
         hold_result = all_result_df[all_result_df.index.isin(all_hold_stocks)]
         addition_name = 'hold'
