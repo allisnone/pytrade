@@ -168,7 +168,8 @@ def format_quotation_data(q_data, code_str):
                 'name': q_data[1],
                 'code': symbol,
                 'now': float(q_data[3]),
-                'close': float(q_data[4]),
+                'close': float(q_data[3]),
+                'close0': float(q_data[4]),
                 'open': float(q_data[5]),
                 'volume': float(q_data[6]) * 100,
                 'bid_volume': int(q_data[7]) * 100,
@@ -217,6 +218,7 @@ def format_quotation_data(q_data, code_str):
                 }
     else:
         pass
+    #print(data_dict)
     return data_dict
 
 
@@ -306,6 +308,8 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
                       'ask4_volume', 'date', 'bid4_volume', 'ask4', 'volume', 'unknown', 'bid4']
         """
         #print('set_columns=',set_columns)
+    if isinstance(codes, str):
+        codes = list(codes)
     for code in codes:
         #symbol = index_symbol_maps[index]
         quo_data = get_qq_quotation(code)

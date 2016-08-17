@@ -386,6 +386,105 @@ class StockSQL(object):
                 table_time.update({index:update_time})
         return table_time
     
+    def update_one_stock(self, symbol,force_update=False):
+        index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
+                         'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
+        FIX_FACTOR = 1.0
+        d_format='%Y/%m/%d'
+        last_date_str = tt.get_last_trade_date(date_format=d_format)
+        latest_date_str = tt.get_latest_trade_date(date_format=d_format)
+        print('last_date_str=',last_date_str)
+        print('latest_date_str=',latest_date_str)
+        next_date_str = tt.get_next_trade_date(date_format=d_format)
+        #print(next_date_str)
+        quotation_date = ''
+        try:
+            quotation_index_df = qq.get_qq_quotations([symbol], ['code','date','open','high','low','close','volume','amount'])
+            quotation_date = quotation_index_df.iloc[0]['date']
+            #quotation_index_df = ts.get_index()
+        except:
+            sleep(3)
+            quotation_index_df = qq.get_qq_quotations([symbol], ['code','date','open','high','low','close','volume','amount'])
+            quotation_date = quotation_index_df.iloc[0]['date']
+        print('quotation_date=',quotation_date)
+        print(quotation_index_df)
+        quotation_index_df['factor'] = 1.0
+        quotation_index_df = quotation_index_df[['date','open','high','low','close','volume','amount','factor']]
+        #quotation_index_df.iloc[0]['volume'] = 0
+        #quotation_index_df.iloc[0]['amount'] = 0
+        print(quotation_index_df)
+        #print(quotation_index_df)
+        need_to_send_mail = []
+        sub = ''
+        index_name = symbol
+        #table_update_times = self.get_table_update_time()
+        if quotation_date:
+            yh_symbol = index_symbol_maps[index_name]
+            yh_index_df = get_yh_raw_hist_df(code_str=yh_symbol)
+            yh_index_df['amount'] = yh_index_df['rmb']
+            del yh_index_df['rmb']
+            yh_index_df['factor'] = FIX_FACTOR
+            yh_last_date = yh_index_df.tail(1).iloc[0]['date']
+            print('yh_last_date=',yh_last_date)
+            print( yh_index_df)#.head(len(yh_index_df)-1))
+            try:
+                #date_data = self.query_data(table=index_name,fields='date',condition="date>='%s'" % last_date_str)
+                #data_len = len(date_data)
+                #this_table_update_time = table_update_times[index_name]
+                #print('this_table_update_time=', this_table_update_time)
+                if yh_last_date<last_date_str: #no update more than two day
+                    """需要手动下载银河客户端数据"""
+                    print('Need to manual update %s index from YH APP! Please make suere you have sync up YH data' % index_name)
+                    need_to_send_mail.append(index_name)
+                    sub = '多于两天没有更新指数数据库'
+                    #self.drop_table(table_name=index_name)
+                    #self.insert_table(data_frame=yh_index_df,table_name=index_name)
+                elif yh_last_date==last_date_str: # update by last date
+                    """只需要更新当天数据"""
+                    #self.update_sql_index_today(index_name,latest_date_str,quotation_index_df,index_symbol_maps)
+                    yh_index_df = yh_index_df.append(quotation_index_df, ignore_index=True)
+                    print(yh_index_df)
+                    pass
+                else:# yh_last_date>latest_date_str: #update to  latest date
+                    """YH已经更新到今天，要更新盘中获取的当天数据"""
+                    print(' %s index updated to %s; not need to update' % (index_name,latest_date_str))
+                    if force_update:
+                        print(' force update %s index' % index_name)
+                        yh_index_df0 = yh_index_df.head(len(yh_index_df)-1)
+                        print(yh_index_df0)
+                        yh_index_df = yh_index_df0.append(quotation_index_df, ignore_index=True)
+                        print(yh_index_df)
+                        #self.delete_data(table_name=index_name,condition="date='%s'" % latest_date_str)
+                        #self.update_sql_index_today(index_name,latest_date_str,quotation_index_df,index_symbol_maps)
+                        pass
+                    else:
+                        pass
+                yh_index_df = yh_index_df.set_index('date')
+                dir='C:/hist/day/data/'
+                file_name = dir+ '%s.csv' % index_name
+                try:
+                    os.remove(file_name)
+                    print('Delete and update the csv file')
+                except:
+                    pass
+                yh_index_df.to_csv(file_name ,encoding='utf-8')
+            #print(date_data)
+            except:
+                sub = '数据表不存在'
+                need_to_send_mail.append(index_name)
+                print('Table %s not exist.'% index_name)
+                try:
+                    #self.drop_table(table_name=yh_index_df)
+                    pass
+                except:
+                    pass
+                #self.insert_table(data_frame=yh_index_df,table_name=index_name,is_index=False)
+                print('Created the table %s.' % index_name)
+        if need_to_send_mail:
+            content = '%s 数据表更新可能异常' % need_to_send_mail
+            sm.send_mail(sub,content,mail_to_list=None)
+        return yh_index_df
+            
     def update_sql_index(self, index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False):
         index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}

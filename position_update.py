@@ -12,7 +12,8 @@ if len(sys.argv)>=2:
 #update_type = 'index'
 #update_type = 'position'
 stock_sql = pds.StockSQL()
-update_data = stock_sql.get_table_update_time()
+stock_sql.update_one_stock(symbol='cyb',force_update=True)
+
 """
 potential_df = stock_sql.query_data(table='potential',fields='category_id,code,valid,name',condition='valid>=1')
 print(potential_df)
@@ -20,6 +21,8 @@ lanchou_df = potential_df[potential_df['category_id']==1]
 print(lanchou_df['code'].values.tolist())
 """
 
+"""
+update_data = stock_sql.get_table_update_time()
 if update_type == 'index':
     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
     stock_sql.download_hist_as_csv(indexs = ['sh','sz','zxb','cyb','hs300','sh50'],dir='C:/hist/day/data/')
@@ -32,6 +35,8 @@ else:
 print('last_position_update_time=',update_data['hold'])
 print('last_index_update_time=',update_data['sh'])
 print(stock_sql.hold)
+
+"""
 
 """
 print(update_data)
