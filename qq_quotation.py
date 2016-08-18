@@ -78,6 +78,7 @@ def get_yahoo_hist(symbol,from_date,to_date): #2016-01-25  or 2016/01/25
 def get_url_content(base_url,symbol, decode_type='gbk'):  #qq: decode_type='gbk'
     base_url ='http://qt.gtimg.cn/q='
     url = base_url + format_symbol(code=symbol)
+    print('url=',url)
     req = urllib.request.Request(url)
     response = urllib.request.urlopen(req)
     #the_page = response.read() 
