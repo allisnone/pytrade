@@ -8,7 +8,7 @@ my_stock_sql = pds.StockSQL()
 #easyhistory.update_single_code(dtype='D', stock_code='002789', path="C:/hist")
 #his = easyhistory.History(dtype='D', path='C:/hist',type='mysql',codes=['sh','cyb'],stock_sql=my_stock_sql)
 his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=['300431','000932'])
-test_code = '000932'
+test_code = '300431'
 # MA 计算, 直接调用的 talib 的对应函数
 def get_hist_indicator(easyhistory_obj,code_str):
     res = easyhistory_obj[code_str].MAX(20)
@@ -32,6 +32,7 @@ def get_hist_indicator(easyhistory_obj,code_str):
     return res
 #res = get_hist_indicator(easyhistory_obj=his,code_str=test_code)
 res = his.get_hist_indicator(code_str=test_code)
+#res = his.get_hist_indicator(code_str='test_code')
 print( res)
 res.to_csv('%s.csv' % test_code)
 describe_df = his[test_code].MA(1).tail(3).describe()
