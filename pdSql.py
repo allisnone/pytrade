@@ -335,7 +335,7 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
             print('yh_last_date=',yh_last_date)
             #print( yh_index_df)#.head(len(yh_index_df)-1))
             
-            if yh_last_date>dest_df_last_date:
+            if yh_last_date>dest_df_last_date:  #dest_df_last_date<latest_date_str
                 #date_data = self.query_data(table=index_name,fields='date',condition="date>='%s'" % last_date_str)
                 #data_len = len(date_data)
                 #this_table_update_time = table_update_times[index_name]
