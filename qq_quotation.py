@@ -88,7 +88,7 @@ def get_url_content(base_url,symbol, decode_type='gbk'):  #qq: decode_type='gbk'
 def format_symbol(code):
     symbol = 'sz%s' % code
     index_symbol_maps = {'sh':'000001','sz':'399001','zxb':'399005','cyb':'399006',
-                         'sh50':'000016','sz300':'399007','zx300':'399008'}#'hs300':'000300'}
+                         'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
     if code in list(index_symbol_maps.keys()): #index
         symbol = 'sz%s' % index_symbol_maps[code]
         if index_symbol_maps[code]<'100000':
@@ -160,7 +160,7 @@ def format_quotation_data(q_data, code_str):
     if len(q_data)>=48:
         symbol = q_data[2]
         index_symbol_maps = {'sh':'000001','sz':'399001','zxb':'399005','cyb':'399006',
-                         'sh50':'000016','sz300':'399007','zx300':'399008'}#'hs300':'000300'}
+                         'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
         if code_str in list(index_symbol_maps.keys()): #index
             symbol = code_str
         else:
