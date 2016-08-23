@@ -12,7 +12,10 @@ if len(sys.argv)>=2:
 #update_type = 'index'
 #update_type = 'position'
 stock_sql = pds.StockSQL()
-pds.update_one_stock(symbol='sh',force_update=False)
+#pds.update_one_stock(symbol='sh',force_update=False)
+pds.update_all_index(force_up=False)
+
+#indexs = ['zxb', 'sh50', 'hs300', 'sz300', 'cyb', 'sz', 'zx300', 'sh']
 
 """
 potential_df = stock_sql.query_data(table='potential',fields='category_id,code,valid,name',condition='valid>=1')

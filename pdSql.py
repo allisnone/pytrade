@@ -281,6 +281,8 @@ def get_position(broker='yh',user_file='yh.json'):
 def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
     index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                      'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
+    qq_index_symbol_maps = {'sh':'000001','sz':'399001','zxb':'399005','cyb':'399006',
+                         'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
     FIX_FACTOR = 1.0
     d_format='%Y/%m/%d'
     last_date_str = tt.get_last_trade_date(date_format=d_format)
@@ -289,13 +291,24 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
     print('latest_date_str=',latest_date_str)
     next_date_str = tt.get_next_trade_date(date_format=d_format)
     #print(next_date_str)
+    dest_file_name = dest_dir+ '%s.csv' % symbol
     dest_df = get_raw_hist_df(code_str=symbol)
-    dest_df['amount'] = dest_df['rmb']
-    del dest_df['rmb']
+    if dest_df.empty:
+        if symbol in index_symbol_maps.keys():
+            yh_symbol = index_symbol_maps[symbol]
+            yh_index_df = get_yh_raw_hist_df(code_str=yh_symbol)
+            yh_index_df['amount'] = yh_index_df['rmb']
+            del yh_index_df['rmb']
+            yh_index_df['factor'] = 1.0
+            yh_df = yh_index_df.set_index('date')
+            yh_df.to_csv(dest_file_name ,encoding='utf-8')
+            dest_df = yh_index_df
+            #del dest_df['rmb']
+            return yh_df
     #print(dest_df)
     dest_df_last_date = dest_df.tail(1).iloc[0]['date']
     print('dest_df_last_date=',dest_df_last_date)
-    dest_file_name = dest_dir+ '%s.csv' % symbol
+    
     if dest_df_last_date<latest_date_str:     
         quotation_date = ''
         try:
@@ -311,12 +324,12 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
             if dest_df_last_date==quotation_date:
                 return dest_df
         print('quotation_date=',quotation_date)
-        print(quotation_index_df)
+        #print(quotation_index_df)
         quotation_index_df['factor'] = 1.0
         quotation_index_df = quotation_index_df[['date','open','high','low','close','volume','amount','factor']]
         #quotation_index_df.iloc[0]['volume'] = 0
         #quotation_index_df.iloc[0]['amount'] = 0
-        print(quotation_index_df)
+        #print(quotation_index_df)
         #print(quotation_index_df)
         need_to_send_mail = []
         sub = ''
@@ -395,6 +408,14 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
         else:
             pass
     return dest_df
+
+def update_all_index(force_up=False):
+    index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
+                     'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
+    #print(list(index_symbol_maps.keys()))
+    for symbol in list(index_symbol_maps.keys()):
+        update_one_stock(symbol,force_update=force_up,dest_dir='C:/hist/day/data/')
+    return
         
 class StockSQL(object):
     def __init__(self):
