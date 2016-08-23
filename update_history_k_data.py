@@ -46,7 +46,7 @@ if __name__ == "__main__":
                     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=True)
                     sleep_seconds=30
             else:
-                if datetime.datetime.now().hour==19:
+                if datetime.datetime.now().hour==20:
                     #easyhistory.init('D', export='csv', path="C:/hist")
                     updated_date_count = updated_date_count +1
                     """更新股票数据"""
