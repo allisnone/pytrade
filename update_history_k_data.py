@@ -36,7 +36,7 @@ if __name__ == "__main__":
         stock_sql = pds.StockSQL()
         last_year_date =datetime.datetime.now() + datetime.timedelta(days=-365)
         date_str = last_year_date.strftime('%Y-%m-%d')
-        sleep_seconds = 60*60
+        sleep_seconds = 60
         if tt.is_trade_date():
             if tt.is_trade_time_now():
                 if datetime.datetime.now().minute%2==0:
@@ -46,7 +46,7 @@ if __name__ == "__main__":
                     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=True)
                     sleep_seconds=30
             else:
-                if datetime.datetime.now().hour==18:
+                if datetime.datetime.now().hour==19:
                     #easyhistory.init('D', export='csv', path="C:/hist")
                     updated_date_count = updated_date_count +1
                     """更新股票数据"""

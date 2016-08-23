@@ -683,7 +683,8 @@ class Stockhistory:
         self.code=code_str
         self.ktype=ktype
         self.DEBUG_ENABLED=False
-        self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
+        #self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
+        self.h_df=get_yh_raw_hist_df(code_str)
         self.alarm_trigger_timestamp=0
         self.max_price=-1
         self.min_price=1000
