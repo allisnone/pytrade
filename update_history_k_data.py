@@ -27,7 +27,10 @@ if __name__ == "__main__":
     #easyhistory.init('D', export='csv', path="C:/hist",stock_codes=given_codes)
     easyhistory.update(path="C:/hist",stock_codes=given_codes)
     print('First update completed: ', datetime.datetime.now())
-    
+    last_year_date =datetime.datetime.now() + datetime.timedelta(days=-365)
+    date_str = last_year_date.strftime('%Y-%m-%d')
+    mybt.back_test(k_num=date_str, given_codes=[],except_stocks=except_stock,type='stock')
+    print('First back_test completed: ', datetime.datetime.now())
     updated_date_count = 1
     while True:
         #this_time=datetime.datetime.now()
@@ -46,7 +49,7 @@ if __name__ == "__main__":
                     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=True)
                     sleep_seconds=30
             else:
-                if datetime.datetime.now().hour==20:
+                if datetime.datetime.now().hour==18:
                     #easyhistory.init('D', export='csv', path="C:/hist")
                     updated_date_count = updated_date_count +1
                     """更新股票数据"""
