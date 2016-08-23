@@ -679,12 +679,13 @@ def market_analyze_today():
     print('market_analyze completed for today.')
     
 class Stockhistory:
-    def __init__(self,code_str,ktype, test_num=0):
+    def __init__(self,code_str,ktype, test_num=0,source='easyhistory'):
         self.code=code_str
         self.ktype=ktype
         self.DEBUG_ENABLED=False
-        #self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
-        self.h_df=get_yh_raw_hist_df(code_str)
+        self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
+        if source=='yh':
+            self.h_df=get_yh_raw_hist_df(code_str)
         self.alarm_trigger_timestamp=0
         self.max_price=-1
         self.min_price=1000
