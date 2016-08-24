@@ -42,22 +42,26 @@ if __name__ == "__main__":
         sleep_seconds = 60
         if tt.is_trade_date():
             if tt.is_trade_time_now():
-                if datetime.datetime.now().minute%2==0:
+                #if datetime.datetime.now().minute%2==0:
                     """更新持仓信息到数据库"""
-                    stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
+                    #stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
                     """更新指数历史数据到数据库"""
-                    stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=True)
-                    sleep_seconds=60
+                    #stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=True)
+                    #sleep_seconds=60
+                    pass
+            
             else:
                 if datetime.datetime.now().hour==18:
                     #easyhistory.init('D', export='csv', path="C:/hist")
                     updated_date_count = updated_date_count +1
                     """更新股票数据"""
                     easyhistory.update(path="C:/hist",stock_codes=given_codes)
-                    
+                    """更新指数csv数据"""
+                    pds.update_all_index(force_up=False)
                     print('update count %s at: ' % updated_date_count, datetime.datetime.now() )
+                    """历史数据回测"""
                     mybt.back_test(k_num=date_str, given_codes=[],except_stocks=except_stock,type='stock')
-                    mybt.back_test(k_num=date_str, given_codes=['sh','sz','zxb','cyb','hs300','sh50'],except_stocks=['000029'], type='index')
+                    mybt.back_test(k_num=date_str, given_codes=['sh','sz','zxb','cyb','hs300','sh50'], type='index')
                     """更新持仓信息到数据库"""
                     stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
                     """更新指数历史数据到数据库"""

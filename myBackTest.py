@@ -46,6 +46,23 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[]):
     #print(len(all_stocks))
     return stop_stocks,all_stocks
 
+def get_exit_data(symbols,last_date_str):
+    refer_index = ['sh','cyb']
+    symbols = symbols +refer_index
+    temp_datas = {}
+    for symbol in symbols:
+        dest_df=pds.pd.read_csv('C:/hist/day/temp/%s.csv' % symbol)
+        print(dest_df)
+    #dest_df = get_raw_hist_df(code_str=symbol)
+        if dest_df.empty:
+            pass
+        else:
+            dest_df_last_date = dest_df.tail(1).iloc[0]['date']
+            if dest_df_last_date==last_date_str:
+                exit_price = dest_df.tail(3)
+    return
+
+get_exit_data(symbols=['000029'],last_date_str='2016/08/23')
 #get_stopped_stocks()
 
 def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
@@ -85,6 +102,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
             result_df = s_stock.form_temp_df(stock_synbol)
             test_result = s_stock.regression_test()
             recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
+            temp_hist_df = s_stock.temp_hist_df.set_index('date')
+            temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
             #print(test_result)
             #print(recent_trend)
             i = i+1

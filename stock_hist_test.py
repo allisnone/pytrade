@@ -56,6 +56,7 @@ if __name__ == "__main__":
     stock_synbol = '000029'
     #file_time = tds.get_file_timestamp('c:/hist/day/data/000060.csv')
     #print(file_time)
+    stock_synbol = 'cyb'
     num = 0
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
@@ -76,7 +77,9 @@ if __name__ == "__main__":
     print(test_result)
     print(recent_trend)
     #print(s_stock.temp_hist_df.tail(120).describe())
-    s_stock.temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)
+    temp_hist_df = s_stock.temp_hist_df.set_index('date')
+    temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
+    #temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)
     #result_df.to_csv('./temp/%s_00.csv' % stock_synbol)
     #print(s_stock.temp_hist_df.tail(20))
    

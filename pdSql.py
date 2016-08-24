@@ -84,7 +84,7 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
 def get_raw_hist_df(code_str,latest_count=None):
     file_type='csv'
     file_name='C:/hist/day/data/'+code_str+'.'+file_type
-    print('file_name=',file_name)
+    #print('file_name=',file_name)
     raw_column_list=['date','open','high','low','close','volume','rmb','factor']
     #print('file_name=',file_name)
     df_0=pd.DataFrame({},columns=raw_column_list)
@@ -93,7 +93,7 @@ def get_raw_hist_df(code_str,latest_count=None):
         #df=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312' #='gb18030')#'utf-8')   #for python3 
         hist_df = pd.read_csv(file_name)
         hist_df['rmb'] = hist_df['amount']
-        del hist_df['amount']
+        #del hist_df['amount']
         #del hist_df['MA1']
         #print(hist_df)
         #print('pd.read_csv=',df)
@@ -279,6 +279,9 @@ def get_position(broker='yh',user_file='yh.json'):
     return holding_stocks_df,user_balance       
 
 def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
+    """
+    运行之前先下载及导出YH历史数据
+    """
     index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                      'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
     qq_index_symbol_maps = {'sh':'000001','sz':'399001','zxb':'399005','cyb':'399006',
@@ -308,7 +311,6 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
     #print(dest_df)
     dest_df_last_date = dest_df.tail(1).iloc[0]['date']
     print('dest_df_last_date=',dest_df_last_date)
-    
     if dest_df_last_date<latest_date_str:     
         quotation_date = ''
         try:
@@ -323,7 +325,7 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
             quotation_date = quotation_index_df.iloc[0]['date']
             if dest_df_last_date==quotation_date:
                 return dest_df
-        print('quotation_date=',quotation_date)
+        #print('quotation_date=',quotation_date)
         #print(quotation_index_df)
         quotation_index_df['factor'] = 1.0
         quotation_index_df = quotation_index_df[['date','open','high','low','close','volume','amount','factor']]
@@ -345,7 +347,7 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
             del yh_index_df['rmb']
             yh_index_df['factor'] = FIX_FACTOR
             yh_last_date = yh_index_df.tail(1).iloc[0]['date']
-            print('yh_last_date=',yh_last_date)
+            #print('yh_last_date=',yh_last_date)
             #print( yh_index_df)#.head(len(yh_index_df)-1))
             
             if yh_last_date>dest_df_last_date:  #dest_df_last_date<latest_date_str
@@ -395,12 +397,14 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
             quotation_index_df = qq.get_qq_quotations([symbol], ['code','date','open','high','low','close','volume','amount'])
             quotation_index_df['factor'] = 1.0
             quotation_index_df = quotation_index_df[['date','open','high','low','close','volume','amount','factor']]
-            print(quotation_index_df)
+            #print(quotation_index_df)
             print(' force update %s index' % symbol)
-            dest_df0 = dest_df.head(len(dest_df)-1)
-            print(dest_df0)
+            dest_df0 = dest_df
+            if dest_df_last_date==latest_date_str:
+                dest_df0 = dest_df.head(len(dest_df)-1)
+            #print(dest_df0)
             dest_df = dest_df0.append(quotation_index_df, ignore_index=True)
-            print(dest_df)
+            #print(dest_df)
             if quotation_index_df.empty:
                 pass
             else:
@@ -418,6 +422,7 @@ def update_all_index(force_up=False):
     return
 
 def get_exit_data(symbol,dest_df,last_date_str):
+    df=pd.read_csv('C:/hist/day/temp/%s.csv' % symbol)
     dest_df = get_raw_hist_df(code_str=symbol)
     if dest_df.empty:
         pass
