@@ -62,7 +62,7 @@ def get_exit_data(symbols,last_date_str):
                 exit_price = dest_df.tail(3)
     return
 
-get_exit_data(symbols=['000029'],last_date_str='2016/08/23')
+#get_exit_data(symbols=['000029'],last_date_str='2016/08/23')
 #get_stopped_stocks()
 
 def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
