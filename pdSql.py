@@ -416,6 +416,16 @@ def update_all_index(force_up=False):
     for symbol in list(index_symbol_maps.keys()):
         update_one_stock(symbol,force_update=force_up,dest_dir='C:/hist/day/data/')
     return
+
+def get_exit_data(symbol,dest_df,last_date_str):
+    dest_df = get_raw_hist_df(code_str=symbol)
+    if dest_df.empty:
+        pass
+    else:
+        dest_df_last_date = dest_df.tail(1).iloc[0]['date']
+        if dest_df_last_date==last_date_str:
+            exit_price = dest_df.tail(3)
+    return
         
 class StockSQL(object):
     def __init__(self):

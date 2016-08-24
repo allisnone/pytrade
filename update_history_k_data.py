@@ -47,7 +47,7 @@ if __name__ == "__main__":
                     stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
                     """更新指数历史数据到数据库"""
                     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=True)
-                    sleep_seconds=30
+                    sleep_seconds=60
             else:
                 if datetime.datetime.now().hour==18:
                     #easyhistory.init('D', export='csv', path="C:/hist")
