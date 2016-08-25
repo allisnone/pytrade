@@ -13,15 +13,20 @@ if len(sys.argv)>=2:
 #update_type = 'position'
 stock_sql = pds.StockSQL()
 hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+print('hold_stocks=',hold_stocks)
+print(hold_df)
 for stock in hold_stocks:
     pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)
-"""
+
 stock_sql.update_sql_position(users={'account':'36005','broker':'yh','json':'yh.json'})
 stock_sql.update_sql_position(users={'account':'38736','broker':'yh','json':'yh1.json'})
+hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+print('hold_stocks=',hold_stocks)
+print(hold_df)
 #pds.update_one_stock(symbol='sh',force_update=False)
 #pds.update_all_index(realtime_update=False)
 pds.update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
-"""
+
 #pds.update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
 #indexs = ['zxb', 'sh50', 'hs300', 'sz300', 'cyb', 'sz', 'zx300', 'sh']
 
