@@ -305,16 +305,16 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
     dest_df = get_raw_hist_df(code_str=symbol)
     if dest_df.empty:
         if symbol in index_symbol_maps.keys():
-            yh_symbol = index_symbol_maps[symbol]
-            yh_index_df = get_yh_raw_hist_df(code_str=yh_symbol)
-            yh_index_df['amount'] = yh_index_df['rmb']
-            del yh_index_df['rmb']
-            yh_index_df['factor'] = 1.0
-            yh_df = yh_index_df.set_index('date')
-            yh_df.to_csv(dest_file_name ,encoding='utf-8')
-            dest_df = yh_index_df
-            #del dest_df['rmb']
-            return yh_df
+            symbol = index_symbol_maps[symbol]
+        yh_index_df = get_yh_raw_hist_df(code_str=symbol)
+        yh_index_df['amount'] = yh_index_df['rmb']
+        del yh_index_df['rmb']
+        yh_index_df['factor'] = 1.0
+        yh_df = yh_index_df.set_index('date')
+        yh_df.to_csv(dest_file_name ,encoding='utf-8')
+        dest_df = yh_index_df
+        #del dest_df['rmb']
+        return yh_df
     #print(dest_df)
     dest_df_last_date = dest_df.tail(1).iloc[0]['date']
     print('dest_df_last_date=',dest_df_last_date)
@@ -730,7 +730,7 @@ class StockSQL(object):
         self.insert_table(data_frame=single_index_df,table_name=index_name,is_index=False)
         
         
-    def update_sql_position(self, users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}}):
+    def update_sql_position0(self, users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}}):
         sub = '持仓更异常'
         fail_check = []
         for account in list(users.keys()):
@@ -760,7 +760,41 @@ class StockSQL(object):
                 except:
                     pass
                 #self.insert_table(data_frame=position_df,table_name='balance')
+    def update_sql_position(self, users={'account':'36005','broker':'yh','json':'yh.json'}):
+        try:
+            account_id = users['account']
+            broker = users['broker']
+            user_file = users['json']
+            position_df,balance = get_position(broker, user_file)
+            self.hold[account_id] =  position_df
+            table_name='acc%s'%account_id
+            try:
+                self.drop_table(table_name)
+            except:
+                pass
+            self.insert_table(data_frame=position_df,table_name='acc%s'%account_id)
+            return
+        except:
+            self.update_sql_position(users)
     
+    def get_hold_stocks(self,accounts=['36005', '38736']):
+        if len(accounts)<1:
+            return False
+        table_name='acc%s'%accounts[0]
+        hold_df = self.get_table_df(table_name)
+        if len(accounts)>=2:
+            accounts.pop(0)
+            for account in accounts:
+                table_name='acc%s'%account
+                next_hold_df = self.get_table_df(table_name)
+                hold_df = hold_df.append(next_hold_df)
+        hold_stock_all = hold_df['证券代码'].values.tolist()
+        #hold_stocks = ['000932', '002362', '300431', '601009', '000007', '000932', '002405', '600570', '603398']
+        hold_stocks = list(set(hold_stock_all) | set(hold_stock_all))
+        #print('hold_stocks=',hold_stocks)
+        #print(hold_df)
+        return hold_df,hold_stocks
+        
     def get_forvary_stocks(self):
         return    
     

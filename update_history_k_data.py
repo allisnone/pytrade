@@ -63,7 +63,9 @@ if __name__ == "__main__":
                     mybt.back_test(k_num=date_str, given_codes=[],except_stocks=except_stock,type='stock')
                     mybt.back_test(k_num=date_str, given_codes=['sh','sz','zxb','cyb','hs300','sh50'], type='index')
                     """更新持仓信息到数据库"""
-                    stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
+                    #stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
+                    stock_sql.update_sql_position(users={'account':'36005','broker':'yh','json':'yh.json'})
+                    stock_sql.update_sql_position(users={'account':'38736','broker':'yh','json':'yh1.json'})
                     """更新指数历史数据到数据库"""
                     stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
                     sleep_seconds = tt.get_remain_time_to_trade()

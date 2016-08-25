@@ -18,13 +18,22 @@ if __name__ == "__main__":
     stock_sql = pds.StockSQL()
     """
     stock_sql = pds.StockSQL()
+    """
     stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
     all_hold_stocks = []
     for account in list(stock_sql.hold.keys()):
         pos_df = stock_sql.hold[account]
         hold_stocks = pos_df['证券代码'].values.tolist()
         all_hold_stocks = list(set(all_hold_stocks)|set(hold_stocks))
-    print("all_hold_stocks=",all_hold_stocks)    
+    print("all_hold_stocks=",all_hold_stocks)
+    """
+    hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+    print('hold_stocks=',hold_stocks)
+    print(hold_df)
+    for stock in hold_stocks:
+        pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)   
+    
+    pds.update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
     #easyhistory.init('D', export='csv', path="C:/hist")
     #easyhistory.update(path="C:/hist")
     stock_synbol = '300162'
@@ -72,10 +81,16 @@ if __name__ == "__main__":
     #givens = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     
+    hold_result_df = back_test(k_num,given_codes=hold_stocks,except_stocks=[],type='stock')#except_stocks)
+    addition_name = 'hold'
+    hold_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
+    """
     all_result_df = back_test(k_num,given_codes=givens,except_stocks=['000029'],type='stock')#except_stocks)
+    all_hold_stocks =hold_stocks
     if all_hold_stocks:
         hold_result = all_result_df[all_result_df.index.isin(all_hold_stocks)]
         addition_name = 'hold'
         hold_result.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
+    """
     #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))
