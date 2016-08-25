@@ -278,9 +278,16 @@ def get_position(broker='yh',user_file='yh.json'):
     #print(holding_stocks_df)
     return holding_stocks_df,user_balance       
 
-def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
+def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False):
     """
     运行之前先下载及导出YH历史数据
+    """
+    """
+    :param symbol: string type, stock code
+    :param realtime_update: bool type, True for K data force update during trade time 
+    :param dest_dir: string type, like csv dir
+    :param force_update_from_YH: bool type, force update K data from YH
+    :return: Dataframe, history K data for stock
     """
     index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                      'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
@@ -364,8 +371,9 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
                     sm.send_mail(sub,content,mail_to_list=None)
                 elif yh_last_date==last_date_str: # update by last date
                     """只需要更新当天数据"""
-                    yh_index_df = yh_index_df.append(quotation_index_df, ignore_index=True)
-                    print(yh_index_df)
+                    if realtime_update and yh_last_date<latest_date_str:
+                        yh_index_df = yh_index_df.append(quotation_index_df, ignore_index=True)
+                        #print(yh_index_df)
                     pass
                 else:# yh_last_date>latest_date_str: #update to  latest date
                     """YH已经更新到今天，要更新盘中获取的当天数据"""
@@ -390,10 +398,13 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
                 """
                 yh_index_df.to_csv(dest_file_name ,encoding='utf-8')
             else:
+                if force_update_from_YH and yh_last_date==dest_df_last_date:
+                    yh_index_df = yh_index_df.set_index('date')
+                    yh_index_df.to_csv(dest_file_name ,encoding='utf-8')
                 pass
     else:
         print('No need to update data')
-        if force_update:
+        if realtime_update:
             quotation_index_df = qq.get_qq_quotations([symbol], ['code','date','open','high','low','close','volume','amount'])
             quotation_index_df['factor'] = 1.0
             quotation_index_df = quotation_index_df[['date','open','high','low','close','volume','amount','factor']]
@@ -413,12 +424,12 @@ def update_one_stock(symbol,force_update=False,dest_dir='C:/hist/day/data/'):
             pass
     return dest_df
 
-def update_all_index(force_up=False):
+def update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False):
     index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                      'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
     #print(list(index_symbol_maps.keys()))
     for symbol in list(index_symbol_maps.keys()):
-        update_one_stock(symbol,force_update=force_up,dest_dir='C:/hist/day/data/')
+        update_one_stock(symbol,realtime_update,dest_dir, force_update_from_YH)
     return
 
 def get_exit_data(symbol,dest_df,last_date_str):
