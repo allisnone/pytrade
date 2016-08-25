@@ -372,6 +372,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
                 elif yh_last_date==last_date_str: # update by last date
                     """只需要更新当天数据"""
                     if realtime_update and yh_last_date<latest_date_str:
+                        print(' force update %s index' % symbol)
                         yh_index_df = yh_index_df.append(quotation_index_df, ignore_index=True)
                         #print(yh_index_df)
                     pass

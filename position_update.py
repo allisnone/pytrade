@@ -13,7 +13,7 @@ if len(sys.argv)>=2:
 #update_type = 'position'
 stock_sql = pds.StockSQL()
 #pds.update_one_stock(symbol='sh',force_update=False)
-pds.update_all_index(force_up=False)
+#pds.update_all_index(realtime_update=False)
 pds.update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
 
 #indexs = ['zxb', 'sh50', 'hs300', 'sz300', 'cyb', 'sz', 'zx300', 'sh']
