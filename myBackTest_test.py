@@ -27,13 +27,24 @@ if __name__ == "__main__":
         all_hold_stocks = list(set(all_hold_stocks)|set(hold_stocks))
     print("all_hold_stocks=",all_hold_stocks)
     """
-    hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+    indexs = ['sh','sz','zxb','cyb','hs300','sh50']
+    hold_df,holds = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+    hold_funds = []
+    for hold in holds:
+        if hold.startswith('1') or hold.startswith('5'):
+            hold_funds.append(hold)
+    #indexs = indexs + hold_funds
+    hold_stocks = list(set(holds).difference(set(hold_funds)))
     print('hold_stocks=',hold_stocks)
     print(hold_df)
+    """从新浪 qq网页更新股票"""
+    #easyhistory.init(path="C:/hist",stock_codes=hold_stocks)
+    #easyhistory.update(path="C:/hist",stock_codes=hold_stocks)
     for stock in hold_stocks:
-        pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)   
+        #pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)
+        pass  
     
-    pds.update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
+    pds.update_all_index(indexs + hold_funds,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
     #easyhistory.init('D', export='csv', path="C:/hist")
     #easyhistory.update(path="C:/hist")
     stock_synbol = '300162'
@@ -67,8 +78,8 @@ if __name__ == "__main__":
     else:
         pass
     
-    indexs = ['sh','sz','zxb','cyb','hs300','sh50']
-    back_test(k_num,given_codes=indexs,except_stocks=[],type='index')#except_stocks)
+    
+    #back_test(k_num,given_codes=indexs,except_stocks=[],type='index')#except_stocks)
     
     except_stocks = ['002548','002220','300467','300459','300238','603588','300379','002528',
                        '603026','002615','603609','603010','300459','300378','002709','300438',
@@ -81,9 +92,19 @@ if __name__ == "__main__":
     #givens = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     
-    hold_result_df = back_test(k_num,given_codes=hold_stocks,except_stocks=[],type='stock')#except_stocks)
+    hold_result_df = back_test(k_num,given_codes=hold_stocks+hold_funds,except_stocks=[],type='stock')#except_stocks)
     addition_name = 'hold'
     hold_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
+    
+    hold_statistics = pds.get_hold_stock_statistics(hold_stocks=hold_stocks+hold_funds)
+    hold_statistics.to_csv('./temp/statistics_test_' + addition_name +'%s.csv' % date_str)
+    print(hold_statistics)
+    
+    his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=hold_stocks+hold_funds)
+    his.update_indicator_results()      #TA_lib 跟新指标
+    indicator_resuls = his.indicator_result
+    res = his.indicator_result['000007']
+    print(indicator_resuls)
     """
     all_result_df = back_test(k_num,given_codes=givens,except_stocks=['000029'],type='stock')#except_stocks)
     all_hold_stocks =hold_stocks

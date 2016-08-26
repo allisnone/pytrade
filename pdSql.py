@@ -425,12 +425,12 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
             pass
     return dest_df
 
-def update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False):
-    index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
-                     'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
+def update_all_index(indexs, realtime_update=False, dest_dir='C:/hist/day/data/', force_update_from_YH=False):
+    #index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
+    #                 'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
     #print(list(index_symbol_maps.keys()))
-    for symbol in list(index_symbol_maps.keys()):
-        update_one_stock(symbol,realtime_update,dest_dir, force_update_from_YH)
+    for symbol in indexs: # #list(index_symbol_maps.keys()):
+        update_one_stock(symbol, realtime_update, dest_dir, force_update_from_YH)
     return
 
 def get_exit_data(symbol,dest_df,last_date_str):
@@ -443,6 +443,22 @@ def get_exit_data(symbol,dest_df,last_date_str):
         if dest_df_last_date==last_date_str:
             exit_price = dest_df.tail(3)
     return
+
+def get_hold_stock_statistics(hold_stocks= ['000007', '000932', '601009', '150288', '300431', '002362', '002405', '600570', '603398'],
+                              stock_dir='C:/hist/day/temp/'):
+    if len(hold_stocks)<1:
+            return False
+    first_stock = hold_stocks[0]
+    statistics_df = pd.read_csv(stock_dir + '%s.csv' % first_stock).tail(1)
+    statistics_df['code'] = first_stock
+    if len(hold_stocks)>=2:
+        hold_stocks.pop(0)
+        for stock in hold_stocks:
+                temp_hold_df = pd.read_csv(stock_dir + '%s.csv' % stock).tail(1)
+                temp_hold_df['code'] = stock
+                statistics_df = statistics_df.append(temp_hold_df)
+    statistics_df = statistics_df.set_index('code')
+    return statistics_df
         
 class StockSQL(object):
     def __init__(self):
