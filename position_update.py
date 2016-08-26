@@ -16,7 +16,11 @@ hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
 print('hold_stocks=',hold_stocks)
 print(hold_df)
 for stock in hold_stocks:
-    pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)
+    """从银河更新股票"""
+    #pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)
+    """从新浪 qq网页更新股票"""
+    easyhistory.init(path="C:/hist",stock_codes=hold_stocks,set_stocks=hold_stocks)
+    #easyhistory.update(path="C:/hist",stock_codes=hold_stocks)
 
 stock_sql.update_sql_position(users={'account':'36005','broker':'yh','json':'yh.json'})
 stock_sql.update_sql_position(users={'account':'38736','broker':'yh','json':'yh1.json'})
@@ -25,6 +29,7 @@ print('hold_stocks=',hold_stocks)
 print(hold_df)
 #pds.update_one_stock(symbol='sh',force_update=False)
 #pds.update_all_index(realtime_update=False)
+"""从银河更新指数"""
 pds.update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
 
 #pds.update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
