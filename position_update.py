@@ -11,6 +11,7 @@ if len(sys.argv)>=2:
         update_type = sys.argv[1]  #start date string   
 #update_type = 'index'
 #update_type = 'position'
+update_type = 'stock'
 stock_sql = pds.StockSQL()
 #hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
 #print('hold_stocks=',hold_stocks)
@@ -44,12 +45,11 @@ print(lanchou_df['code'].values.tolist())
 """
 
 #"""
-
+indexs = ['sh','sz','zxb','cyb','hs300','sh50']
 if update_type == 'index':
     #从银河更新指数
     #stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
     #stock_sql.download_hist_as_csv(indexs = ['sh','sz','zxb','cyb','hs300','sh50'],dir='C:/hist/day/data/')
-    indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     pds.update_codes_from_YH(indexs,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
 elif  update_type == 'fund':
     #从银河更新基金
@@ -71,7 +71,17 @@ elif update_type == 'stock':
     #从新浪 qq网页更新股票
     #easyhistory.init(path="C:/hist",stock_codes=hold_stocks)
     #easyhistory.update(path="C:/hist",stock_codes=hold_stocks)
-    easyhistory.update(path="C:/hist",stock_codes=[])
+    index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
+                     'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
+    print('index=', list(index_symbol_maps.keys()))
+    all_codes = pds.get_all_code(hist_dir='C:/hist/day/data/')
+    funds =[]
+    for code in all_codes:
+        if code.startswith('1') or code.startswith('5'):
+            funds.append(code)
+    all_codes = list(set(all_codes).difference(set(funds)).difference(set(index)))
+    print(all_codes)
+    easyhistory.update(path="C:/hist",stock_codes=all_codes)
 else:
     pass
 """
