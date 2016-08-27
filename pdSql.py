@@ -249,7 +249,7 @@ def get_different_symbols():
         elif code.startswith('9'):
             b_stock.append(code)
     except_codes = ['000029']
-    all_stocks = list(set(all_codes).difference(set(funds+index+except_codes)))
+    all_stocks = list(set(all_codes).difference(set(funds+indexs+except_codes)))
     return indexs,funds,b_stock,all_stocks
     
 def update_all_hist_data(codes,update_db=True):
