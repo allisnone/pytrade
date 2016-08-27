@@ -45,7 +45,7 @@ print(lanchou_df['code'].values.tolist())
 """
 
 #"""
-indexs = ['sh','sz','zxb','cyb','hs300','sh50']
+index= ['cyb', 'zxb', 'sz', 'sh', 'sz300', 'zx300', 'hs300', 'sh50']
 if update_type == 'index':
     #从银河更新指数
     #stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
@@ -73,14 +73,14 @@ elif update_type == 'stock':
     #easyhistory.update(path="C:/hist",stock_codes=hold_stocks)
     index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                      'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
-    print('index=', list(index_symbol_maps.keys()))
+    #print('index=', list(index_symbol_maps.keys()))
     all_codes = pds.get_all_code(hist_dir='C:/hist/day/data/')
     funds =[]
     for code in all_codes:
         if code.startswith('1') or code.startswith('5'):
             funds.append(code)
-    all_codes = list(set(all_codes).difference(set(funds)).difference(set(index)))
-    print(all_codes)
+    all_codes = list(set(all_codes).difference(set(funds)).difference(set(index+['000029'])))
+    #print(all_codes)
     easyhistory.update(path="C:/hist",stock_codes=all_codes)
 else:
     pass
