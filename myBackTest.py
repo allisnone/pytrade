@@ -91,6 +91,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
                         'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close','cont_num','rmb_rate','ma_rmb_rate']
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
+    all_temp_hist_df = tds.pd.DataFrame({}, columns=[])
     ma_num = 20
     for stock_synbol in all_codes:
         if stock_synbol=='000029':
@@ -103,7 +104,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
             test_result = s_stock.regression_test()
             recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
             temp_hist_df = s_stock.temp_hist_df.set_index('date')
-            temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
+            #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
+            all_temp_hist_df= all_temp_hist_df.append(temp_hist_df.tail(1))
             #print(test_result)
             #print(recent_trend)
             i = i+1
@@ -187,5 +189,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
         
     result_summary.to_csv('./temp/result_summary_' + addition_name +'%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_' + addition_name +'%s.csv' % ma_num)
+    
+    all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +'%s.csv' % k_num )
     
     return all_result_df
