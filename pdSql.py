@@ -318,8 +318,8 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
     d_format='%Y/%m/%d'
     last_date_str = tt.get_last_trade_date(date_format=d_format)
     latest_date_str = tt.get_latest_trade_date(date_format=d_format)
-    print('last_date_str=',last_date_str)
-    print('latest_date_str=',latest_date_str)
+    #print('last_date_str=',last_date_str)
+    #print('latest_date_str=',latest_date_str)
     next_date_str = tt.get_next_trade_date(date_format=d_format)
     #print(next_date_str)
     dest_file_name = dest_dir+ '%s.csv' % symbol
@@ -338,7 +338,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
         return yh_df
     #print(dest_df)
     dest_df_last_date = dest_df.tail(1).iloc[0]['date']
-    print('dest_df_last_date=',dest_df_last_date)
+    #print('dest_df_last_date=',dest_df_last_date)
     if dest_df_last_date<latest_date_str:     
         quotation_date = ''
         try:

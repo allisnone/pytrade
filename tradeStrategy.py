@@ -688,7 +688,7 @@ class Stockhistory:
         if source=='yh':
             self.h_df=get_yh_raw_hist_df(code_str)
         #self.h_df= self.h_df.resetindex()
-        print(self.h_df)
+        #print(self.h_df)
         self.alarm_trigger_timestamp=0
         self.max_price=-1
         self.min_price=1000
