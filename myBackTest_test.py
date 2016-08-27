@@ -44,7 +44,7 @@ if __name__ == "__main__":
         #pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)
         pass  
     
-    pds.update_all_index(indexs + hold_funds,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
+    pds.update_codes_from_YH(indexs + hold_funds,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
     #easyhistory.init('D', export='csv', path="C:/hist")
     #easyhistory.update(path="C:/hist")
     stock_synbol = '300162'

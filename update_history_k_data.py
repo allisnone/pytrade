@@ -57,7 +57,7 @@ if __name__ == "__main__":
                     """更新股票数据"""
                     easyhistory.update(path="C:/hist",stock_codes=given_codes)
                     """更新指数csv数据"""
-                    pds.update_all_index(realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
+                    pds.update_codes_from_YH(indexs=['sh','sz','zxb','cyb','hs300','sh50'], realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
                     print('update count %s at: ' % updated_date_count, datetime.datetime.now() )
                     """历史数据回测"""
                     mybt.back_test(k_num=date_str, given_codes=[],except_stocks=except_stock,type='stock')

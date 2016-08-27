@@ -431,11 +431,12 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
             pass
     return dest_df
 
-def update_all_index(indexs, realtime_update=False, dest_dir='C:/hist/day/data/', force_update_from_YH=False):
+def update_codes_from_YH(codes, realtime_update=False, dest_dir='C:/hist/day/data/', force_update_from_YH=False):
     #index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
     #                 'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
     #print(list(index_symbol_maps.keys()))
-    for symbol in indexs: # #list(index_symbol_maps.keys()):
+    #通常为指数和基金从银河的更新
+    for symbol in codes: # #list(index_symbol_maps.keys()):
         update_one_stock(symbol, realtime_update, dest_dir, force_update_from_YH)
     return
 
