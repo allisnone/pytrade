@@ -51,7 +51,7 @@ def get_exit_data(symbols,last_date_str):
     symbols = symbols +refer_index
     temp_datas = {}
     for symbol in symbols:
-        dest_df=pds.pd.read_csv('C:/hist/day/temp/%s.csv' % symbol)
+        dest_df=pds.pd.read_csv('C:/hist/day/data/%s.csv' % symbol)
         print(dest_df)
     #dest_df = get_raw_hist_df(code_str=symbol)
         if dest_df.empty:
