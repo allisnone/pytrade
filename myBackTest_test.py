@@ -108,8 +108,12 @@ if __name__ == "__main__":
     print(indicator_resuls)
     """
     
-    """
+    
     all_result_df = back_test(k_num,given_codes=givens,except_stocks=['000029'],type='stock')#except_stocks)
+    all_codes = all_result_df.index.values.tolist()
+    hold_statistics = pds.get_hold_stock_statistics(hold_stocks=all_codes)
+    hold_statistics.to_csv('./temp/statistics_test_' + 'all' +'%s.csv' % date_str)
+    """
     all_hold_stocks =hold_stocks
     if all_hold_stocks:
         hold_result = all_result_df[all_result_df.index.isin(all_hold_stocks)]
