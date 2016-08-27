@@ -93,20 +93,20 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
     all_temp_hist_df = tds.pd.DataFrame({}, columns=[])
     ma_num = 20
-    for stock_synbol in all_codes:
-        if stock_synbol=='000029':
+    for stock_symbol in all_codes:
+        if stock_symbol=='000029':
             continue
-        print(i,stock_synbol)
-        s_stock=tds.Stockhistory(stock_synbol,'D',test_num=k_num)
+        print(i,stock_symbol)
+        s_stock=tds.Stockhistory(stock_symbol,'D',test_num=k_num)
         if True:
         #try:
-            result_df = s_stock.form_temp_df(stock_synbol)
+            result_df = s_stock.form_temp_df(stock_symbol)
             test_result = s_stock.regression_test()
             recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
             temp_hist_df = s_stock.temp_hist_df.set_index('date')
-            #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
+            #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_symbol)
             temp_hist_df_tail = temp_hist_df.tail(1)
-            temp_hist_df_tail['code'] = stock_synbol
+            temp_hist_df_tail['code'] = stock_symbol
             all_temp_hist_df= all_temp_hist_df.append(temp_hist_df_tail)
             #print(test_result)
             #print(recent_trend)
@@ -114,15 +114,15 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
             if test_result.empty:
                 pass
             else: 
-                test_result_df = tds.pd.DataFrame(test_result.to_dict(), columns=column_list, index=[stock_synbol])
+                test_result_df = tds.pd.DataFrame(test_result.to_dict(), columns=column_list, index=[stock_symbol])
                 all_result_df = all_result_df.append(test_result_df,ignore_index=False)
             if recent_trend.empty:
                 pass
             else:
-                trend_result_df = tds.pd.DataFrame(recent_trend.to_dict(), columns=trend_column_list, index=[stock_synbol])
+                trend_result_df = tds.pd.DataFrame(recent_trend.to_dict(), columns=trend_column_list, index=[stock_symbol])
                 all_trend_result_df = all_trend_result_df.append(trend_result_df,ignore_index=False)
         #except:
-        #    print('Regression test exception for stock: %s' % stock_synbol)
+        #    print('Regression test exception for stock: %s' % stock_symbol)
         
         
     #print(result_df.tail(20))
