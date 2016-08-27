@@ -40,6 +40,7 @@ if __name__ == "__main__":
     """从新浪 qq网页更新股票"""
     #easyhistory.init(path="C:/hist",stock_codes=hold_stocks)
     #easyhistory.update(path="C:/hist",stock_codes=hold_stocks)
+    indexs,funds,b_stock,all_stocks = pds.get_different_symbols()
     for stock in hold_stocks:
         #pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)
         pass  
@@ -77,10 +78,7 @@ if __name__ == "__main__":
                 #             '002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']# '300476', '002548', '002799']
     else:
         pass
-    
-    
     #back_test(k_num,given_codes=indexs,except_stocks=[],type='index')#except_stocks)
-    
     except_stocks = ['002548','002220','300467','300459','300238','603588','300379','002528',
                        '603026','002615','603609','603010','300459','300378','002709','300438',
                        '300277','002752','002613','300337','603005','603718','600666','002350',
@@ -92,7 +90,7 @@ if __name__ == "__main__":
     #givens = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     
-    hold_result_df = back_test(k_num,given_codes=hold_stocks+hold_funds,except_stocks=[],type='stock')#except_stocks)
+    hold_result_df = back_test(k_num,given_codes=holds,except_stocks=[],type='stock')#except_stocks)
     addition_name = 'hold'
     hold_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
     
@@ -108,11 +106,11 @@ if __name__ == "__main__":
     print(indicator_resuls)
     """
     
-    
-    all_result_df = back_test(k_num,given_codes=givens,except_stocks=['000029'],type='stock')#except_stocks)
-    all_codes = all_result_df.index.values.tolist()
-    hold_statistics = pds.get_hold_stock_statistics(hold_stocks=all_codes)
-    hold_statistics.to_csv('./temp/statistics_test_' + 'all' +'%s.csv' % date_str)
+    #all_codes = list(set(all_codes).difference(set(funds+index+except_codes)))
+    all_result_df = back_test(k_num,given_codes=all_stocks,except_stocks=['000029'],type='stock')#except_stocks)
+    #all_codes = all_result_df.index.values.tolist()
+    all_statistics = pds.get_hold_stock_statistics(hold_stocks=all_stocks,stock_dir='C:/hist/day/temp/')
+    all_statistics.to_csv('./temp/statistics_test_' + 'all' +'%s.csv' % date_str)
     """
     all_hold_stocks =hold_stocks
     if all_hold_stocks:

@@ -45,13 +45,13 @@ print(lanchou_df['code'].values.tolist())
 """
 
 #"""
-index= ['cyb', 'zxb', 'sz', 'sh', 'sz300', 'zx300', 'hs300', 'sh50']
+indexs,funds,b_stock,all_stocks = pds.get_different_symbols()
 if update_type == 'index':
     #从银河更新指数
     #stock_sql.update_sql_index(index_list=['sh','sz','zxb','cyb','hs300','sh50'],force_update=False)
     #stock_sql.download_hist_as_csv(indexs = ['sh','sz','zxb','cyb','hs300','sh50'],dir='C:/hist/day/data/')
     pds.update_codes_from_YH(indexs,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
-elif  update_type == 'fund':
+elif update_type == 'fund':
     #从银河更新基金
     all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
     funds =[]
@@ -59,7 +59,7 @@ elif  update_type == 'fund':
         if code.startswith('1') or code.startswith('5'):
             funds.append(code)
     pds.update_codes_from_YH(funds,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
-elif  update_type == 'position':
+elif update_type == 'position':
     #更新仓位
     #stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
     stock_sql.update_sql_position(users={'account':'36005','broker':'yh','json':'yh.json'})
@@ -71,17 +71,8 @@ elif update_type == 'stock':
     #从新浪 qq网页更新股票
     #easyhistory.init(path="C:/hist",stock_codes=hold_stocks)
     #easyhistory.update(path="C:/hist",stock_codes=hold_stocks)
-    index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
-                     'sh50':'000016','sz300':'399007','zx300':'399008','hs300':'000300'}
-    #print('index=', list(index_symbol_maps.keys()))
-    all_codes = pds.get_all_code(hist_dir='C:/hist/day/data/')
-    funds =[]
-    for code in all_codes:
-        if code.startswith('1') or code.startswith('5'):
-            funds.append(code)
-    all_codes = list(set(all_codes).difference(set(funds)).difference(set(index+['000029'])))
-    #print(all_codes)
-    easyhistory.update(path="C:/hist",stock_codes=all_codes)
+    #easyhistory.init(path="C:/hist")#,stock_codes=all_codes)
+    easyhistory.update(path="C:/hist",stock_codes=all_stocks)#+b_stock)
 else:
     pass
 """

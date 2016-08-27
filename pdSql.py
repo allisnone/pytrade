@@ -12,6 +12,7 @@ import tradeTime as tt
 import sendEmail as sm
 import easytrader,easyhistory
 import time,os
+import code
 #ROOT_DIR='E:/work/stockAnalyze'
 ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
@@ -236,6 +237,20 @@ def get_all_code(hist_dir):
         if len(code)==6:
             all_code.append(code)
     return all_code
+
+def get_different_symbols():
+    indexs= ['cyb', 'zxb', 'sz', 'sh', 'sz300', 'zx300', 'hs300', 'sh50']
+    all_codes = get_all_code(hist_dir='C:/hist/day/data/')
+    funds =[]
+    b_stock = []
+    for code in all_codes:
+        if code.startswith('1') or code.startswith('5'):
+            funds.append(code)
+        elif code.startswith('9'):
+            b_stock.append(code)
+    except_codes = ['000029']
+    all_stocks = list(set(all_codes).difference(set(funds+index+except_codes)))
+    return indexs,funds,b_stock,all_stocks
     
 def update_all_hist_data(codes,update_db=True):
     """
