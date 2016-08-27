@@ -105,7 +105,9 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
             recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
             temp_hist_df = s_stock.temp_hist_df.set_index('date')
             #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
-            all_temp_hist_df= all_temp_hist_df.append(temp_hist_df.tail(1))
+            temp_hist_df_tail = temp_hist_df.tail(1)
+            temp_hist_df_tail['code'] = stock_synbol
+            all_temp_hist_df= all_temp_hist_df.append(temp_hist_df_tail)
             #print(test_result)
             #print(recent_trend)
             i = i+1
@@ -189,7 +191,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
         
     result_summary.to_csv('./temp/result_summary_' + addition_name +'%s.csv' % k_num )
     all_trend_result_df_chinese.to_csv('./temp/trend_result_' + addition_name +'%s.csv' % ma_num)
-    
-    all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +'%s.csv' % k_num )
+    if not all_temp_hist_df.empty:
+        all_temp_hist_df = all_temp_hist_df.set_index('code')
+        all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +'%s.csv' % k_num )
     
     return all_result_df
