@@ -43,17 +43,17 @@ def get_all_code(hist_dir):
             all_code.append(code[0])
     return all_code
 
-#get the history raw data for certain code: ['date','open','high','low','close','volume','rmb']
+#get the history raw data for certain code: ['date','open','high','low','close','volume','amount']
 """data from 'export' is update from trade software everyday """
 def get_raw_hist_df(code_str,latest_count=None):
     file_type='csv'
     file_name=RAW_HIST_DIR+code_str+'.'+file_type
-    column_list=['date','open','high','low','close','volume','rmb']
+    column_list=['date','open','high','low','close','volume','amount']
     #print('file_name=',file_name)
     df_0=pd.read_csv(file_name,names=column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
     #print df_0
-    #delete column 'rmb' and delete the last row
-    del df_0['rmb']
+    #delete column 'amount' and delete the last row
+    del df_0['amount']
     df=df_0.ix[0:(len(df_0)-2)]
     #print df
     
@@ -133,7 +133,7 @@ def get_hist_df(code_str,analyze_type,latest_count=None):
     file_name=target_dir+code_str+'.'+ file_type
     #print 'file_name:',file_name
     data={}
-    column_list=['date','open','high','low','close','volume']#,'rmb']
+    column_list=['date','open','high','low','close','volume']#,'amount']
     df=pd.DataFrame(data=data,columns=column_list)
     now_time=datetime.datetime.now()
     file_mt_str=now_time.strftime("%Y-%m-%d %X")
@@ -683,9 +683,12 @@ class Stockhistory:
         self.code=code_str
         self.ktype=ktype
         self.DEBUG_ENABLED=False
-        self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
+        #self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
+        self.h_df=pds.get_easyhistory_df(code_str)  #ta_lib  indicator
         if source=='yh':
             self.h_df=get_yh_raw_hist_df(code_str)
+        #self.h_df= self.h_df.resetindex()
+        print(self.h_df)
         self.alarm_trigger_timestamp=0
         self.max_price=-1
         self.min_price=1000
@@ -796,7 +799,7 @@ class Stockhistory:
         """
         实时更新当前K线到历史数据
         """
-        #k_data=[date,open,high,low,close,volume,rmb]
+        #k_data=[date,open,high,low,close,volume,amount]
         k_data = self.get_realtime_k_data()
         #print(k_data)
         if self.h_df.empty:
@@ -811,9 +814,9 @@ class Stockhistory:
             predict_volume_rate = 1.0
             if pass_time_rate:
                 predict_volume_rate = pass_time_rate
-            column_list=['date','open','high','low','close','volume','rmb']
-            #this_k_data={'date': k_data[0],'open': k_data[1],'high': k_data[2],'low': k_data[3],'close': k_data[4],'volume': k_data[5],'rmb': k_data[6]}
-            this_k_data={'date': k_data['date'],'open': k_data['open'],'high': k_data['high'],'low': k_data['low'],'close': k_data['now'],'volume': k_data['turnover']*predict_volume_rate,'rmb': k_data['volume']*predict_volume_rate}
+            column_list=['date','open','high','low','close','volume','amount']
+            #this_k_data={'date': k_data[0],'open': k_data[1],'high': k_data[2],'low': k_data[3],'close': k_data[4],'volume': k_data[5],'amount': k_data[6]}
+            this_k_data={'date': k_data['date'],'open': k_data['open'],'high': k_data['high'],'low': k_data['low'],'close': k_data['now'],'volume': k_data['turnover']*predict_volume_rate,'amount': k_data['volume']*predict_volume_rate}
             this_k_df=pd.DataFrame(data=this_k_data,columns=column_list,index=[latest_index+1])
             #print(this_k_df)
             #print(k_data['date'])
@@ -994,13 +997,13 @@ class Stockhistory:
         
         great_v_rate=1.2
         little_v_rate=0.8
-        temp_df1['rmb_rate']=(temp_df1['rmb_rate']).round(2)
-        rmb_rate_list=temp_df1['rmb_rate'].values.tolist()
-        great_v_rate,little_v_rate=self.get_extreme_change(rmb_rate_list,rate=extreme_rate)
+        temp_df1['amount_rate']=(temp_df1['amount_rate']).round(2)
+        amount_rate_list=temp_df1['amount_rate'].values.tolist()
+        great_v_rate,little_v_rate=self.get_extreme_change(amount_rate_list,rate=extreme_rate)
         print('great_v_rate=%s,little_v_rate=%s' %(great_v_rate,little_v_rate))
         
-        temp_df['gt_v_r']=np.where(temp_df['rmb_rate']>great_v_rate,(temp_df['rmb_rate']/great_v_rate-1),0)
-        temp_df['lt_v_r']=np.where(temp_df['rmb_rate']<little_v_rate,-(little_v_rate/temp_df['rmb_rate']-1),0)
+        temp_df['gt_v_r']=np.where(temp_df['amount_rate']>great_v_rate,(temp_df['amount_rate']/great_v_rate-1),0)
+        temp_df['lt_v_r']=np.where(temp_df['amount_rate']<little_v_rate,-(little_v_rate/temp_df['amount_rate']-1),0)
         temp_df['great_v_rate']=temp_df['gt_v_r']+temp_df['lt_v_r']
         del temp_df['gt_v_r']
         del temp_df['lt_v_r']
@@ -1044,7 +1047,7 @@ class Stockhistory:
         close = temp_df.tail(1).iloc[0].close
         ma5 = temp_df.tail(1).iloc[0].ma5
         ma10 = temp_df.tail(1).iloc[0].ma10
-        rmb_rate = temp_df.tail(1).iloc[0].rmb_rate
+        amount_rate = temp_df.tail(1).iloc[0].amount_rate
         atr = temp_df.tail(1).iloc[0].atr
         atr_ma5 = temp_df.tail(1).iloc[0].atr
         atr_in = temp_df.tail(1).iloc[0].atr_in
@@ -1536,15 +1539,15 @@ class Stockhistory:
         #temp_df['v_rate'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
         temp_df.insert(17, 'v_rate', (temp_df['volume']/(temp_df['v_ma5'].shift(1))).round(4))
         if '3.5' in platform.python_version():
-            temp_df['rmb_ma5'] = temp_df['rmb'].rolling(center=False,window=5).mean().round(2)
-            temp_df['rmb_ma10'] = temp_df['rmb'].rolling(center=False,window=10).mean().round(2)
+            temp_df['amount_ma5'] = temp_df['amount'].rolling(center=False,window=5).mean().round(2)
+            temp_df['amount_ma10'] = temp_df['amount'].rolling(center=False,window=10).mean().round(2)
         else:#elif '3.4' in platform.python_version():
-            temp_df['rmb_ma5'] = pd.rolling_mean(temp_df['rmb'], window=5).round(2)
-            temp_df['rmb_ma10'] = pd.rolling_mean(temp_df['rmb'], window=10).round(2)
-        #temp_df['rmb_ma5'] = np.round(pd.rolling_mean(temp_df['rmb'], window=5), 2)
-        #temp_df['rmb_ma10'] = np.round(pd.rolling_mean(temp_df['rmb'], window=10), 2)
-        temp_df.insert(18, 'rmb_rate', (temp_df['rmb']/(temp_df['rmb_ma5'].shift(1))).round(4))
-        temp_df.insert(19, 'ma_rmb_rate', (temp_df['rmb_ma5']/temp_df['rmb_ma10']).round(4))
+            temp_df['amount_ma5'] = pd.rolling_mean(temp_df['amount'], window=5).round(2)
+            temp_df['amount_ma10'] = pd.rolling_mean(temp_df['amount'], window=10).round(2)
+        #temp_df['amount_ma5'] = np.round(pd.rolling_mean(temp_df['amount'], window=5), 2)
+        #temp_df['amount_ma10'] = np.round(pd.rolling_mean(temp_df['amount'], window=10), 2)
+        temp_df.insert(18, 'amount_rate', (temp_df['amount']/(temp_df['amount_ma5'].shift(1))).round(4))
+        temp_df.insert(19, 'ma_amount_rate', (temp_df['amount_ma5']/temp_df['amount_ma10']).round(4))
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(16, 'o_change', 100.00*((temp_df.open-temp_df.last_close)/temp_df.last_close).round(4))
@@ -1580,7 +1583,7 @@ class Stockhistory:
             temp_df['chg_min5'] = temp_df['p_change'].rolling(window=5,center=False).min().round(2)
             temp_df['chg_max2'] = temp_df['p_change'].rolling(window=2,center=False).max().round(2)
             temp_df['chg_max3'] = temp_df['p_change'].rolling(window=3,center=False).max().round(2)
-            temp_df['rmb_rate_min2'] = temp_df['rmb_rate'].rolling(window=2,center=False).min().round(2)
+            temp_df['amount_rate_min2'] = temp_df['amount_rate'].rolling(window=2,center=False).min().round(2)
             #temp_df['id_c_max20'] = temp_df['close'].idxmax(axis=0)
             #print(temp_df['close'].rolling(window=20,center=False))
             #print(type(temp_df['close'].rolling(window=20,center=False)))
@@ -1610,7 +1613,7 @@ class Stockhistory:
             temp_df['chg_min5']=pd.rolling_min(temp_df['p_change'], window=2).round(2)
             temp_df['chg_max2']=pd.rolling_max(temp_df['p_change'], window=2).round(2)
             temp_df['chg_max3']=pd.rolling_max(temp_df['p_change'], window=3).round(2)
-            temp_df['rmb_rate_min2'] = pd.rolling_min(temp_df['rmb_rate'], window=2).round(2)
+            temp_df['amount_rate_min2'] = pd.rolling_min(temp_df['amount_rate'], window=2).round(2)
         #print(self.temp_df.tail(30)[['date','close','id_c_max20']]) 
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
@@ -1723,7 +1726,7 @@ class Stockhistory:
                                       & (temp_df['star']<0.20)
                                       & (temp_df['cOma10']>0.015)
                                       #& ((temp_df['ma5']-temp_df['ma10'])>0)
-                                      ),temp_df['rmb_rate'],0)
+                                      ),temp_df['amount_rate'],0)
         """
         temp_df['star_in'] = np.where(((
                                       (temp_df['close'] == (temp_df['close'].shift(1)*1.1).round(2))
@@ -1744,7 +1747,7 @@ class Stockhistory:
                                         (temp_df['h_max20'].shift(1) <=((1+wave_rate*0.01)*temp_df['l_min20'].shift(1)))
                                         & (temp_df['close']>= temp_df['c_max20'].shift(1))
                                       
-                                      ),temp_df['rmb_rate'],0)
+                                      ),temp_df['amount_rate'],0)
         
         temp_df['break_in_p'] = np.where((
                                         (temp_df['h_max20'] <=((1+wave_rate*0.01)*temp_df['l_min20']))
@@ -1862,24 +1865,24 @@ class Stockhistory:
         
         great_v_rate=1.2
         little_v_rate=0.8
-        temp_df1['rmb_rate']=(temp_df1['rmb_rate']).round(2)
-        rmb_rate_list=temp_df1['rmb_rate'].values.tolist()
-        great_v_rate,little_v_rate=self.get_extreme_change(rmb_rate_list,rate=extreme_rate)
+        temp_df1['amount_rate']=(temp_df1['amount_rate']).round(2)
+        amount_rate_list=temp_df1['amount_rate'].values.tolist()
+        great_v_rate,little_v_rate=self.get_extreme_change(amount_rate_list,rate=extreme_rate)
         #print('great_v_rate=%s,little_v_rate=%s' %(great_v_rate,little_v_rate))
         
-        temp_df['gt_v_r']=np.where(temp_df['rmb_rate']>great_v_rate,(temp_df['rmb_rate']/great_v_rate-1),0)
-        temp_df['lt_v_r']=np.where(temp_df['rmb_rate']<little_v_rate,-(little_v_rate/temp_df['rmb_rate']-1),0)
+        temp_df['gt_v_r']=np.where(temp_df['amount_rate']>great_v_rate,(temp_df['amount_rate']/great_v_rate-1),0)
+        temp_df['lt_v_r']=np.where(temp_df['amount_rate']<little_v_rate,-(little_v_rate/temp_df['amount_rate']-1),0)
         temp_df['great_v_rate']=temp_df['gt_v_r']+temp_df['lt_v_r']
         del temp_df['gt_v_r']
         del temp_df['lt_v_r']
         
-        temp_df['gt2_rmb'] = np.where(((temp_df['rmb_rate']>(great_v_rate*1.2)) 
-                                       & (temp_df['rmb_rate'].shift(1)>(great_v_rate*1.2)) 
-                                       ),(temp_df['rmb_rate']>great_v_rate),0)
+        temp_df['gt2_amount'] = np.where(((temp_df['amount_rate']>(great_v_rate*1.2)) 
+                                       & (temp_df['amount_rate'].shift(1)>(great_v_rate*1.2)) 
+                                       ),(temp_df['amount_rate']>great_v_rate),0)
         
-        temp_df['gt3_rmb'] = np.where(((temp_df['rmb_rate']>great_v_rate) 
-                                       & (temp_df['rmb_rate'].shift(1)>great_v_rate) 
-                                       & (temp_df['rmb_rate'].shift(2)>great_v_rate)),(temp_df['rmb_rate']>great_v_rate),0)
+        temp_df['gt3_amount'] = np.where(((temp_df['amount_rate']>great_v_rate) 
+                                       & (temp_df['amount_rate'].shift(1)>great_v_rate) 
+                                       & (temp_df['amount_rate'].shift(2)>great_v_rate)),(temp_df['amount_rate']>great_v_rate),0)
         
         great_continue_increase_rate=great_increase_rate*0.75
         great_continue_descrease_rate=great_descrease_rate*0.75
@@ -1945,10 +1948,10 @@ class Stockhistory:
         id_max_id_min = id_close_max20 -id_close_min20
         close_position = (latest_close-min_close)/(max_close-min_close)
         recent_trend_df = temp_df[temp_df.index>id_close_min20]
-        if column == 'rmb_rate':
-            latest_close = temp_df.tail(1).iloc[0].rmb_rate
-            max_close = temp_df.loc[id_close_max20].rmb_rate
-            min_close = temp_df.loc[id_close_min20].rmb_rate
+        if column == 'amount_rate':
+            latest_close = temp_df.tail(1).iloc[0].amount_rate
+            max_close = temp_df.loc[id_close_max20].amount_rate
+            min_close = temp_df.loc[id_close_min20].amount_rate
         elif column == 'close':
             latest_close = temp_df.tail(1).iloc[0].close
             max_close = temp_df.loc[id_close_max20].close
@@ -2001,7 +2004,7 @@ class Stockhistory:
             return pd.Series({})
         id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='close')
         #print(id_close_max20,id_close_min20, max_close, min_close, close_state,max_high, recent_trend_df )
-        #id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='rmb_rate')
+        #id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df =self.get_recent_state(temp_df=self.temp_hist_df,num=20,column='amount_rate')
         #print(id_rbm_rate_max20,id_rbm_rate_min20, max_rbm_rate, min_rbm_rate, rbm_rate_state,max_high, rbm_rate_recent_trend_df)
         #print('rbm_rate_state=%s' % close_state)
         if recent_trend_df.empty:
@@ -2029,8 +2032,8 @@ class Stockhistory:
             recent_trend['chg_fuli'] =0
         #if id_close_max20>id_close_min20:
         #    recent_trend['chg_fuli'] = ((latest_close/min_close)**(1/len(recent_trend))-1)*100.0
-        rmb_rate = recent_trend_df.tail(1).iloc[0].rmb_rate
-        ma_rmb_rate = recent_trend_df.tail(1).iloc[0].ma_rmb_rate
+        amount_rate = recent_trend_df.tail(1).iloc[0].amount_rate
+        ma_amount_rate = recent_trend_df.tail(1).iloc[0].ma_amount_rate
         recent_trend['c_state'] = close_state
         recent_trend['c_state0'] = close_state_last
         recent_trend['c_mean'] = recent_trend_describe.loc['mean'].close
@@ -2043,8 +2046,8 @@ class Stockhistory:
         recent_trend['holding'] = min_close
         recent_trend['close'] = latest_close
         recent_trend['cont_num'] = continue_incrs_count
-        recent_trend['rmb_rate'] = rmb_rate
-        recent_trend['ma_rmb_rate'] = ma_rmb_rate
+        recent_trend['amount_rate'] = amount_rate
+        recent_trend['ma_amount_rate'] = ma_amount_rate
         
         
         #print(recent_trend)
@@ -2146,9 +2149,9 @@ class Stockhistory:
         if last_trade_price<0:
             fuli_prf = fuli_prf * (1.0 + (last_price+last_trade_price)/abs(last_trade_price))
             cum_prf = cum_prf + (last_price+last_trade_price)/abs(last_trade_price)
-        #rmd_rate_sumary = temp_hist_df.describe()['rmb_rate']
-        #max_rmb_rate = temp_hist_df.tail(1).iloc[0].rmb_rate
-        #last_rmb_rate = temp_hist_df.tail(1).iloc[0].rmb_rate
+        #rmd_rate_sumary = temp_hist_df.describe()['amount_rate']
+        #max_amount_rate = temp_hist_df.tail(1).iloc[0].amount_rate
+        #last_amount_rate = temp_hist_df.tail(1).iloc[0].amount_rate
         #print(last_id,last_trade_id)
         #print( temp_df)
         #print('cum_prf=%s' % cum_prf)
@@ -2180,14 +2183,14 @@ class Stockhistory:
         summary_profit['break_in_distance'] = last_id - break_in_id
         summary_profit['break_in_date'] = break_in_date
         summary_profit['break_in_count'] = tupo_count_100
-        #summary_profit['max_rmb_rate'] = max_rmb_rate
-        #summary_profit['max_rmb_rate'] = max_rmb_rate
+        #summary_profit['max_amount_rate'] = max_amount_rate
+        #summary_profit['max_amount_rate'] = max_amount_rate
         
-        id_rmb_rate_min2_max20 = self.temp_hist_df.tail(20)['rmb_rate_min2'].idxmax(axis=0)
+        id_amount_rate_min2_max20 = self.temp_hist_df.tail(20)['amount_rate_min2'].idxmax(axis=0)
         #print(id_close_max20)
-        max_rmb_rate_min2 = self.temp_hist_df.loc[id_rmb_rate_min2_max20].rmb_rate_min2
-        summary_profit['max_rmb_rate'] = max_rmb_rate_min2 
-        summary_profit['max_rmb_distance'] = last_id - id_rmb_rate_min2_max20 + 1
+        max_amount_rate_min2 = self.temp_hist_df.loc[id_amount_rate_min2_max20].amount_rate_min2
+        summary_profit['max_amount_rate'] = max_amount_rate_min2 
+        summary_profit['max_amount_distance'] = last_id - id_amount_rate_min2_max20 + 1
         
         #print(temp_df)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
@@ -2199,10 +2202,10 @@ class Stockhistory:
         #print(self.h_df)
         #self.temp_hist_df = self._form_temp_df()
         self.get_market_score()
-        select_columns=['close','p_change','rmb_rate','ma_rmb_rate','gap','star','star_h','star_chg','cOma5',
+        select_columns=['close','p_change','amount_rate','ma_amount_rate','gap','star','star_h','star_chg','cOma5',
                         'cOma10','k_rate','p_rate','island','atr_in','reverse',
                         'cross1','cross2','cross3','k_score','position','operation',
-                        'std','tangle_p','tangle_p1','gt2_rmb','gt3_rmb']#,'e_d_loss']
+                        'std','tangle_p','tangle_p1','gt2_amount','gt3_amount']#,'e_d_loss']
         if self.temp_hist_df.empty:
             return self.temp_hist_df
         else:

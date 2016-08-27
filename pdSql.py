@@ -10,7 +10,7 @@ import datetime,time,os
 import tushare as ts
 import tradeTime as tt
 import sendEmail as sm
-import easytrader
+import easytrader,easyhistory
 import time,os
 #ROOT_DIR='E:/work/stockAnalyze'
 ROOT_DIR="C:/中国银河证券海王星/T0002"
@@ -139,6 +139,12 @@ def get_yh_raw_hist_df(code_str,latest_count=None):
         #print('OSError:',e)
         return df_0
     
+def get_easyhistory_df(code_str):  #ta_lib
+    his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=[code_str])
+    res = his.get_hist_indicator(code_str)
+    return res
+
+
 def update_one_hist(code_str,stock_sql_obj,histdata_last_df,update_db=True):
     """
     :param code_str: string type, code string_name

@@ -56,7 +56,7 @@ if __name__ == "__main__":
     stock_synbol = '000029'
     #file_time = tds.get_file_timestamp('c:/hist/day/data/000060.csv')
     #print(file_time)
-    stock_synbol = 'cyb'
+    stock_synbol = '000007'
     num = 0
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):

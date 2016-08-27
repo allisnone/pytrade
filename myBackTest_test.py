@@ -100,11 +100,14 @@ if __name__ == "__main__":
     hold_statistics.to_csv('./temp/statistics_test_' + addition_name +'%s.csv' % date_str)
     print(hold_statistics)
     
+    """ TA_LIB
     his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=hold_stocks+hold_funds)
     his.update_indicator_results()      #TA_lib 跟新指标
     indicator_resuls = his.indicator_result
     res = his.indicator_result['000007']
     print(indicator_resuls)
+    """
+    
     """
     all_result_df = back_test(k_num,given_codes=givens,except_stocks=['000029'],type='stock')#except_stocks)
     all_hold_stocks =hold_stocks
