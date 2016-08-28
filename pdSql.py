@@ -12,7 +12,6 @@ import tradeTime as tt
 import sendEmail as sm
 import easytrader,easyhistory
 import time,os
-import code
 #ROOT_DIR='E:/work/stockAnalyze'
 ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
