@@ -65,7 +65,7 @@ def get_exit_data(symbols,last_date_str):
 #get_exit_data(symbols=['000029'],last_date_str='2016/08/23')
 #get_stopped_stocks()
 
-def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
+def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', source='easyhistory'):
     addition_name = ''
     if type == 'index':
         addition_name = type
@@ -97,7 +97,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock'):
         if stock_symbol=='000029':
             continue
         print(i,stock_symbol)
-        s_stock=tds.Stockhistory(stock_symbol,'D',test_num=k_num)
+        s_stock=tds.Stockhistory(stock_symbol,'D',test_num=k_num,source=source)
         if True:
         #try:
             result_df = s_stock.form_temp_df(stock_symbol)

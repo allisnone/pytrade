@@ -62,6 +62,7 @@ if __name__ == "__main__":
     #all_stop_codes = []
     date_str ='19970101'
     givens = []
+    source_type = 'easyhistory'
     if len(sys.argv)>=2:
         if sys.argv[1] and isinstance(sys.argv[1], str):
             k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
@@ -76,6 +77,8 @@ if __name__ == "__main__":
                 is_few_test = int(sys.argv[2])==1
                 givens = ['000525','300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519','000418','600103','000029']
                 #             '002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']# '300476', '002548', '002799']
+        if len(sys.argv)>=4 and isinstance(sys.argv[3], str):
+            source_type = sys.argv[3]
     else:
         pass
     #back_test(k_num,given_codes=indexs,except_stocks=[],type='index')#except_stocks)
@@ -90,7 +93,7 @@ if __name__ == "__main__":
     #givens = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     
-    hold_result_df = back_test(k_num,given_codes=holds,except_stocks=[],type='stock')#except_stocks)
+    hold_result_df = back_test(k_num,given_codes=holds,except_stocks=[],type='stock',source=source_type)#except_stocks)
     addition_name = 'hold'
     hold_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
     
