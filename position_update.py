@@ -6,12 +6,12 @@ import sys
 #update_type = ''
 update_type = 'index'
 #update_type = 'position'
+update_type = 'stock'
 if len(sys.argv)>=2:
     if sys.argv[1] and isinstance(sys.argv[1], str):
         update_type = sys.argv[1]  #start date string   
 #update_type = 'index'
 #update_type = 'position'
-update_type = 'stock'
 stock_sql = pds.StockSQL()
 #hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
 #print('hold_stocks=',hold_stocks)
