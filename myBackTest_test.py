@@ -28,7 +28,7 @@ if __name__ == "__main__":
     print("all_hold_stocks=",all_hold_stocks)
     """
     indexs = ['sh','sz','zxb','cyb','hs300','sh50']
-    hold_df,hold_stocks,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+    hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
     hold_funds = []
     for hold in holds:
         if hold.startswith('1') or hold.startswith('5'):
