@@ -804,6 +804,11 @@ class StockSQL(object):
                 except:
                     pass
                 #self.insert_table(data_frame=position_df,table_name='balance')
+                
+    def get_except_codes(self):
+        except_df = self.query_data(table='stock.except',fields='code,valid',condition='valid=1')
+        return except_df['code'].values.tolist()
+    
     def update_sql_position(self, users={'account':'36005','broker':'yh','json':'yh.json'}):
         if True:
             account_id = users['account']
