@@ -806,20 +806,18 @@ class StockSQL(object):
                 #self.insert_table(data_frame=position_df,table_name='balance')
                 
     def get_except_codes(self):
+        #从数据库获取除外的股票代码，比如高风险或者长期持有，或者新股中签等
         except_df = self.query_data(table='stock.except',fields='code',condition='valid=1')
         return except_df['code'].values.tolist()
     
     def update_sql_position(self, users={'account':'36005','broker':'yh','json':'yh.json'}):
-        if True:
+        try:
             account_id = users['account']
             broker = users['broker']
             user_file = users['json']
             position_df,balance = get_position(broker, user_file)
             except_codes = self.get_except_codes()
-            #print(except_df)
-            #print(position_df)
             except_holds = list(set(except_codes) & set(position_df['证券代码'].values.tolist()))
-            #print('except_holds=',except_holds)
             if except_holds:
                 position_df['valid'] = np.where((position_df['证券代码']==except_holds[0]),0,1)
                 except_holds.pop(0)
@@ -837,7 +835,7 @@ class StockSQL(object):
                 pass
             self.insert_table(data_frame=position_df,table_name='acc%s'%account_id)
             return
-        else:
+        except:
             time.sleep(10)
             self.update_sql_position(users)
     
