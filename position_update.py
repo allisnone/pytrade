@@ -5,15 +5,15 @@ import pdSql as pds
 import sys
 #update_type = ''
 update_type = 'index'
-#update_type = 'position'
-update_type = 'stock'
+update_type = 'position'
+#update_type = 'stock'
 if len(sys.argv)>=2:
     if sys.argv[1] and isinstance(sys.argv[1], str):
         update_type = sys.argv[1]  #start date string   
 #update_type = 'index'
 #update_type = 'position'
 stock_sql = pds.StockSQL()
-#hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+#hold_df,hold_stocks,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
 #print('hold_stocks=',hold_stocks)
 #print(hold_df)
 """从新浪 qq网页更新股票"""
@@ -26,7 +26,7 @@ stock_sql = pds.StockSQL()
 
 #stock_sql.update_sql_position(users={'account':'36005','broker':'yh','json':'yh.json'})
 #stock_sql.update_sql_position(users={'account':'38736','broker':'yh','json':'yh1.json'})
-#hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+#hold_df,hold_stocks,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
 #print('hold_stocks=',hold_stocks)
 #print(hold_df)
 #pds.update_one_stock(symbol='sh',force_update=False)
@@ -64,7 +64,7 @@ elif update_type == 'position':
     #stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
     stock_sql.update_sql_position(users={'account':'36005','broker':'yh','json':'yh.json'})
     stock_sql.update_sql_position(users={'account':'38736','broker':'yh','json':'yh1.json'})
-    hold_df,hold_stocks = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+    hold_df,hold_stocks,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
     print('hold_stocks=',hold_stocks)
     print(hold_df)
 elif update_type == 'stock':

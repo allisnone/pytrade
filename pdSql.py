@@ -8,8 +8,7 @@ from pandas.lib import to_datetime
 from pandas.lib import Timestamp
 import datetime,time,os
 import tushare as ts
-import tradeTime as tt
-import sendEmail as sm
+
 import easytrader,easyhistory
 import time,os
 #ROOT_DIR='E:/work/stockAnalyze'
@@ -17,7 +16,15 @@ ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
 RAW_HIST_DIR=ROOT_DIR+'/export/'  
 #HIST_DIR=ROOT_DIR+'/update/'
+import tradeTime as tt
+import sendEmail as sm
 import qq_quotation as qq
+
+"""
+from . import tradeTime as tt
+from . import sendEmail as sm
+from . import qq_quotation as qq
+"""
 
 def form_sql(table_name,oper_type='query',select_field=None,where_condition=None,insert_field=None,update_field=None,update_value=None):
     """
@@ -830,7 +837,12 @@ class StockSQL(object):
         hold_stocks = list(set(hold_stock_all) | set(hold_stock_all))
         #print('hold_stocks=',hold_stocks)
         #print(hold_df)
-        return hold_df,hold_stocks
+        available_sells = []
+        if not hold_df.empty:
+            available_sell_df = hold_df[(hold_df['valid'])==1 & (hold_df['股份可用']>=100)]
+            if available_sell_df.empty:
+                available_sells = available_sell_df['证券代码'].values.tolist()
+        return hold_df,hold_stocks,available_sells
         
     def get_forvary_stocks(self):
         return    
