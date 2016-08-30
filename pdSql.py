@@ -288,7 +288,7 @@ def get_position(broker='yh',user_file='yh.json'):
     time_format = date_format + ' %X'
     time_str=this_day.strftime(time_format)
     holding_stocks_df['update'] = time_str
-    holding_stocks_df['valid'] = 1
+    #holding_stocks_df['valid'] = 1
     """
             当前持仓  股份可用     参考市值   参考市价  股份余额    参考盈亏 交易市场   参考成本价 盈亏比例(%)        股东代码  \
             0  6300  6300  24885.0   3.95  6300  343.00   深A   3.896   1.39%  0130010635   
@@ -805,12 +805,26 @@ class StockSQL(object):
                     pass
                 #self.insert_table(data_frame=position_df,table_name='balance')
     def update_sql_position(self, users={'account':'36005','broker':'yh','json':'yh.json'}):
-        try:
+        if True:
             account_id = users['account']
             broker = users['broker']
             user_file = users['json']
             position_df,balance = get_position(broker, user_file)
+            except_df = self.query_data(table='stock.except',fields='code,valid',condition='valid=1')
+            #print(except_df)
+            #print(position_df)
+            except_holds = list(set(except_df['code'].values.tolist()) & set(position_df['证券代码'].values.tolist()))
+            #print('except_holds=',except_holds)
+            if except_holds:
+                position_df['valid'] = np.where((position_df['证券代码']==except_holds[0]),0,1)
+                except_holds.pop(0)
+                for code in except_holds:
+                    #position_df.loc['证券代码','valid'] = 0
+                    position_df['valid'] = np.where((position_df['证券代码']==code),0,position_df['valid'])
+            else:
+                position_df['valid'] = 1
             self.hold[account_id] =  position_df
+            #print(position_df)
             table_name='acc%s'%account_id
             try:
                 self.drop_table(table_name)
@@ -818,7 +832,8 @@ class StockSQL(object):
                 pass
             self.insert_table(data_frame=position_df,table_name='acc%s'%account_id)
             return
-        except:
+        else:
+            time.sleep(10)
             self.update_sql_position(users)
     
     def get_hold_stocks(self,accounts=['36005', '38736']):
