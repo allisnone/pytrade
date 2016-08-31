@@ -8,9 +8,12 @@ import pdSql as pds
 #easyhistory.update_single_code(dtype='D', stock_code='002789', path="C:/hist")
 #his = easyhistory.History(dtype='D', path='C:/hist',type='mysql',codes=['sh','cyb'],stock_sql=my_stock_sql)
 #his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=['cyb','sh'])
-his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=['000007','002362'])
+data_path = 'C:/hist/day/data/'
+#data_path = 'C:/中国银河证券海王星/T0002/export/'
+
+his = easyhistory.History(dtype='D', path=data_path,type='csv',codes=['000001','000002'])
 #test_code = 'sh'
-test_code = '000007'
+test_code = '000001'
 # MA 计算, 直接调用的 talib 的对应函数
 def get_hist_indicator(easyhistory_obj,code_str):
     res = easyhistory_obj[code_str].MAX(20)
@@ -37,7 +40,7 @@ def get_hist_indicator(easyhistory_obj,code_str):
 his.update_indicator_results()
 print(his.indicator_result)
 #res = his.get_hist_indicator(code_str='test_code')
-res = his.indicator_result['000007']
+res = his.indicator_result['000001']
 print( res)
 res.to_csv('%s.csv' % test_code)
 describe_df = his[test_code].MA(1).tail(3).describe()
