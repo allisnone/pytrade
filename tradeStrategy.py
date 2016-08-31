@@ -2124,6 +2124,7 @@ class Stockhistory:
             print(self.test_num)
             print(type(self.test_num))
             print(type(self.temp_hist_df['date']))
+            print(self.temp_hist_df['date'])
             temp_hist_df =self.temp_hist_df[self.temp_hist_df['date']>self.test_num]
         else:
             pass
