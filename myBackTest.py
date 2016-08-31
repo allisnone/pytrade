@@ -94,12 +94,12 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
                    'fuli_prf','last_trade_date','last_trade_price','min_hold_count',
                    'max_hold_count','avrg_hold_count','this_hold_count','exit','enter',
-                   'position','max_rmb_rate','max_rmb_distance','break_in', 
+                   'position','max_amount_rate','max_amount_distance','break_in', 
                    'break_in_count','break_in_date', 'break_in_distance','success_rate']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
     i=0
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
-                        'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close','cont_num','rmb_rate','ma_rmb_rate']
+                        'c_mean', 'pos_mean', 'ft_rate', 'presure', 'holding', 'close','cont_num','amount_rate','ma_amount_rate']
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
     all_temp_hist_df = tds.pd.DataFrame({}, columns=[])
     ma_num = 20
@@ -174,7 +174,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     ma_c_name = '%s日趋势数' % ma_num
     trend_column_chiness = {'count':ma_c_name, 'mean': '平均涨幅','chg_fuli': '复利涨幅', 'std': '标准差', 'min': '最小涨幅', '25%': '25%', '50%': '50%', '75%': '75%', 'max': '最大涨幅', 'c_state': '收盘价状态',
                         'c_mean': '平均收盘价', 'pos_mean': '平均仓位', 'ft_rate': '低点反弹率', 'presure': '压力', 'holding': '支撑', 'close': '收盘价','cont_num': '连涨天数', 'name': '名字', 'stopped': '停牌','invalid': '除外',
-                        'rmb_rate':'量比','ma_rmb_rate':'短长量比'}
+                        'amount_rate':'量比','ma_amount_rate':'短长量比'}
     print(all_trend_result_df)
     all_trend_result_df_chinese = all_trend_result_df.rename(index=str, columns=trend_column_chiness)
     print(all_result_df)
@@ -188,7 +188,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     if all_result_df.empty:
         pass
     else:
-        consider_df = all_result_df[(all_result_df['max_rmb_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & (all_result_df['invalid']==0)]# & (all_result_df['last_trade_price'] ==0)]
+        consider_df = all_result_df[(all_result_df['max_amount_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & (all_result_df['invalid']==0)]# & (all_result_df['last_trade_price'] ==0)]
         consider_df.to_csv('./temp/consider_' + addition_name +'%s.csv' % k_num )
         
         active_df = all_result_df[(all_result_df['max_r']<0.4)  & (all_result_df['name']!='NA') & # (all_result_df['min']>-0.08)  & (all_result_df['position']>0.35) &
