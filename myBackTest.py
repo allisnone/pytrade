@@ -89,6 +89,10 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
         pass
     if except_stocks:
         all_codes = list(set(all_codes).difference(set(except_stocks)))
+    
+    if source =='yh' or source=='YH':
+        for code_str in all_codes:
+            pds.get_yh_raw_hist_df(code_str)
     #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #            '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
@@ -214,4 +218,4 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     return all_result_df
 
 
-#back_test(k_num='2015/08/30',given_codes=['000001','000002'],except_stocks=['000029'], type='stock', source='YH')
+back_test(k_num='2015/08/30',given_codes=['000004','000005'],except_stocks=['000029'], type='stock', source='YH')

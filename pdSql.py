@@ -138,7 +138,8 @@ def get_yh_raw_hist_df(code_str,latest_count=None):
             if int(last_volume)==0:
                 df=df[:-1]
             df['date'].astype(Timestamp)
-            df.to_csv(file_name,encoding='utf-8')
+            df_to_write = df.set_index('date')
+            df_to_write.to_csv(file_name,encoding='utf-8')
         else:
             pass
         return df
