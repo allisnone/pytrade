@@ -2178,6 +2178,11 @@ class Stockhistory:
         #print(temp_df[temp_df['profit']!=0])
         
         temp_df = temp_df[['date','close','p_change',  'position','operation','s_price','b_price','profit','cum_prf','fuli_prf','hold_count']]
+        trade_count = len(temp_df[temp_df['profit']!=0])
+        trade_success_count = len(temp_df[temp_df['profit']>0])
+        trade_success_rate = 0.0
+        if trade_count!=0:
+            trade_success_rate = round((round(trade_success_count,2)/trade_count),2 )
         summary_profit = temp_df[temp_df['profit']!=0].describe()['profit']
         avrg_hold_count = round(temp_df[temp_df['profit']!=0].describe().loc['mean'].hold_count)
         min_hold_count = round(temp_df[temp_df['profit']!=0].describe().loc['min'].hold_count)
@@ -2202,6 +2207,7 @@ class Stockhistory:
         summary_profit['break_in_distance'] = last_id - break_in_id
         summary_profit['break_in_date'] = break_in_date
         summary_profit['break_in_count'] = tupo_count_100
+        summary_profit['success_rate'] = trade_success_rate
         #summary_profit['max_amount_rate'] = max_amount_rate
         #summary_profit['max_amount_rate'] = max_amount_rate
         
