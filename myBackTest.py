@@ -189,13 +189,13 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
         pass
     else:
         consider_df = all_result_df[(all_result_df['max_amount_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & (all_result_df['invalid']==0)]# & (all_result_df['last_trade_price'] ==0)]
-        consider_df.to_csv('./temp/consider_' + addition_name +'%s.csv' % k_num )
+        consider_df.to_csv('./temp/consider_' + addition_name +'%s.csv' % latest_date_str )
         
         active_df = all_result_df[(all_result_df['max_r']<0.4)  & (all_result_df['name']!='NA') & # (all_result_df['min']>-0.08)  & (all_result_df['position']>0.35) &
                                   (all_result_df['max']>(3.9 *all_result_df['min'].abs())) & (all_result_df['invalid']==0) &(all_result_df['stopped']==0)]
         active_df['active_score'] = active_df['fuli_prf']/active_df['max_r']/active_df['std']*active_df['fuli_prf']/active_df['cum_prf']
         active_df = active_df.sort_values(axis=0, by='active_score', ascending=False)
-        active_df.to_csv('./temp/active_' + addition_name +'%s.csv' % k_num )
+        active_df.to_csv('./temp/active_' + addition_name +'%s.csv' % latest_date_str )
         
         tupo_df = all_result_df[(all_result_df['break_in_distance']!=0) &(all_result_df['break_in_distance']<=20) & 
                                 (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & 

@@ -111,7 +111,7 @@ if __name__ == "__main__":
     """
     
     #all_codes = list(set(all_codes).difference(set(funds+index+except_codes)))
-    all_result_df = back_test(k_num,given_codes=all_stocks,except_stocks=['000029','002807'],type='stock')#except_stocks)
+    all_result_df = back_test(k_num,given_codes=all_stocks,except_stocks=['000029','002807'],type='stock',source=source_type)#except_stocks)
     #all_codes = all_result_df.index.values.tolist()
     #all_statistics = pds.get_hold_stock_statistics(hold_stocks=all_stocks,stock_dir='C:/hist/day/temp/')
     #all_statistics.to_csv('./temp/statistics_test_' + 'all' +'%s.csv' % date_str)
