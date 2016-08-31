@@ -684,9 +684,12 @@ class Stockhistory:
         self.ktype=ktype
         self.DEBUG_ENABLED=False
         #self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
-        self.h_df=pds.get_easyhistory_df(code_str)  #ta_lib  indicator
-        if source=='yh':
-            self.h_df=get_yh_raw_hist_df(code_str)
+        self.h_df = None  #ta_lib  indicator
+        if source=='yh' or source=='YH':
+            self.h_df = pds.get_yh_raw_hist_df(code_str)
+            self.h_df['amount'] = self.h_df['rmb']
+        else:
+            self.h_df=pds.get_easyhistory_df(code_str)  #ta_lib  indicator
         #self.h_df= self.h_df.resetindex()
         #print(self.h_df)
         self.alarm_trigger_timestamp=0
@@ -1490,8 +1493,8 @@ class Stockhistory:
             return self.h_df
         df=self.h_df
         #df.to_csv('aa.csv')
-        close_c=df['close']
-        idx=close_c.index.values.tolist()
+        #close_c=df['close']
+        idx=df.index.values.tolist()
         va=df['close'].values.tolist()
         idx1=idx[1:]
         first_idx=idx.pop(0)

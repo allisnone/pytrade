@@ -66,6 +66,16 @@ def get_exit_data(symbols,last_date_str):
 #get_stopped_stocks()
 
 def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', source='easyhistory'):
+    """
+高于三天收盘最大值时买入，低于三天最低价的最小值时卖出： 33策略
+    """
+    """
+    :param k_num: string type or int type: mean counts of history if int type; mean start date of history if date str
+    :param given_codes: str type, 
+    :param except_stocks: list type, 
+    :param type: str type, force update K data from YH
+    :return: source: history data from web if 'easyhistory',  history data from YH if 'YH'
+    """
     addition_name = ''
     if type == 'index':
         addition_name = type
@@ -171,7 +181,10 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     print(all_result_df.describe())
     if isinstance(k_num, str):
         k_num = k_num.replace('/','').replace('-','')
-    all_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % k_num)
+    latest_date_str = pds.tt.get_latest_trade_date(date_format='%Y/%m/%d')
+    latest_date_str = latest_date_str.replace('/','').replace('-','')
+    #print('latest_date_str=',latest_date_str)
+    all_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % latest_date_str)
     if all_result_df.empty:
         pass
     else:
@@ -187,12 +200,18 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
         tupo_df = all_result_df[(all_result_df['break_in_distance']!=0) &(all_result_df['break_in_distance']<=20) & 
                                 (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & 
                                 (all_result_df['invalid']==0) & (all_result_df['name']!='NA') & (all_result_df['last_trade_price']!=0)]# & (all_result_df['last_trade_price'] ==0)]
-        tupo_df.to_csv('./temp/tupo_' + addition_name +'%s.csv' % k_num )
+        tupo_df.to_csv('./temp/tupo_' + addition_name +'%s.csv' % latest_date_str )
         
     result_summary.to_csv('./temp/result_summary_' + addition_name +'%s.csv' % k_num )
-    all_trend_result_df_chinese.to_csv('./temp/trend_result_' + addition_name +'%s.csv' % ma_num)
+    all_trend_result_df_chinese.to_csv('./temp/trend_result_%s' % ma_num + addition_name +'%s.csv' % latest_date_str)
     if not all_temp_hist_df.empty:
         all_temp_hist_df = all_temp_hist_df.set_index('code')
-        all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +'%s.csv' % k_num )
+        all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +'%s.csv' % latest_date_str )
+        reverse_df = all_temp_hist_df[(all_temp_hist_df['reverse']>0) & 
+                                (all_temp_hist_df['position']>0.35)]#
+        reverse_df.to_csv('./temp/reverse_df_' + addition_name +'%s.csv' % latest_date_str )
     
     return all_result_df
+
+
+back_test(k_num='2015/08/30',given_codes=['000060','002494'],except_stocks=['000029'], type='stock', source='YH')
