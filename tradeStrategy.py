@@ -2121,8 +2121,8 @@ class Stockhistory:
         if  isinstance(self.test_num, int):
             temp_hist_df =self.temp_hist_df.tail(self.test_num)
         elif isinstance(self.test_num, str):
-            print(self.test_num)
-            print(type(self.test_num))
+            #print(self.test_num)
+            #print(type(self.test_num))
             temp_hist_df =self.temp_hist_df[self.temp_hist_df['date']>self.test_num]
         else:
             pass
