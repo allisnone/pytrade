@@ -146,8 +146,11 @@ def get_yh_raw_hist_df(code_str,latest_count=None):
         #print('OSError:',e)
         return df_0
     
-def get_easyhistory_df(code_str):  #ta_lib
-    his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=[code_str])
+def get_easyhistory_df(code_str,source='easyhistory'):  #ta_lib
+    data_path = 'C:/hist/day/data/'
+    if source=='YH' or source=='yh':
+        data_path = 'C:/中国银河证券海王星/T0002/export/'
+    his = easyhistory.History(dtype='D', path=data_path,type='csv',codes=[code_str])
     res = his.get_hist_indicator(code_str)
     return res
 

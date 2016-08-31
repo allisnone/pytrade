@@ -684,13 +684,15 @@ class Stockhistory:
         self.ktype=ktype
         self.DEBUG_ENABLED=False
         #self.h_df=pds.get_raw_hist_df(code_str)             #the history data frame data set
+        """
         self.h_df = None  #ta_lib  indicator
         if source=='yh' or source=='YH':
             self.h_df = pds.get_yh_raw_hist_df(code_str)
             self.h_df['amount'] = self.h_df['rmb']
         else:
             self.h_df=pds.get_easyhistory_df(code_str)  #ta_lib  indicator
-        #self.h_df= self.h_df.resetindex()
+        """
+        self.h_df= pds.get_easyhistory_df(code_str,source)  #ta_lib
         #print(self.h_df)
         self.alarm_trigger_timestamp=0
         self.max_price=-1

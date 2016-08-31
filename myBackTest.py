@@ -214,4 +214,4 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     return all_result_df
 
 
-#back_test(k_num='2015/08/30',given_codes=['000060','002494'],except_stocks=['000029'], type='stock', source='YH')
+back_test(k_num='2015/08/30',given_codes=['000001','000002'],except_stocks=['000029'], type='stock', source='YH')
