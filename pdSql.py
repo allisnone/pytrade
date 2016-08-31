@@ -818,6 +818,7 @@ class StockSQL(object):
             position_df,balance = get_position(broker, user_file)
             except_codes = self.get_except_codes()
             except_holds = list(set(except_codes) & set(position_df['证券代码'].values.tolist()))
+            """
             if except_holds:
                 position_df['valid'] = np.where((position_df['证券代码']==except_holds[0]),0,1)
                 except_holds.pop(0)
@@ -826,6 +827,12 @@ class StockSQL(object):
                     position_df['valid'] = np.where((position_df['证券代码']==code),0,position_df['valid'])
             else:
                 position_df['valid'] = 1
+            """
+            position_df['valid'] = 1
+            for code in except_holds:
+                position_df['valid'][position_df['证券代码']==code] = 0
+            #df=df.tail(20)
+            #df[['close']].apply(lambda x: (x - x.min()) / (x.max()-x.nin()))   
             self.hold[account_id] =  position_df
             #print(position_df)
             table_name='acc%s'%account_id

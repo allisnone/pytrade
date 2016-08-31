@@ -1560,6 +1560,7 @@ class Stockhistory:
         short_num=5
         long_num=10
         long_num20 = 20
+        long_num60 = 60
         if '3.5' in platform.python_version():
             temp_df['atr_ma%s'%short_num] = temp_df['atr'].rolling(center=False,window=short_num).mean().round(2)
             temp_df['atr_ma%s'%long_num] = temp_df['atr'].rolling(center=False,window=long_num).mean().round(2)
@@ -1575,6 +1576,8 @@ class Stockhistory:
             temp_df['l_min20'] = temp_df['low'].rolling(window=long_num20,center=False).min().round(2)
             temp_df['c_max20'] = temp_df['close'].rolling(window=long_num20,center=False).max().round(2)
             temp_df['c_min20'] = temp_df['close'].rolling(window=long_num20,center=False).min().round(2)
+            temp_df['c_max60'] = temp_df['close'].rolling(window=long_num60,center=False).max().round(2)
+            temp_df['c_min60'] = temp_df['close'].rolling(window=long_num60,center=False).min().round(2)
             temp_df['l_max3'] = temp_df['low'].rolling(window=3,center=False).max().round(2)
             temp_df['c_max3'] = temp_df['close'].rolling(window=3,center=False).max().round(2)
             temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
@@ -1606,6 +1609,8 @@ class Stockhistory:
             temp_df['l_min20']=pd.rolling_min(temp_df['low'], window=long_num20).round(2)
             temp_df['c_max20']=pd.rolling_max(temp_df['close'], window=long_num20).round(2)
             temp_df['c_min20']=pd.rolling_min(temp_df['close'], window=long_num20).round(2)
+            temp_df['c_max60']=pd.rolling_max(temp_df['close'], window=long_num60).round(2)
+            temp_df['c_min60']=pd.rolling_min(temp_df['close'], window=long_num60).round(2)
             temp_df['l_max3']=pd.rolling_max(temp_df['low'], window=3).round(2)
             temp_df['c_max3']=pd.rolling_max(temp_df['close'], window=3).round(2)
             temp_df['l_min3']=pd.rolling_min(temp_df['low'], window=3).round(2)
@@ -1662,6 +1667,17 @@ class Stockhistory:
         #temp_df['std'] =  temp_df['p_change'].rolling(window=10).std()
         temp_df['std'] =  temp_df['close'].rolling(window=5).std()
         island_df=temp_df[['date','p_change','gap','star','k_rate','p_rate','island','atr_in','reverse','cross1','cross2','cross3']]
+        
+        """收盘价所处的位置"""
+        """
+        temp_df_20 = temp_df.tail(20)
+        temp_df_20['pos20'] = df[['close']].apply(lambda x: (x - x.min()) / (x.max()-x.nin())) 
+        temp_df_60 = temp_df.tail(60)
+        temp_df_60['pos60'] = df[['close']].apply(lambda x: (x - x.min()) / (x.max()-x.nin())) 
+        """
+        temp_df['pos20'] = (temp_df['close']-temp_df['c_min20'])/(temp_df['c_max20']-temp_df['c_min20'])
+        temp_df['pos60'] = (temp_df['close']-temp_df['c_min60'])/(temp_df['c_max60']-temp_df['c_min60'])
+        
         #print(island_df[island_df.island!=0])
         #print(island_df.tail(50))
         del temp_df['jump_max']
