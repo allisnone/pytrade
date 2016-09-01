@@ -248,9 +248,9 @@ def get_all_code(hist_dir):
             all_code.append(code)
     return all_code
 
-def get_different_symbols():
+def get_different_symbols(hist_dir='C:/hist/day/data/'):
     indexs= ['cyb', 'zxb', 'sz', 'sh', 'sz300', 'zx300', 'hs300', 'sh50']
-    all_codes = get_all_code(hist_dir='C:/hist/day/data/')
+    all_codes = get_all_code(hist_dir)
     funds =[]
     b_stock = []
     for code in all_codes:
