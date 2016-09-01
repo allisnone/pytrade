@@ -101,7 +101,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
         all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir)
         #print('all_stocks2=',('150251'  in all_stocks))
         all_trade_codes = list(set(all_stocks).difference(set(all_stop_codes)))
-    print('all_trade_codes=',('150251'  in all_trade_codes))
+    #print('all_trade_codes=',('150251'  in all_trade_codes))
     #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #            '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
