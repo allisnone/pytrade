@@ -28,10 +28,10 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[],hist_dir='C:/hist/day/da
     else:
         this_quotation = quotation.all
     all_stocks = list(this_quotation.keys())
-    print('all_stocks=',('150251'  in all_stocks))
-    print('hist_dir=',hist_dir)
+    #print('all_stocks=',('150251'  in all_stocks))
+    #print('hist_dir=',hist_dir)
     exist_codes = pds.get_all_code(hist_dir)
-    print('exist_codes=',('150251'  in exist_codes))
+    #print('exist_codes=',('150251'  in exist_codes))
     #print('all_stocks=',all_stocks)
     all_codes = list(set(all_stocks) & (set(exist_codes)))
     #print('all_codes=',all_codes)
@@ -45,12 +45,12 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[],hist_dir='C:/hist/day/da
     
     if except_stocks:
         all_codes = list(set(all_codes).difference(set(except_stocks)))
-    print('all_codes=',('150251'  in all_codes))
+    #print('all_codes=',('150251'  in all_codes))
     #print('stop_stocks=', stop_stocks)
     #print(len(stop_stocks))
     #print('all_stocks=',all_stocks)
     #print(len(all_stocks))
-    return stop_stocks,all_stocks
+    return stop_stocks,all_codes
 
 def get_exit_data(symbols,last_date_str):
     refer_index = ['sh','cyb']
@@ -92,14 +92,14 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #print('source=',source)
     if source =='yh' or source=='YH':
         hist_dir='C:/中国银河证券海王星/T0002/export/'
-        print(given_codes,except_stocks)
+        #print(given_codes,except_stocks)
         all_stop_codes,all_stocks1 = get_stopped_stocks(given_codes,except_stocks,hist_dir)
-        print('all_stocks1=',('150251'  in all_stocks1))
+        #print('all_stocks1=',('150251'  in all_stocks1))
         all_trade_codes = list(set(all_stocks1).difference(set(all_stop_codes)))
     else:
         hist_dir='C:/hist/day/data/'
         all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir)
-        print('all_stocks2=',('150251'  in all_stocks))
+        #print('all_stocks2=',('150251'  in all_stocks))
         all_trade_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     print('all_trade_codes=',('150251'  in all_trade_codes))
     #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
