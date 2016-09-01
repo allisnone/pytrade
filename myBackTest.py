@@ -82,6 +82,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_codes = []
     all_stop_codes = []
     all_stocks = []
+    print('source=',source)
     if source =='yh' or source=='YH':
         all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir='C:/中国银河证券海王星/T0002/export/')
     else:
@@ -102,7 +103,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
     all_temp_hist_df = tds.pd.DataFrame({}, columns=[])
     ma_num = 20
-    print('all_trade_codes=',all_trade_codes)
+    #print('all_trade_codes=',all_trade_codes)
     for stock_symbol in all_trade_codes:
         if stock_symbol=='000029':
             continue
