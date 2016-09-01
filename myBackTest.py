@@ -30,10 +30,10 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[],hist_dir='C:/hist/day/da
     all_stocks = list(this_quotation.keys())
     print('hist_dir=',hist_dir)
     exist_codes = pds.get_all_code(hist_dir)
-    print('exist_codes=',exist_codes)
-    print('all_stocks=',all_stocks)
-    all_codes = list(set(all_stocks).intersection(set(exist_codes)))
-    print('all_codes=',all_codes)
+    #print('exist_codes=',exist_codes)
+    #print('all_stocks=',all_stocks)
+    all_codes = list(set(all_stocks) & (set(exist_codes)))
+    #print('all_codes=',all_codes)
     for stock_code in all_codes:
         if this_quotation[stock_code]:
             #print(this_quotation[stock_code])
