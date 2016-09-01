@@ -73,7 +73,7 @@ elif update_type == 'stock':
     #easyhistory.update(path="C:/hist",stock_codes=hold_stocks)
     #easyhistory.init(path="C:/hist")#,stock_codes=all_codes)
     easyhistory.update(path="C:/hist",stock_codes=all_stocks)#+b_stock)
-elif update_type == 'YH':
+elif update_type == 'YH' or update_type == 'yh':
     all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
     for code in all_codes:
         pds.get_yh_raw_hist_df(code,latest_count=None)
