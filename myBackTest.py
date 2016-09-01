@@ -19,7 +19,7 @@ def get_stop_trade_symbol():
     return all_stop_codes
 
 
-def get_stopped_stocks(given_stocks=[],except_stocks=[]):
+def get_stopped_stocks(given_stocks=[],except_stocks=[],hist_dir='C:/hist/day/data/'):
     import easyquotation
     quotation =easyquotation.use('qq')
     stop_stocks = []
@@ -35,7 +35,7 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[]):
             else:
                 pass
     all_stocks = list(this_quotation.keys())
-    exist_codes = tds.get_all_code(hist_dir='C:/hist/day/data/')
+    exist_codes = tds.get_all_code(hist_dir)
     all_codes = list(set(all_stocks).intersection(set(exist_codes)))
     if except_stocks:
         all_codes = list(set(all_codes).difference(set(except_stocks)))
@@ -83,11 +83,10 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_stop_codes = []
     all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks)
     if source =='yh' or source=='YH':
-        all_stocks = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
-        all_stop_codes = []
+        all_stop_codes,all_stocks = pds.get_stopped_stocks(hist_dir='C:/中国银河证券海王星/T0002/export/')
     all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     if given_codes:
-        all_codes = list(set(given_codes).difference(set(all_stop_codes)))
+        all_codes = list(set(given_codes) & set(all_codes))
     else:
         pass
     if except_stocks:
