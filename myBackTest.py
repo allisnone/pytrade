@@ -27,19 +27,19 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[],hist_dir='C:/hist/day/da
         this_quotation = quotation.stocks(given_stocks)
     else:
         this_quotation = quotation.all
-    for stock_code in (this_quotation.keys()):
+    all_stocks = list(this_quotation.keys())
+    exist_codes = tds.get_all_code(hist_dir)
+    all_codes = list(set(all_stocks).intersection(set(exist_codes)))
+    for stock_code in all_codes:
         if this_quotation[stock_code]:
             #print(this_quotation[stock_code])
             if this_quotation[stock_code]['ask1']==0 and this_quotation[stock_code]['volume']==0:
                 stop_stocks.append(stock_code)
             else:
                 pass
-    all_stocks = list(this_quotation.keys())
-    exist_codes = tds.get_all_code(hist_dir)
-    all_codes = list(set(all_stocks).intersection(set(exist_codes)))
+    
     if except_stocks:
         all_codes = list(set(all_codes).difference(set(except_stocks)))
-    stop_stocks = list(set(stop_stocks).intersection(set(exist_codes)))
     #print('stop_stocks=', stop_stocks)
     #print(len(stop_stocks))
     #print('all_stocks=',all_stocks)
@@ -81,17 +81,12 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
         addition_name = type
     all_codes = []
     all_stop_codes = []
-    all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks)
+    all_stocks = []
     if source =='yh' or source=='YH':
-        all_stop_codes,all_stocks = get_stopped_stocks(hist_dir='C:/中国银河证券海王星/T0002/export/')
-    all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
-    if given_codes:
-        all_codes = list(set(given_codes) & set(all_codes))
+        all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir='C:/中国银河证券海王星/T0002/export/')
     else:
-        pass
-    if except_stocks:
-        all_codes = list(set(all_codes).difference(set(except_stocks)))
-    
+        all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks)
+    all_trade_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     
     #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #            '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
@@ -107,7 +102,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
     all_temp_hist_df = tds.pd.DataFrame({}, columns=[])
     ma_num = 20
-    for stock_symbol in all_codes:
+    print('all_trade_codes=',all_trade_codes)
+    for stock_symbol in all_trade_codes:
         if stock_symbol=='000029':
             continue
         print(i,stock_symbol)
