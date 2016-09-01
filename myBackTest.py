@@ -28,9 +28,10 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[],hist_dir='C:/hist/day/da
     else:
         this_quotation = quotation.all
     all_stocks = list(this_quotation.keys())
+    print('all_stocks=',('150251'  in all_stocks))
     print('hist_dir=',hist_dir)
     exist_codes = pds.get_all_code(hist_dir)
-    #print('exist_codes=',exist_codes)
+    print('exist_codes=',('150251'  in exist_codes))
     #print('all_stocks=',all_stocks)
     all_codes = list(set(all_stocks) & (set(exist_codes)))
     #print('all_codes=',all_codes)
@@ -44,6 +45,7 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[],hist_dir='C:/hist/day/da
     
     if except_stocks:
         all_codes = list(set(all_codes).difference(set(except_stocks)))
+    print('all_codes=',('150251'  in all_codes))
     #print('stop_stocks=', stop_stocks)
     #print(len(stop_stocks))
     #print('all_stocks=',all_stocks)
