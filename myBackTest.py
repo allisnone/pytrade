@@ -91,8 +91,9 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #print('source=',source)
     if source =='yh' or source=='YH':
         hist_dir='C:/中国银河证券海王星/T0002/export/'
-        all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir)
-        print('all_stocks1=',('150251'  in all_stocks))
+        print(given_codes,except_stocks)
+        all_stop_codes,all_stocks1 = get_stopped_stocks(given_codes,except_stocks,hist_dir)
+        print('all_stocks1=',('150251'  in all_stocks1))
     else:
         hist_dir='C:/hist/day/data/'
         all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir)
