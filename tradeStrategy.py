@@ -30,7 +30,7 @@ HIST_FILE_TYPE='.csv'
 
 
 #get the all file source data in certain DIR
-def get_all_code(hist_dir):
+def get_all_code(hist_dir='C:/hist/day/data/'):
     all_code=[]
     for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
         """
