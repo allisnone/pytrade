@@ -88,17 +88,19 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_codes = []
     all_stop_codes = []
     all_stocks = []
+    all_trade_codes = []
     #print('source=',source)
     if source =='yh' or source=='YH':
         hist_dir='C:/中国银河证券海王星/T0002/export/'
         print(given_codes,except_stocks)
         all_stop_codes,all_stocks1 = get_stopped_stocks(given_codes,except_stocks,hist_dir)
         print('all_stocks1=',('150251'  in all_stocks1))
+        all_trade_codes = list(set(all_stocks1).difference(set(all_stop_codes)))
     else:
         hist_dir='C:/hist/day/data/'
         all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir)
         print('all_stocks2=',('150251'  in all_stocks))
-    all_trade_codes = list(set(all_stocks).difference(set(all_stop_codes)))
+        all_trade_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     print('all_trade_codes=',('150251'  in all_trade_codes))
     #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #            '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
