@@ -28,7 +28,7 @@ def get_stopped_stocks(given_stocks=[],except_stocks=[],hist_dir='C:/hist/day/da
     else:
         this_quotation = quotation.all
     all_stocks = list(this_quotation.keys())
-    exist_codes = tds.get_all_code(hist_dir)
+    exist_codes = pds.get_all_code(hist_dir)
     all_codes = list(set(all_stocks).intersection(set(exist_codes)))
     for stock_code in all_codes:
         if this_quotation[stock_code]:
@@ -84,9 +84,11 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_stocks = []
     print('source=',source)
     if source =='yh' or source=='YH':
-        all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir='C:/中国银河证券海王星/T0002/export/')
+        hist_dir='C:/中国银河证券海王星/T0002/export/'
+        all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir)
     else:
-        all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks)
+        hist_dir='C:/hist/day/data/'
+        all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks,hist_dir)
     all_trade_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     
     #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
