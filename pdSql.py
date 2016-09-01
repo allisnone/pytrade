@@ -12,9 +12,9 @@ import tushare as ts
 import easytrader,easyhistory
 import time,os
 #ROOT_DIR='E:/work/stockAnalyze'
-ROOT_DIR="C:/中国银河证券海王星/T0002"
+#ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
-RAW_HIST_DIR=ROOT_DIR+'/export/'  
+RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"  
 #HIST_DIR=ROOT_DIR+'/update/'
 import tradeTime as tt
 import sendEmail as sm
@@ -115,9 +115,9 @@ def get_raw_hist_df(code_str,latest_count=None):
 
 def get_yh_raw_hist_df(code_str,latest_count=None):
     file_type='csv'
-    ROOT_DIR="C:/中国银河证券海王星/T0002"
+    RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"
     file_name=RAW_HIST_DIR+code_str+'.'+file_type
-    raw_column_list=['date','open','high','low','close','volume','rmb']
+    raw_column_list=['date','open','high','low','close','volume','amount']
     #print('file_name=',file_name)
     df_0=pd.DataFrame({},columns=raw_column_list)
     try:
@@ -334,12 +334,15 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
     #print(next_date_str)
     dest_file_name = dest_dir+ '%s.csv' % symbol
     dest_df = get_raw_hist_df(code_str=symbol)
+    file_type='csv'
+    RAW_HIST_DIR = "C:/中国银河证券海王星/T0002/export/"
+    yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
     if dest_df.empty:
         if symbol in index_symbol_maps.keys():
             symbol = index_symbol_maps[symbol]
-        yh_index_df = get_yh_raw_hist_df(code_str=symbol)
-        yh_index_df['amount'] = yh_index_df['rmb']
-        del yh_index_df['rmb']
+        yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+        #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
+        yh_index_df = pd.read_csv(yh_file_name)
         yh_index_df['factor'] = 1.0
         yh_df = yh_index_df.set_index('date')
         yh_df.to_csv(dest_file_name ,encoding='utf-8')
@@ -380,9 +383,9 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
             yh_symbol = symbol
             if symbol in index_symbol_maps.keys():
                 yh_symbol = index_symbol_maps[index_name]
-            yh_index_df = get_yh_raw_hist_df(code_str=yh_symbol)
-            yh_index_df['amount'] = yh_index_df['rmb']
-            del yh_index_df['rmb']
+            yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+            #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
+            yh_index_df = pd.read_csv(yh_file_name)
             yh_index_df['factor'] = FIX_FACTOR
             yh_last_date = yh_index_df.tail(1).iloc[0]['date']
             #print('yh_last_date=',yh_last_date)
@@ -637,9 +640,9 @@ class StockSQL(object):
             yh_symbol = symbol
             if symbol in index_symbol_maps.keys():
                 yh_symbol = index_symbol_maps[index_name]
-            yh_index_df = get_yh_raw_hist_df(code_str=yh_symbol)
-            yh_index_df['amount'] = yh_index_df['rmb']
-            del yh_index_df['rmb']
+            yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+            #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
+            yh_index_df = pd.read_csv(yh_file_name)
             yh_index_df['factor'] = FIX_FACTOR
             yh_last_date = yh_index_df.tail(1).iloc[0]['date']
             print('yh_last_date=',yh_last_date)
@@ -718,9 +721,9 @@ class StockSQL(object):
         #table_update_times = self.get_table_update_time()
         for index_name in index_list:
             yh_symbol = index_symbol_maps[index_name]
-            yh_index_df = get_yh_raw_hist_df(code_str=yh_symbol)
-            yh_index_df['amount'] = yh_index_df['rmb']
-            del yh_index_df['rmb']
+            yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+            #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
+            yh_index_df = pd.read_csv(yh_file_name)
             yh_index_df['factor'] = FIX_FACTOR
             try:
                 date_data = self.query_data(table=index_name,fields='date',condition="date>='%s'" % last_date_str)
