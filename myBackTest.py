@@ -83,7 +83,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_stop_codes = []
     all_stop_codes,all_stocks = get_stopped_stocks(given_codes,except_stocks)
     if source =='yh' or source=='YH':
-        all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
+        all_stocks = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
         all_stop_codes = []
     all_codes = list(set(all_stocks).difference(set(all_stop_codes)))
     if given_codes:
