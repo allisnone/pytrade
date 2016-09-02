@@ -68,7 +68,7 @@ if __name__ == "__main__":
         pass
     num = 120
     #stock_synbol = '000029'
-    s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)
+    s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num,source='YH')
     #s_stock.temp_hist_df.to_csv('./temp/%s_01.csv' % stock_synbol)
     result_df = s_stock.form_temp_df(stock_synbol)
     test_result = s_stock.regression_test()
