@@ -383,7 +383,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
             yh_symbol = symbol
             if symbol in index_symbol_maps.keys():
                 yh_symbol = index_symbol_maps[index_name]
-            yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+            yh_file_name = RAW_HIST_DIR+yh_symbol+'.'+file_type
             #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
             yh_index_df = pd.read_csv(yh_file_name)
             yh_index_df['factor'] = FIX_FACTOR
