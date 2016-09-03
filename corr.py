@@ -66,7 +66,7 @@ hist_dir='C:/中国银河证券海王星/T0002/export/'
 #all_stop_codes,all_stocks = bt.get_stopped_stocks(hist_dir='C:/中国银河证券海王星/T0002/export/')
 
 all_stocks = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
-all_corr_df = get_all_corr(ref_stocks=['sh','cyb']+given_stocks,stocks=all_stocks,recent=250)
+all_corr_df = get_all_corr(ref_stocks=['sh','cyb']+all_stocks,stocks=all_stocks,recent=1000)
 #all_corr_df = get_all_corr(ref_stocks=['sh'],stocks=all_stocks,recent=12000)
 all_corr_df.to_csv('./temp/all_corr_df.csv')
 
