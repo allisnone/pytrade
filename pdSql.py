@@ -126,14 +126,20 @@ def get_yh_raw_hist_df(code_str,latest_count=None):
         #print('pd.read_csv=',df)
         if df.empty:
             #print('code_str=',code_str)
+            df_0.to_csv(file_name,encoding='utf-8')
             return df_0
+        #else:
+        #    return
         last_date=df.tail(1).iloc[0].date
         if last_date=='数据来源:通达信':
             df=df[:-1]
             #print('数据来源:通达信')
             #print(df.tail(1).iloc[0].date)
             if df.empty:
+                df_0.to_csv(file_name,encoding='utf-8')
                 return df_0
+            #else:
+            #   return
             last_volume=df.tail(1).iloc[0].volume
             if int(last_volume)==0:
                 df=df[:-1]
@@ -145,6 +151,7 @@ def get_yh_raw_hist_df(code_str,latest_count=None):
         return df
     except OSError as e:
         #print('OSError:',e)
+        df_0.to_csv(file_name,encoding='utf-8')
         return df_0
     
 def get_easyhistory_df(code_str,source='easyhistory'):  #ta_lib
@@ -385,7 +392,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
                 yh_symbol = index_symbol_maps[index_name]
             yh_file_name = RAW_HIST_DIR+yh_symbol+'.'+file_type
             #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
-            yh_index_df = pd.read_csv(yh_file_name)
+            yh_index_df = pd.read_csv(yh_file_name,encoding='GBK')
             yh_index_df['factor'] = FIX_FACTOR
             yh_last_date = yh_index_df.tail(1).iloc[0]['date']
             #print('yh_last_date=',yh_last_date)

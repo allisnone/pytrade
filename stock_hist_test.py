@@ -56,7 +56,7 @@ if __name__ == "__main__":
     stock_synbol = '000029'
     #file_time = tds.get_file_timestamp('c:/hist/day/data/000060.csv')
     #print(file_time)
-    stock_synbol = '000007'
+    stock_synbol = 'zxb'
     num = 120
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         pass
     
     #stock_synbol = '000029'
-    s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num,source='YH')
+    s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)#,source='YH')
     #s_stock.temp_hist_df.to_csv('./temp/%s_01.csv' % stock_synbol)
     result_df = s_stock.form_temp_df(stock_synbol)
     test_result = s_stock.regression_test()
@@ -81,6 +81,7 @@ if __name__ == "__main__":
     print(recent_trend)
     #print(s_stock.temp_hist_df.tail(120).describe())
     temp_hist_df = s_stock.temp_hist_df.set_index('date')
+    print(temp_hist_df)
     temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
     temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)
     #result_df.to_csv('./temp/%s_00.csv' % stock_synbol)

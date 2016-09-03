@@ -5,8 +5,9 @@ import pdSql as pds
 import sys
 #update_type = ''
 update_type = 'index'
-update_type = 'position'
+#update_type = 'position'
 #update_type = 'stock'
+update_type = 'yh'
 if len(sys.argv)>=2:
     if sys.argv[1] and isinstance(sys.argv[1], str):
         update_type = sys.argv[1]  #start date string   
@@ -75,6 +76,9 @@ elif update_type == 'stock':
     easyhistory.update(path="C:/hist",stock_codes=all_stocks)#+b_stock)
 elif update_type == 'YH' or update_type == 'yh':
     all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
+    #all_codes = ['999999', '000016', '399007', '399008', '399006', '000300', '399005', '399001',
+    #             '399004','399106','000009','000010','000903','000905']
+    #all_codes=['002811']
     for code in all_codes:
         pds.get_yh_raw_hist_df(code,latest_count=None)
         
