@@ -115,7 +115,9 @@ if __name__ == "__main__":
     print(indicator_resuls)
     """
     #all_codes = list(set(all_codes).difference(set(funds+index+except_codes)))
-    all_result_df = back_test(k_num,given_codes=[],except_stocks=['000029','002807','603515'],type='stock',source=source_type)#except_stocks)
+    for rate in [0.03,0.02,0.015,0.008,0.005,0.003,0.00001]:
+        all_result_df = back_test(k_num,given_codes=[],except_stocks=['000029','002807','603515'],type='stock',source=source_type,rate_to_confirm=rate)#except_stocks)
+    #all_result_df = back_test(k_num,given_codes=[],except_stocks=['000029','002807','603515'],type='stock',source=source_type)#except_stocks)
     #all_codes = all_result_df.index.values.tolist()
     #all_statistics = pds.get_hold_stock_statistics(hold_stocks=all_stocks,stock_dir='C:/hist/day/temp/')
     #all_statistics.to_csv('./temp/statistics_test_' + 'all' +'%s.csv' % date_str)

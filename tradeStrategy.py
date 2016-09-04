@@ -2076,7 +2076,7 @@ class Stockhistory:
         #print(recent_trend)
         return recent_trend
     
-    def regression_test(self):
+    def regression_test(self,rate_to_confirm = 0.01):
         """
         卖出： 当天最低价小于之前三天的最低价，以最近三天的最低价卖出；如果跳空低开且开盘价小于近三天的最低价，以开盘价卖出
         买入： 当天价格高于前三天的收盘价的最大值，且当前建议仓位不小于25%，并无明显的减仓建议， 则以前三天收盘价的最大值买入；如果跳空高开且开盘价大于前三天的收盘价的最大值，以开盘价买入；
@@ -2093,12 +2093,12 @@ class Stockhistory:
                                                 self.temp_hist_df['open'],self.temp_hist_df['s_price0'])
         """
         #"""
-        less_than_lowest = 0.01
-        self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<(self.temp_hist_df['l_min3'].shift(1)*(1-less_than_lowest))) 
+        rate_to_confirm = 0.01
+        self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<(self.temp_hist_df['l_min3'].shift(1)*(1-rate_to_confirm))) 
                                                  #& (self.temp_hist_df['p_change']<0)  #预测了收盘价 不合理
                                                  #& (self.temp_hist_df['position'].shift(1)<0.7)
                                                  ,self.temp_hist_df['l_min3'].shift(1),0)
-        #self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)*(1-less_than_lowest))& #(self.temp_hist_df['p_change']>0) &
+        #self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)*(1-rate_to_confirm))& #(self.temp_hist_df['p_change']>0) &
                                                  #(self.temp_hist_df['s_price0']==0) & (self.temp_hist_df['position'].shift(1)>0.6),  #预测了收盘价 不合理
                                                  #0,self.temp_hist_df['s_price0'])
         self.temp_hist_df['s_price1'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']==self.temp_hist_df['low']) ,
@@ -2126,7 +2126,7 @@ class Stockhistory:
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         """
         #"""
-        self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>(self.temp_hist_df['c_max3'].shift(1)*(1+less_than_lowest))) 
+        self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>(self.temp_hist_df['c_max3'].shift(1)*(1+rate_to_confirm))) 
                                                  & (self.temp_hist_df['position']>0.3)# & (self.temp_hist_df['operation']>-0.15),
                                                  ,self.temp_hist_df['c_max3'].shift(1),0)
         #self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>self.temp_hist_df['h_max3'].shift(1)) #&
