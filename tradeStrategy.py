@@ -1581,6 +1581,7 @@ class Stockhistory:
             temp_df['c_max60'] = temp_df['close'].rolling(window=long_num60,center=False).max().round(2)
             temp_df['c_min60'] = temp_df['close'].rolling(window=long_num60,center=False).min().round(2)
             temp_df['l_max3'] = temp_df['low'].rolling(window=3,center=False).max().round(2)
+            temp_df['h_max3'] = temp_df['high'].rolling(window=3,center=False).max().round(2)
             temp_df['c_max3'] = temp_df['close'].rolling(window=3,center=False).max().round(2)
             temp_df['l_min3'] = temp_df['low'].rolling(window=3,center=False).min().round(2)
             temp_df['c_min2'] = temp_df['close'].rolling(window=2,center=False).min().round(2)
@@ -1614,6 +1615,7 @@ class Stockhistory:
             temp_df['c_max60']=pd.rolling_max(temp_df['close'], window=long_num60).round(2)
             temp_df['c_min60']=pd.rolling_min(temp_df['close'], window=long_num60).round(2)
             temp_df['l_max3']=pd.rolling_max(temp_df['low'], window=3).round(2)
+            temp_df['h_max3']=pd.rolling_max(temp_df['high'], window=3).round(2)
             temp_df['c_max3']=pd.rolling_max(temp_df['close'], window=3).round(2)
             temp_df['l_min3']=pd.rolling_min(temp_df['low'], window=3).round(2)
             temp_df['c_min2']=pd.rolling_min(temp_df['low'], window=2).round(2)
@@ -2081,16 +2083,34 @@ class Stockhistory:
         """
         if self.temp_hist_df.empty:
             return pd.Series({})
-        self.temp_hist_df['exit_3p'] = np.where((self.temp_hist_df['l_min3'].shift(1)>self.temp_hist_df['ma10']),self.temp_hist_df['l_min3'].shift(1),self.temp_hist_df['ma10'])
+        self.temp_hist_df['exit_3p'] = np.where((self.temp_hist_df['l_min3'].shift(1)>self.temp_hist_df['ma10']),
+                                                self.temp_hist_df['l_min3'].shift(1),self.temp_hist_df['ma10'])
+        """
         self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['high']!=self.temp_hist_df['low']) 
                                                  & (self.temp_hist_df['p_change']<0)
                                                  & (self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)),self.temp_hist_df['l_min3'].shift(1),0)
         self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price0']),
                                                 self.temp_hist_df['open'],self.temp_hist_df['s_price0'])
-        
+        """
+        #"""
+        less_than_lowest = 0.01
+        self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<(self.temp_hist_df['l_min3'].shift(1)*(1-less_than_lowest))) 
+                                                 #& (self.temp_hist_df['p_change']<0)  #预测了收盘价 不合理
+                                                 #& (self.temp_hist_df['position'].shift(1)<0.7)
+                                                 ,self.temp_hist_df['l_min3'].shift(1),0)
+        #self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)*(1-less_than_lowest))& #(self.temp_hist_df['p_change']>0) &
+                                                 #(self.temp_hist_df['s_price0']==0) & (self.temp_hist_df['position'].shift(1)>0.6),  #预测了收盘价 不合理
+                                                 #0,self.temp_hist_df['s_price0'])
+        self.temp_hist_df['s_price1'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']==self.temp_hist_df['low']) ,
+                                                0,self.temp_hist_df['s_price0']) #低开一字板跌停，卖不出去，第二天卖
+        self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price1']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price1']),
+                                                self.temp_hist_df['open'],self.temp_hist_df['s_price1']) #低开，按开盘价卖
+        #self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price1']>0) & (self.temp_hist_df['high']==self.temp_hist_df['low']) ,
+        #                                        0,self.temp_hist_df['s_price1']) #低开一字板跌停，卖不出去，第二天卖
+        #"""
         #self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price1']==0) & (self.temp_hist_df['star_chg']<-3.5),
         #                                        self.temp_hist_df['close'],self.temp_hist_df['s_price1'])
-        
+        """
         self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']!=self.temp_hist_df['low'])
                                                  & (self.temp_hist_df['p_change']>0)
                                                  & (self.temp_hist_df['high']>self.temp_hist_df['c_max3'].shift(1)) &
@@ -2104,6 +2124,31 @@ class Stockhistory:
         self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)==0) 
                                                 & (self.temp_hist_df['s_price']>0)
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
+        """
+        #"""
+        self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>(self.temp_hist_df['c_max3'].shift(1)*(1+less_than_lowest))) 
+                                                 & (self.temp_hist_df['position']>0.3)# & (self.temp_hist_df['operation']>-0.15),
+                                                 ,self.temp_hist_df['c_max3'].shift(1),0)
+        #self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>self.temp_hist_df['h_max3'].shift(1)) #&
+        #                                         #(self.temp_hist_df['position']>0.3) & (self.temp_hist_df['operation']>-0.15),
+        #                                         ,self.temp_hist_df['h_max3'].shift(1),0)
+        self.temp_hist_df['b_price1'] = np.where((self.temp_hist_df['b_price0']>0) & (self.temp_hist_df['low']>self.temp_hist_df['b_price0']),
+                                                -self.temp_hist_df['open'], -self.temp_hist_df['b_price0']) #高开
+        self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['high']==self.temp_hist_df['low'])
+                                                 & (self.temp_hist_df['p_change']>0) & (self.temp_hist_df['b_price1']<0),
+                                                    0,self.temp_hist_df['b_price1']) #一字涨停
+        #self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['s_price'].shift(1)>0)
+        #                                         & (self.temp_hist_df['p_change'].shift(1)>0.5) & (self.temp_hist_df['b_price2']==0),
+        #                                            -self.temp_hist_df['open'],self.temp_hist_df['b_price2']) #昨日卖出后上涨，次日开盘买回
+        #"""
+        #print(self.temp_hist_df[['s_price', 'b_price']].tail(30))
+        self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['b_price'].shift(1)==0) 
+                                                & (self.temp_hist_df['s_price']==0)
+                                                & (self.temp_hist_df['b_price']<0)), self.temp_hist_df['b_price'], 0)
+        self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)==0) 
+                                                & (self.temp_hist_df['s_price']>0)
+                                                & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
+        
         temp_hist_df =self.temp_hist_df.tail(100)
         break_in_df = temp_hist_df[(temp_hist_df['break_in']!=0) & (temp_hist_df['break_in'].shift(1)==0)]
         #print(break_in_df)

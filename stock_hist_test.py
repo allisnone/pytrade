@@ -53,11 +53,11 @@ if __name__ == "__main__":
     stock_synbol = '603398'
     stock_synbol = '002253'
     stock_synbol = '002371'
-    stock_synbol = '000029'
+    stock_synbol = '600199'
     #file_time = tds.get_file_timestamp('c:/hist/day/data/000060.csv')
     #print(file_time)
-    stock_synbol = 'zxb'
-    num = 120
+    #stock_synbol = '300085'
+    num = 0
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
             try:
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         pass
     
     #stock_synbol = '000029'
-    s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num)#,source='YH')
+    s_stock=tds.Stockhistory(stock_synbol,'D',test_num=num,source='YH')
     #s_stock.temp_hist_df.to_csv('./temp/%s_01.csv' % stock_synbol)
     result_df = s_stock.form_temp_df(stock_synbol)
     test_result = s_stock.regression_test()
