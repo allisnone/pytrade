@@ -1636,6 +1636,7 @@ class Stockhistory:
         temp_df['star_h'] = np.where(temp_df['star']>=0, ((temp_df['high']-temp_df['close'])/(temp_df['high']-temp_df['low'])).round(3),
                                   ((temp_df['high']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(3))
         temp_df['star_chg'] =temp_df['p_change']*(temp_df['star'].abs())
+        temp_df['k_chg'] =(100.0 * (temp_df['close'] -temp_df['open'])/(temp_df['close'].shift(1))).round(4)
         """一日反转"""
         temp_df['k_rate'] = np.where((temp_df['close'].shift(1)-temp_df['open'].shift(1))!=0,
                                      ((temp_df['close']-temp_df['open'])/(temp_df['close'].shift(1)-temp_df['open'].shift(1))).round(2),0)
@@ -2148,6 +2149,12 @@ class Stockhistory:
         self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)==0) 
                                                 & (self.temp_hist_df['s_price']>0)
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
+        
+        #self.temp_hist_df['trade'] = self.temp_hist_df['b_price'] * self.temp_hist_df['s_price'] + self.temp_hist_df['b_price']  + self.temp_hist_df['s_price'] 
+        self.temp_hist_df['trade'] = self.temp_hist_df['b_price']  + self.temp_hist_df['s_price'] 
+        self.temp_hist_df['trade_na'] = np.where((self.temp_hist_df['trade']!=0),self.temp_hist_df['trade'],self.temp_hist_df['trade']/0.0)
+        self.temp_hist_df['trade_na'] =  self.temp_hist_df['trade_na'].fillna(method='pad')
+        #self.temp_hist_df['trade_na0'] = np.where((self.temp_hist_df['trade_na']*(self.temp_hist_df['trade_na'].shift(1))>0),self.temp_hist_df['trade_na'].shift(1),self.temp_hist_df['trade_na'])
         
         temp_hist_df =self.temp_hist_df.tail(100)
         break_in_df = temp_hist_df[(temp_hist_df['break_in']!=0) & (temp_hist_df['break_in'].shift(1)==0)]

@@ -201,6 +201,12 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     rate_to_confirm_str = 'rate' + rate_to_confirm_str.replace('.', '_')
     #print('latest_date_str=',latest_date_str)
     tail_name = '%s_to_%s_%s.csv' % (k_num,latest_date_str,rate_to_confirm_str)
+    column_list = ['count','name', 'mean', 'std', 'max', 'min', 'cum_prf',
+                   'fuli_prf','success_rate','last_trade_date','last_trade_price','min_hold_count',
+                   'max_hold_count','avrg_hold_count','this_hold_count','exit','enter',
+                   'position','max_amount_rate','max_amount_distance','break_in', 
+                   'break_in_count','break_in_date', 'break_in_distance',
+                   'stopped','invalid','max_r','25%','50%','75%',]
     all_result_df.to_csv('./temp/regression_test_' + addition_name +tail_name)
     if all_result_df.empty:
         pass
@@ -226,6 +232,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
         all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +tail_name)
         reverse_df = all_temp_hist_df[(all_temp_hist_df['reverse']>0) & 
                                 (all_temp_hist_df['position']>0.35)]#
+        #reverse_df['r_sort'] = reverse_df['star_chg']/reverse_df['pos20']
         reverse_df.to_csv('./temp/reverse_df_' + addition_name +tail_name)
     
     return all_result_df
