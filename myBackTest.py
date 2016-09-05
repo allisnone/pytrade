@@ -200,7 +200,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     rate_to_confirm_str = '%s' % rate_to_confirm
     rate_to_confirm_str = 'rate' + rate_to_confirm_str.replace('.', '_')
     #print('latest_date_str=',latest_date_str)
-    tail_name = '%s_to_%s_%s.csv' % (latest_date_str,k_num,rate_to_confirm_str)
+    tail_name = '%s_from_%s_%s.csv' % (latest_date_str,k_num,rate_to_confirm_str)
     column_list = ['count','name', 'mean', 'std', 'max', 'min', 'cum_prf',
                    'fuli_prf','success_rate','last_trade_date','last_trade_price','min_hold_count',
                    'max_hold_count','avrg_hold_count','this_hold_count','exit','enter',
