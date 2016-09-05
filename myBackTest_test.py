@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from myBackTest import *
+import datetime
 #import pdSql as pds
 
 if __name__ == "__main__":
@@ -50,7 +51,9 @@ if __name__ == "__main__":
     stock_synbol = '600570'
     stock_synbol = '002504'
     stock_synbol = '000989'
-    k_num = 0
+    last_year_date =datetime.datetime.now() + datetime.timedelta(days=-365)
+    date_str = last_year_date.strftime('%Y-%m-%d')
+    k_num = date_str
     #all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
     #all_stop_codes = get_stop_trade_symbol()
     #all_stop_codes,all_stocks = get_stopped_stocks()
