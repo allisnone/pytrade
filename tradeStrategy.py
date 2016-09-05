@@ -679,7 +679,7 @@ def market_analyze_today():
     print('market_analyze completed for today.')
     
 class Stockhistory:
-    def __init__(self,code_str,ktype, test_num=0,source='easyhistory'):
+    def __init__(self,code_str,ktype, test_num=0,source='easyhistory',rate_to_confirm=0.01):
         self.code=code_str
         self.ktype=ktype
         self.DEBUG_ENABLED=False
@@ -701,6 +701,7 @@ class Stockhistory:
         self.realtime_stamp=0
         self.temp_hist_df=self._form_temp_df()
         self.test_num = test_num
+        self.rate_to_confirm = rate_to_confirm
         if test_num ==0 and isinstance(test_num, int):
             self.test_num = len(self.h_df)
         #self.average_high=0
@@ -2094,12 +2095,13 @@ class Stockhistory:
                                                 self.temp_hist_df['open'],self.temp_hist_df['s_price0'])
         """
         #"""
-        rate_to_confirm = 0.01
-        self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<(self.temp_hist_df['l_min3'].shift(1)*(1-rate_to_confirm))) 
+        if rate_to_confirm:
+            self.rate_to_confirm = rate_to_confirm
+        self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<(self.temp_hist_df['l_min3'].shift(1)*(1-self.rate_to_confirm))) 
                                                  #& (self.temp_hist_df['p_change']<0)  #预测了收盘价 不合理
                                                  #& (self.temp_hist_df['position'].shift(1)<0.7)
                                                  ,self.temp_hist_df['l_min3'].shift(1),0)
-        #self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)*(1-rate_to_confirm))& #(self.temp_hist_df['p_change']>0) &
+        #self.temp_hist_df['s_price0'] = np.where((self.temp_hist_df['low']<self.temp_hist_df['l_min3'].shift(1)*(1-self.rate_to_confirm))& #(self.temp_hist_df['p_change']>0) &
                                                  #(self.temp_hist_df['s_price0']==0) & (self.temp_hist_df['position'].shift(1)>0.6),  #预测了收盘价 不合理
                                                  #0,self.temp_hist_df['s_price0'])
         self.temp_hist_df['s_price1'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']==self.temp_hist_df['low']) ,
@@ -2127,7 +2129,7 @@ class Stockhistory:
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         """
         #"""
-        self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>(self.temp_hist_df['c_max3'].shift(1)*(1+rate_to_confirm))) 
+        self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>(self.temp_hist_df['c_max3'].shift(1)*(1+self.rate_to_confirm))) 
                                                  & (self.temp_hist_df['position']>0.3)# & (self.temp_hist_df['operation']>-0.15),
                                                  ,self.temp_hist_df['c_max3'].shift(1),0)
         #self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>self.temp_hist_df['h_max3'].shift(1)) #&
