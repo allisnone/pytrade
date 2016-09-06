@@ -530,7 +530,7 @@ def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王�
         exit_data['exit_half'] = min_close
         exit_data['exit_all'] = min_low
         exit_dict[code] = exit_data
-    #print('exit_dict=%s' % exit_dict)
+    print('exit_dict=%s' % exit_dict)
     return exit_dict
 
 def get_hold_stock_statistics(hold_stocks= ['000007', '000932', '601009', '150288', '300431', '002362', '002405', '600570', '603398'],
