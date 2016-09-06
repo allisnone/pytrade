@@ -515,6 +515,7 @@ def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王�
             hist_low_describe = hist_df.tail(60).describe()
             print(hist_low_describe)
             hist_low_change = round(hist_low_describe.loc['25%'].l_change,4)
+            print('hist_low_change')
             if hist_low_change> highest_exit_rate:
                 hist_low_change = highest_exit_rate
             print('hist_low_change=',hist_low_change)
