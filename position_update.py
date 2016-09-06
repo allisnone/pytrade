@@ -84,7 +84,7 @@ elif update_type == 'YH' or update_type == 'yh':
     all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
     #all_codes = ['999999', '000016', '399007', '399008', '399006', '000300', '399005', '399001',
     #             '399004','399106','000009','000010','000903','000905']
-    #all_codes=['002811']
+    #all_codes=['300162']
     for code in all_codes:
         pds.get_yh_raw_hist_df(code,latest_count=None)
         
