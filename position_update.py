@@ -8,7 +8,7 @@ update_type = 'index'
 #update_type = 'position'
 #update_type = 'stock'
 update_type = 'yh'
-update_type = 'aa'
+#update_type = 'aa'
 if len(sys.argv)>=2:
     if sys.argv[1] and isinstance(sys.argv[1], str):
         update_type = sys.argv[1]  #start date string   
