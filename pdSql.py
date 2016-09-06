@@ -878,7 +878,7 @@ class StockSQL(object):
         print(hold_df)
         available_sells = []
         if not hold_df.empty:
-            available_sell_df = hold_df[(hold_df['valid'])==1 & (hold_df['股份可用']>=100)]
+            available_sell_df = hold_df[(hold_df['valid']==1) & (hold_df['股份可用']>=100)]
             print(available_sell_df)
             if available_sell_df.empty:
                 available_sells = available_sell_df['证券代码'].values.tolist()
