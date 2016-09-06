@@ -500,8 +500,6 @@ def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王�
     #data_path = 'C:/中国银河证券海王星/T0002/export/' 
     exit_dict = dict()
     his = easyhistory.History(dtype='D', path=data_path, type='csv',codes=hold_codes)
-    if his.empty:
-        return exit_dict
     d_format='%Y/%m/%d'
     last_date_str = tt.get_last_trade_date(date_format=d_format)
     latest_date_str = tt.get_latest_trade_date(date_format=d_format)
@@ -510,10 +508,12 @@ def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王�
         exit_data = dict()
         hist_df  =his[code] 
         hist_last_date = hist_df.tail(1).iloc[0].date
+        print('hist_last_date=',hist_last_date)
         highest_exit_rate = -0.03
         if hist_last_date<last_date_str:
             hist_df['l_change'] = ((hist_df['low']-hist_df['close'].shift(1))/hist_df['close'].shift(1)).round(3)
             hist_low_describe = hist_df.tail(60).describe()
+            print(hist_low_describe)
             hist_low_change = round(hist_low_describe.loc['25%'].l_change,4)
             if hist_low_change> highest_exit_rate:
                 hist_low_change = highest_exit_rate
