@@ -52,8 +52,8 @@ if __name__ == "__main__":
     stock_synbol = '002504'
     stock_synbol = '000989'
     last_year_date =datetime.datetime.now() + datetime.timedelta(days=-365)
-    date_str = last_year_date.strftime('%Y-%m-%d')
-    k_num = date_str
+    last_year_date_str = last_year_date.strftime('%Y/%m/%d')
+    k_num = last_year_date_str
     #all_codes = pds.get_all_code(pds.RAW_HIST_DIR)
     #all_stop_codes = get_stop_trade_symbol()
     #all_stop_codes,all_stocks = get_stopped_stocks()
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     #all_stop_codes = []
     date_str ='19970101'
     givens = []
-    source_type = 'easyhistory'
+    source_type = 'yh'
     if len(sys.argv)>=2:
         if sys.argv[1] and isinstance(sys.argv[1], str):
             k_num = sys.argv[1]  #start date string   #新浪格式：2016-01-25， 银河导出格式： 2016/01/25
