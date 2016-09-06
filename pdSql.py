@@ -508,30 +508,36 @@ def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王�
         exit_data = dict()
         hist_df  =his[code].ROC(1) 
         hist_last_date = hist_df.tail(1).iloc[0].date
-        print('hist_last_date=',hist_last_date)
-        highest_exit_rate = -0.03
+        #print('hist_last_date=',hist_last_date)
+        tolerance_exit_rate = 0.0
+        min_close = 0.0
+        min_low =0.0
         if hist_last_date<last_date_str:
             hist_df['l_change'] = ((hist_df['low']-hist_df['close'].shift(1))/hist_df['close'].shift(1)).round(3)
             hist_low_describe = hist_df.tail(60).describe()
-            print(hist_low_describe)
+            #print(hist_low_describe)
             hist_low_change = round(hist_low_describe.loc['25%'].l_change,4)
-            print('hist_low_change')
-            if hist_low_change> highest_exit_rate:
-                hist_low_change = highest_exit_rate
-            print('hist_low_change=',hist_low_change)
-            exit_dict['hist_l_chg'] = hist_low_change
-            exit_dict[code] = exit_data
-            continue
-        exit_dict['hist_l_chg'] = highest_exit_rate
-        describe_df = his[code].MA(1).tail(3).describe()
-        min_low =round(describe_df.loc['min'].low, 2)
-        min_close = round(round(describe_df.loc['min'].close,2),2)
-        max_close = round(describe_df.loc['max'].close,2)
-        max_high = round(describe_df.loc['max'].high,2)
+            #print('hist_low_change=',hist_low_change)
+            #if hist_low_change< tolerance_exit_rate:
+            tolerance_exit_rate = hist_low_change
+            #print('tolerance_exit_rate=',tolerance_exit_rate)
+        else:
+            hist_df['l_change'] = ((hist_df['low']-hist_df['close'].shift(1))/hist_df['close'].shift(1)).round(3)
+            hist_low_describe = hist_df.tail(60).describe()
+            hist_low_change = round(hist_low_describe.loc['25%'].l_change,4)
+            tolerance_exit_rate = hist_low_change
+            #print('tolerance_exit_rate=',tolerance_exit_rate)
+            hist_df = hist_df[hist_df.date<=last_date_str]
+            describe_df = his[code].MA(1).tail(3).describe()
+            min_low =round(describe_df.loc['min'].low, 2)
+            min_close = round(round(describe_df.loc['min'].close,2),2)
+            max_close = round(describe_df.loc['max'].close,2)
+            max_high = round(describe_df.loc['max'].high,2)
         exit_data['exit_half'] = min_close
         exit_data['exit_all'] = min_low
+        exit_data['exit_rate'] = tolerance_exit_rate
         exit_dict[code] = exit_data
-    print('exit_dict=%s' % exit_dict)
+    #print('exit_dict=%s' % exit_dict)
     return exit_dict
 
 def get_hold_stock_statistics(hold_stocks= ['000007', '000932', '601009', '150288', '300431', '002362', '002405', '600570', '603398'],

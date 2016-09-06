@@ -8,18 +8,20 @@ update_type = 'index'
 #update_type = 'position'
 #update_type = 'stock'
 update_type = 'yh'
-update_type = 'aa'
+#update_type = 'aa'
 if len(sys.argv)>=2:
     if sys.argv[1] and isinstance(sys.argv[1], str):
         update_type = sys.argv[1]  #start date string   
 #update_type = 'index'
 #update_type = 'position'
+#update_type = 'aa'
 stock_sql = pds.StockSQL()
 hold_df,hold_stocks,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
 print('hold_stocks=',hold_stocks)
 print('available_sells=',available_sells)
 
-pds.get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王星/T0002/export/' )
+pds.get_exit_price(hold_codes=['002521'],data_path='C:/中国银河证券海王星/T0002/export/' )
+
 #print(hold_df)
 """从新浪 qq网页更新股票"""
 #easyhistory.init(path="C:/hist",stock_codes=hold_stocks)
