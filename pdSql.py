@@ -16,6 +16,7 @@ import time,os
 #ROOT_DIR="C:\work\stockAnalyze"
 RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"  
 #HIST_DIR=ROOT_DIR+'/update/'
+#"""
 import tradeTime as tt
 import sendEmail as sm
 import qq_quotation as qq
