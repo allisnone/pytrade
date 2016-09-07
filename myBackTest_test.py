@@ -118,7 +118,7 @@ if __name__ == "__main__":
     print(indicator_resuls)
     """
     #all_codes = list(set(all_codes).difference(set(funds+index+except_codes)))
-    for rate in [0.01,0,-0.005,-0.01]: #[0.015,0.01,0.007,0.003,0.03,0.02,0.00001]
+    for rate in [0,-0.005,-0.01]: #[0.015,0.01,0.007,0.003,0.03,0.02,0.00001]
         try:
             all_result_df = back_test(k_num,given_codes=[],except_stocks=['000029','002807','603515'],type='stock',source=source_type,rate_to_confirm=rate)#except_stocks)
         except:
