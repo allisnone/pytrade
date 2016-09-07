@@ -82,9 +82,9 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     :param type: str type, force update K data from YH
     :return: source: history data from web if 'easyhistory',  history data from YH if 'YH'
     """
-    addition_name = ''
-    if type == 'index':
-        addition_name = type
+    #addition_name = ''
+    #if type == 'index':
+    addition_name = type
     all_codes = []
     all_stop_codes = []
     all_stocks = []
