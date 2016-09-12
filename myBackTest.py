@@ -118,7 +118,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     ma_num = 20
     #print('all_trade_codes=',all_trade_codes)
     for stock_symbol in all_trade_codes:
-        if stock_symbol=='000029':
+        if stock_symbol=='000029' and source=='easyhistory':
             continue
         print(i,stock_symbol)
         s_stock=tds.Stockhistory(stock_symbol,'D',test_num=k_num,source=source,rate_to_confirm=rate_to_confirm)
