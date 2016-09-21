@@ -175,6 +175,16 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
             valid_dict[code] = 1
         else:
             valid_dict[code] = 0
+    """
+    all_temp_dict = {} 
+    all_temp_codes = all_temp_hist_df.index.values.tolist()
+    for code in result_codes:
+        if code in all_temp_codes:
+            all_temp_dict[code]= basic_code[code]
+        else:
+            result_codes_dict[code] = 'NA'
+    all_temp_hist_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
+    """
     #print(result_codes_dict)
     #print(tds.pd.DataFrame(result_codes_dict, columns=['name'], index=list(result_codes_dict.keys())))
     #all_result_df['name'] = result_codes_dict
