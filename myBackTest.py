@@ -228,7 +228,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     result_summary.to_csv('./temp/result_summary_' + addition_name +tail_name)
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s' % ma_num + addition_name +'%s_to_%s_%s.csv' % (k_num,latest_date_str,rate_to_confirm_str))
     if not all_temp_hist_df.empty:
-        all_temp_hist_df = all_temp_hist_df[column_list]
+        #all_temp_hist_df = all_temp_hist_df[column_list]
         all_temp_hist_df = all_temp_hist_df.set_index('code')
         all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +tail_name)
         reverse_df = all_temp_hist_df[(all_temp_hist_df['reverse']>0) & 
