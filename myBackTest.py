@@ -228,12 +228,28 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     result_summary.to_csv('./temp/result_summary_' + addition_name +tail_name)
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s' % ma_num + addition_name +'%s_to_%s_%s.csv' % (k_num,latest_date_str,rate_to_confirm_str))
     if not all_temp_hist_df.empty:
+        all_temp_hist_df = all_temp_hist_df[column_list]
         all_temp_hist_df = all_temp_hist_df.set_index('code')
         all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +tail_name)
         reverse_df = all_temp_hist_df[(all_temp_hist_df['reverse']>0) & 
+                                      all_temp_hist_df['LINEARREG_ANGLE8']<-2.0 &
                                 (all_temp_hist_df['position']>0.35)]#
         #reverse_df['r_sort'] = reverse_df['star_chg']/reverse_df['pos20']
         reverse_df.to_csv('./temp/reverse_df_' + addition_name +tail_name)
+        
+        long_turn_min_angle = -0.5
+        short_turn_min_angle = 0.2
+        ma30_df = all_temp_hist_df[(all_temp_hist_df['LINEARREG_ANGLE14MA120']>long_turn_min_angle) & 
+                                   (all_temp_hist_df['LINEARREG_ANGLE14MA250']>long_turn_min_angle) &
+                                   (all_temp_hist_df['LINEARREG_ANGLE14MA60']>long_turn_min_angle) &
+                                   (all_temp_hist_df['LINEARREG_ANGLE14MA30']<1.0) &
+                                   (all_temp_hist_df['LINEARREG_ANGLE5MA5']>short_turn_min_angle) &
+                                   (all_temp_hist_df['LINEARREG_ANGLE6MA10']>short_turn_min_angle) &
+                                   (all_temp_hist_df['LINEARREG_ANGLE5MA5']>=all_temp_hist_df['LINEARREG_ANGLE6MA10']) &
+                                   (all_temp_hist_df['LINEARREG_ANGLE8ROC1']>0.0) &
+                                   (all_temp_hist_df['close']>all_temp_hist_df['ma30']) &
+                                (all_temp_hist_df['position']>0.35)]#
+        ma30_df.to_csv('./temp/ma30_df_' + addition_name +tail_name)
     
     return all_result_df
 
