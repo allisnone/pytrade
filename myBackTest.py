@@ -242,8 +242,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
         all_temp_hist_df = all_temp_hist_df.set_index('code')
         all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +tail_name)
         reverse_df = all_temp_hist_df[(all_temp_hist_df['reverse']>0) & 
-                                      all_temp_hist_df['LINEARREG_ANGLE8']<-2.0 &
-                                (all_temp_hist_df['position']>0.35)]#
+                                      (all_temp_hist_df['LINEARREG_ANGLE8']<-2.0) &
+                                      (all_temp_hist_df['position']>0.35)]#
         #reverse_df['r_sort'] = reverse_df['star_chg']/reverse_df['pos20']
         reverse_df.to_csv('./temp/reverse_df_' + addition_name +tail_name)
         
