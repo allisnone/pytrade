@@ -56,7 +56,7 @@ if __name__ == "__main__":
     stock_synbol = '600199'
     #file_time = tds.get_file_timestamp('c:/hist/day/data/000060.csv')
     #print(file_time)
-    stock_synbol = '999999'
+    stock_synbol = '002521'
     num = 0
     if len(sys.argv)>=3:
         if sys.argv[2] and isinstance(sys.argv[2], str):
@@ -84,6 +84,7 @@ if __name__ == "__main__":
     print(temp_hist_df)
     temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
     temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)
+    s_stock.regress_high_open(column_type = 'high')
     #result_df.to_csv('./temp/%s_00.csv' % stock_synbol)
     #print(s_stock.temp_hist_df.tail(20))
    

@@ -1765,6 +1765,17 @@ class Stockhistory:
         """
         """连涨若干天后，第一次回调入手"""""
         
+        """前日低收，大幅次日高开反转"""
+        weak_change = -1.5
+        high_open_rate = 0.6
+        temp_df['low_high_open'] = np.where((
+                                        (temp_df['p_change'].shift(1) <=weak_change)
+                                        & (temp_df['o_change']>= (temp_df['p_change'].shift(1).abs())*high_open_rate)
+                                        #& (temp_df['close'] !=temp_df['open'])
+                                        & (temp_df['close'].shift(1) <temp_df['open'].shift(1))
+                                        #& (temp_df['pos20'].shift(1)<0.6)
+                                      
+                                      ),(temp_df['p_change'].shift(1).abs()*temp_df['o_change'])/(1.0+temp_df['pos20'].shift(1)),0)
         """盘整20天后突破"""""
         wave_rate = 10.0
         strong_posistion = 0.5
@@ -1783,6 +1794,38 @@ class Stockhistory:
         self.temp_hist_df = temp_df
         
         return temp_df
+    
+    def regress_high_open(self,column_type = 'close'):
+        high_open_df =  self.temp_hist_df
+        high_open_df['high_o_day0'] = np.where((
+                                        (high_open_df['low_high_open']!= 0)
+                                      
+                                      ),(high_open_df[column_type]-high_open_df['open'])/high_open_df['open'],0)
+        high_open_df['high_o_day1'] = np.where((
+                                        (high_open_df['low_high_open']!= 0)
+                                      
+                                      ),(high_open_df[column_type].shift(-1)-high_open_df['open'])/high_open_df['open'],0)
+        high_open_df['high_o_day3'] = np.where((
+                                        (high_open_df['low_high_open']!= 0)
+                                      
+                                      ),(high_open_df[column_type].shift(-3)-high_open_df['open'])/high_open_df['open'],0)
+        high_open_df['high_o_day5'] = np.where((
+                                        (high_open_df['low_high_open']!= 0)
+                                      
+                                      ),(high_open_df[column_type].shift(-5)-high_open_df['open'])/high_open_df['open'],0)
+        high_open_df['high_o_day10'] = np.where((
+                                        (high_open_df['low_high_open']!= 0)
+                                      
+                                      ),(high_open_df[column_type].shift(-10)-high_open_df['open'])/high_open_df['open'],0)
+        high_open_df['high_o_day20'] = np.where((
+                                        (high_open_df['low_high_open']!= 0)
+                                      
+                                      ),(high_open_df[column_type].shift(-20)-high_open_df['open'])/high_open_df['open'],0)
+        high_open_df = high_open_df[high_open_df['low_high_open']!= 0]
+        columns = ['close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3','high_o_day5','high_o_day10','high_o_day20']
+        high_open_df = high_open_df[columns]
+        high_open_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,column_type))
+        return high_open_df
     
     def get_market_score(self,short_turn_weight=None,k_data=None):
         ma_type='ma5'
