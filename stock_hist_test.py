@@ -84,7 +84,7 @@ if __name__ == "__main__":
     print(temp_hist_df)
     temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_synbol)
     temp_hist_df.to_csv('./temp/%s.csv' % stock_synbol)
-    s_stock.regress_high_open(column_type = 'high')
+    s_stock.s_stock.regress_high_open(regress_column = 'high',base_column='open')
     #result_df.to_csv('./temp/%s_00.csv' % stock_synbol)
     #print(s_stock.temp_hist_df.tail(20))
    

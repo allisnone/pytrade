@@ -1636,6 +1636,7 @@ class Stockhistory:
         temp_df['star'] = ((temp_df['close']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(2) #k线实体比例
         temp_df['star_h'] = np.where(temp_df['star']>=0, ((temp_df['high']-temp_df['close'])/(temp_df['high']-temp_df['low'])).round(3),
                                   ((temp_df['high']-temp_df['open'])/(temp_df['high']-temp_df['low'])).round(3))
+        temp_df['star_l'] = 1 - temp_df['star'].abs() - temp_df['star_h']
         temp_df['star_chg'] =temp_df['p_change']*(temp_df['star'].abs())
         temp_df['k_chg'] =(100.0 * (temp_df['close'] -temp_df['open'])/(temp_df['close'].shift(1))).round(4)
         """一日反转"""
@@ -1795,42 +1796,35 @@ class Stockhistory:
         
         return temp_df
     
-    def regress_high_open(self,column_type = 'close'):
+    def regress_high_open(self,regress_column = 'close',base_column='open'):
         high_open_df =  self.temp_hist_df
-        high_open_df['high_o_day0'] = np.where((
-                                        (high_open_df['low_high_open']!= 0)
-                                      
-                                      ),(high_open_df[column_type]-high_open_df['open'])/high_open_df['open'],0)
-        high_open_df['high_o_day1'] = np.where((
-                                        (high_open_df['low_high_open']!= 0)
-                                      
-                                      ),(high_open_df[column_type].shift(-1)-high_open_df['open'])/high_open_df['open'],0)
-        high_open_df['high_o_day3'] = np.where((
-                                        (high_open_df['low_high_open']!= 0)
-                                      
-                                      ),(high_open_df[column_type].shift(-3)-high_open_df['open'])/high_open_df['open'],0)
-        high_open_df['high_o_day5'] = np.where((
-                                        (high_open_df['low_high_open']!= 0)
-                                      
-                                      ),(high_open_df[column_type].shift(-5)-high_open_df['open'])/high_open_df['open'],0)
-        high_open_df['high_o_day10'] = np.where((
-                                        (high_open_df['low_high_open']!= 0)
-                                      
-                                      ),(high_open_df[column_type].shift(-10)-high_open_df['open'])/high_open_df['open'],0)
-        high_open_df['high_o_day20'] = np.where((
-                                        (high_open_df['low_high_open']!= 0)
-                                      
-                                      ),(high_open_df[column_type].shift(-20)-high_open_df['open'])/high_open_df['open'],0)
-        high_open_df['high_o_day50'] = np.where((
-                                        (high_open_df['low_high_open']!= 0)
-                                      
-                                      ),(high_open_df[column_type].shift(-50)-high_open_df['open'])/high_open_df['open'],0)
+        crit_low_high_open = high_open_df['low_high_open']!= 0
+        days = [0,-1,-2,-3,-5,-10,-20,-30,-50]
+        columns = ['date','close','p_change','o_change','position','low_high_open']
+        for day in days:
+            column_name = 'high_o_day%s' % abs(day)
+            columns.append(column_name)
+            high_open_df[column_name] = np.where(crit_low_high_open,
+                                                   (high_open_df[regress_column].shift(day)-high_open_df[base_column])/high_open_df[base_column],0)
         high_open_df = high_open_df[high_open_df['low_high_open']!= 0]
-        columns = ['date','close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3',
-                   'high_o_day5','high_o_day10','high_o_day20','high_o_day50']
         high_open_df = high_open_df[columns]
-        high_open_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,column_type))
-        return high_open_df
+        #high_open_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,column_type))
+        return high_open_df,columns
+    
+    def regress_common(self,criteria,post_days=[0,-1,-2,-3,-4,-5],regress_column = 'close',
+                       base_column='open',fix_columns=['date','close','p_change','o_change','position']):
+        #criteria = self.temp_hist_df['low_high_open']!= 0
+        #post_days = [0,-1,-2,-3,-5,-10,-20,-30,-50]
+        #fix_columns = ['date','close','p_change','o_change','position','low_high_open']
+        for day in post_days:
+            column_name = 'high_o_day%s' % abs(day)
+            fix_columns.append(column_name)
+            self.temp_hist_df[column_name] = np.where(criteria,
+                                                   (self.temp_hist_df[regress_column].shift(day)-self.temp_hist_df[base_column])/self.temp_hist_df[base_column],0)
+        regress_df = self.temp_hist_df[criteria]
+        regress_df = regress_df[fix_columns]
+        #high_open_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,column_type))
+        return regress_df,fix_columns
     
     def get_market_score(self,short_turn_weight=None,k_data=None):
         ma_type='ma5'

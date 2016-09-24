@@ -120,10 +120,11 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     basic_code = stock_basic_df['name'].to_dict()
     basic_code_keys = basic_code.keys()
     #print('all_trade_codes=',all_trade_codes)
-    high_open_columns = ['date','close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3',
-                   'high_o_day5','high_o_day10','high_o_day20','high_o_day50']
+    #high_open_columns = ['date','close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3',
+    #               'high_o_day5','high_o_day10','high_o_day20','high_o_day50']
+    high_open_columns = []
     high_open_df = tds.pd.DataFrame({}, columns=high_open_columns)
-    high_open_type = 'high'
+    regress_column_type = 'close'
     for stock_symbol in all_trade_codes:
         if stock_symbol=='000029' and source=='easyhistory':
             continue
@@ -140,7 +141,11 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
             temp_hist_df_tail['code'] = stock_symbol
             all_temp_hist_df= all_temp_hist_df.append(temp_hist_df_tail)
             #columns = ['close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3','high_o_day5','high_o_day10','high_o_day20']
-            high_o_df = s_stock.regress_high_open(column_type = high_open_type)
+            #high_o_df,high_open_columns = s_stock.regress_high_open(regress_column = regress_column_type,base_column='open')
+            #criteria = s_stock.temp_hist_df['low_high_open']!= 0
+            criteria = ((s_stock.temp_hist_df['star_l']> 0.50) & (s_stock.temp_hist_df['l_change']<-3.0) & (s_stock.temp_hist_df['pos20'].shift(1)<0.2))
+            high_o_df,high_open_columns = s_stock.regress_common(criteria,post_days=[0,-1,-2,-3,-4,-5,-10,-20,-60],regress_column = regress_column_type,
+                       base_column='close',fix_columns=['date','close','p_change','o_change','position'])
             high_o_df['code'] = stock_symbol
             high_open_df= high_open_df.append(high_o_df)
             #print(test_result)
@@ -231,7 +236,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                    'break_in_count','break_in_date', 'break_in_distance',
                    'stopped','invalid','max_r','25%','50%','75%',]
     all_result_df.to_csv('./temp/regression_test_' + addition_name +tail_name)
-    high_open_df.to_csv('./temp/low_high_open_%s.csv'% high_open_type + addition_name +tail_name)
+    high_open_df.to_csv('./temp/pos20_star_%s'% regress_column_type + addition_name +tail_name)
     if all_result_df.empty:
         pass
     else:
