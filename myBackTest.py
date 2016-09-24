@@ -116,7 +116,14 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_trend_result_df = tds.pd.DataFrame({}, columns=trend_column_list)
     all_temp_hist_df = tds.pd.DataFrame({}, columns=[])
     ma_num = 20
+    stock_basic_df=ts.get_stock_basics()
+    basic_code = stock_basic_df['name'].to_dict()
+    basic_code_keys = basic_code.keys()
     #print('all_trade_codes=',all_trade_codes)
+    high_open_columns = ['date','close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3',
+                   'high_o_day5','high_o_day10','high_o_day20','high_o_day50']
+    high_open_df = tds.pd.DataFrame({}, columns=high_open_columns)
+    high_open_type = 'high'
     for stock_symbol in all_trade_codes:
         if stock_symbol=='000029' and source=='easyhistory':
             continue
@@ -132,6 +139,10 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
             temp_hist_df_tail = temp_hist_df.tail(1)
             temp_hist_df_tail['code'] = stock_symbol
             all_temp_hist_df= all_temp_hist_df.append(temp_hist_df_tail)
+            #columns = ['close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3','high_o_day5','high_o_day10','high_o_day20']
+            high_o_df = s_stock.regress_high_open(column_type = high_open_type)
+            high_o_df['code'] = stock_symbol
+            high_open_df= high_open_df.append(high_o_df)
             #print(test_result)
             #print(recent_trend)
             i = i+1
@@ -155,9 +166,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     all_result_df = all_result_df.sort_values(axis=0, by='cum_prf', ascending=False)
     all_trend_result_df = all_trend_result_df.sort_values(axis=0, by='chg_fuli', ascending=False)
     result_summary = all_result_df.describe()
-    stock_basic_df=ts.get_stock_basics()
-    basic_code = stock_basic_df['name'].to_dict()
-    basic_code_keys = basic_code.keys()
+    
+    
     result_codes = all_result_df.index.values.tolist()
     result_codes_dict = {}
     on_trade_dict = {}
@@ -189,6 +199,9 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #print(tds.pd.DataFrame(result_codes_dict, columns=['name'], index=list(result_codes_dict.keys())))
     #all_result_df['name'] = result_codes_dict
     all_result_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
+    high_open_df['name'] = tds.Series(result_codes_dict,index=high_open_df.index)
+    high_open_df = high_open_df[['code','name']+high_open_columns]
+    
     all_trend_result_df['name'] = tds.Series(result_codes_dict,index=all_trend_result_df.index)
     all_result_df['stopped'] = tds.Series(on_trade_dict,index=all_result_df.index)
     all_trend_result_df['stopped'] = tds.Series(on_trade_dict,index=all_trend_result_df.index)
@@ -218,6 +231,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                    'break_in_count','break_in_date', 'break_in_distance',
                    'stopped','invalid','max_r','25%','50%','75%',]
     all_result_df.to_csv('./temp/regression_test_' + addition_name +tail_name)
+    high_open_df.to_csv('./temp/low_high_open_%s.csv'% high_open_type + addition_name +tail_name)
     if all_result_df.empty:
         pass
     else:

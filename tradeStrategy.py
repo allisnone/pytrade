@@ -1821,8 +1821,13 @@ class Stockhistory:
                                         (high_open_df['low_high_open']!= 0)
                                       
                                       ),(high_open_df[column_type].shift(-20)-high_open_df['open'])/high_open_df['open'],0)
+        high_open_df['high_o_day50'] = np.where((
+                                        (high_open_df['low_high_open']!= 0)
+                                      
+                                      ),(high_open_df[column_type].shift(-50)-high_open_df['open'])/high_open_df['open'],0)
         high_open_df = high_open_df[high_open_df['low_high_open']!= 0]
-        columns = ['close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3','high_o_day5','high_o_day10','high_o_day20']
+        columns = ['date','close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3',
+                   'high_o_day5','high_o_day10','high_o_day20','high_o_day50']
         high_open_df = high_open_df[columns]
         high_open_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,column_type))
         return high_open_df
