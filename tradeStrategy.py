@@ -1796,6 +1796,15 @@ class Stockhistory:
         
         return temp_df
     
+    def diff_ma(self,ma=[10,30],target_column='close',win_num=5):
+        for ma_num in ma:
+            ma_column = 'MA%s' % ma_num
+            self.temp_hist_df['diff_v_' + ma_column] = (self.temp_hist_df[target_column]-self.temp_hist_df[ma_column])*100.0/self.temp_hist_df[ma_column]
+            self.temp_hist_df['diff_' + ma_column] = self.temp_hist_df['diff_v_' + ma_column].rolling(window=win_num,center=False).mean().round(2)
+            self.temp_hist_df['diff_std_' + ma_column] = self.temp_hist_df['diff_' + ma_column].rolling(window=win_num,center=False).std().round(2)
+        
+        return
+    
     def regress_high_open(self,regress_column = 'close',base_column='open'):
         high_open_df =  self.temp_hist_df
         crit_low_high_open = high_open_df['low_high_open']!= 0
@@ -1823,7 +1832,7 @@ class Stockhistory:
                                                    (self.temp_hist_df[regress_column].shift(day)-self.temp_hist_df[base_column])/self.temp_hist_df[base_column],0)
         regress_df = self.temp_hist_df[criteria]
         regress_df = regress_df[fix_columns]
-        #high_open_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,column_type))
+        regress_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,regress_column))
         return regress_df,fix_columns
     
     def get_market_score(self,short_turn_weight=None,k_data=None):
