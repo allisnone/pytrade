@@ -13,7 +13,7 @@ import datetime
 import threading
 import smtplib
 
-import pdSql as pds
+from pdSql_common import get_easyhistory_df
 import tradeTime as tt
 import easyquotation
 
@@ -692,7 +692,7 @@ class Stockhistory:
         else:
             self.h_df=pds.get_easyhistory_df(code_str)  #ta_lib  indicator
         """
-        self.h_df= pds.get_easyhistory_df(code_str,source)  #ta_lib
+        self.h_df= get_easyhistory_df(code_str,source)  #ta_lib
         #print(self.h_df)
         self.alarm_trigger_timestamp=0
         self.max_price=-1
@@ -2129,7 +2129,7 @@ class Stockhistory:
         #print(recent_trend)
         return recent_trend
     
-    def regression_test(self,rate_to_confirm = 0.01):
+    def regression_test(self,rate_to_confirm = 0.0001):
         """
         卖出： 当天最低价小于之前三天的最低价，以最近三天的最低价卖出；如果跳空低开且开盘价小于近三天的最低价，以开盘价卖出
         买入： 当天价格高于前三天的收盘价的最大值，且当前建议仓位不小于25%，并无明显的减仓建议， 则以前三天收盘价的最大值买入；如果跳空高开且开盘价大于前三天的收盘价的最大值，以开盘价买入；
@@ -2180,9 +2180,9 @@ class Stockhistory:
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         """
         #"""
-        self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>(self.temp_hist_df['c_max3'].shift(1)*(1+self.rate_to_confirm))) 
-                                                 & (self.temp_hist_df['position']>0.3)# & (self.temp_hist_df['operation']>-0.15),
-                                                 ,self.temp_hist_df['c_max3'].shift(1),0)
+        self.temp_hist_df['b_price0'] = np.where(((self.temp_hist_df['high']>((self.temp_hist_df['c_max3'].shift(1))*(1.0+self.rate_to_confirm))) 
+                                                 & (self.temp_hist_df['position']>0.3)),# & (self.temp_hist_df['operation']>-0.15),
+                                                 self.temp_hist_df['c_max3'].shift(1),0)
         #self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>self.temp_hist_df['h_max3'].shift(1)) #&
         #                                         #(self.temp_hist_df['position']>0.3) & (self.temp_hist_df['operation']>-0.15),
         #                                         ,self.temp_hist_df['h_max3'].shift(1),0)
@@ -2265,12 +2265,12 @@ class Stockhistory:
         #print(temp_df.sum())
         temp_df['id'] = temp_df.index
         temp_df['hold_count'] = np.where((temp_df['profit']!=0) ,(temp_df['id'] - temp_df['id'].shift(1)),0)
-        
+        temp_df['trade'] = temp_df['s_price'] + temp_df['b_price']
         temp_df['cum_prf'] = temp_df['profit'].cumsum()
         cum_prf = temp_df.tail(1).iloc[0].cum_prf
         fuli_prf = temp_df.tail(1).iloc[0].fuli_prf
         last_trade_date = temp_df.tail(1).iloc[0].date
-        last_trade_price = temp_df.tail(1).iloc[0].b_price
+        last_trade_price = temp_df.tail(1).iloc[0].trade
         last_trade_id = temp_df.tail(1).iloc[0].id
         last_id = temp_hist_df.tail(1).index.values.tolist()[0]
         last_price = temp_hist_df.tail(1).iloc[0].close
@@ -2331,6 +2331,7 @@ class Stockhistory:
         summary_profit['max_amount_distance'] = last_id - id_amount_rate_min2_max20 + 1
         
         #print(temp_df)
+        self.temp_hist_df.to_csv('./temp/hist_temp_%s.csv' % self.code)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
     
