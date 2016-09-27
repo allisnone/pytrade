@@ -386,7 +386,7 @@ class StockSQL(object):
             try:
                 broker = users[account]['broker']
                 user_file = users[account]['json']
-                position_df,balance = get_position(broker, user_file)
+                position_df,balance = pdsqlc.get_position(broker, user_file)
                 self.hold[account] =  position_df
                 self.insert_table(data_frame=position_df,table_name='hold')
             except:
@@ -402,7 +402,7 @@ class StockSQL(object):
                 try:
                     broker = users[account]['broker']
                     user_file = users[account]['json']
-                    position_df,balance = get_position(broker, user_file)
+                    position_df,balance = pdsqlc.get_position(broker, user_file)
                     self.hold[account] =  position_df
                     self.insert_table(data_frame=position_df,table_name='hold')
                 except:
@@ -443,10 +443,11 @@ class StockSQL(object):
     
     def update_sql_position(self, users={'account':'36005','broker':'yh','json':'yh.json'}):
         try:
+        #if True:
             account_id = users['account']
             broker = users['broker']
             user_file = users['json']
-            position_df,balance = get_position(broker, user_file)
+            position_df,balance = pdsqlc.get_position(broker, user_file)
             except_codes = self.get_except_codes()
             except_holds = list(set(except_codes) & set(position_df['证券代码'].values.tolist()))
             """
@@ -474,6 +475,7 @@ class StockSQL(object):
             self.insert_table(data_frame=position_df,table_name='acc%s'%account_id)
             return
         except:
+        #else:
             time.sleep(10)
             self.update_sql_position(users)
     
