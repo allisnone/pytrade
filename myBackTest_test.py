@@ -18,7 +18,7 @@ if __name__ == "__main__":
     #update_type = 'position'
     stock_sql = pds.StockSQL()
     """
-    stock_sql = pds.StockSQL()
+    stock_sql = StockSQL()
     """
     stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
     all_hold_stocks = []
