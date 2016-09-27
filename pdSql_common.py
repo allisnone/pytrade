@@ -595,9 +595,10 @@ def get_index_exit_data(indexs=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999
     index_exit_data = get_exit_price(hold_codes)
     return index_exit_data
 
-def is_system_risk(indexs=['sh','cyb'],index_exit_data=get_index_exit_data(['sh','cyb']),
+def is_system_risk(indexs=['sh','cyb'],index_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'}):
+    #index_exit_data=get_index_exit_data(['sh','cyb']
     exit_data =index_exit_data
     if not exit_data:
         exit_data = get_index_exit_data(indexs)

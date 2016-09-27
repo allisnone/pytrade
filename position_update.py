@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 #import easytrader
 import easyhistory
-import pdSql0 as pds
+import pdSql_common as pds
+from pdSql import StockSQL
 import sys
 #update_type = ''
 update_type = 'index'
@@ -15,7 +16,7 @@ if len(sys.argv)>=2:
 #update_type = 'index'
 #update_type = 'position'
 #update_type = 'aa'
-stock_sql = pds.StockSQL()
+stock_sql = StockSQL()
 hold_df,hold_stocks,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
 print('hold_stocks=',hold_stocks)
 print('available_sells=',available_sells)
