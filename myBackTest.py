@@ -4,7 +4,8 @@ import tradeStrategy as tds
 import sendEmail as se
 import tradeTime as tt
 import tushare as ts
-import pdSql as pds
+import pdSql_common as pds
+from pdSql import StockSQL
 import sys
 from pydoc import describe
 
