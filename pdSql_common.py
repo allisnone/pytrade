@@ -346,6 +346,9 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
     file_type='csv'
     RAW_HIST_DIR = "C:/中国银河证券海王星/T0002/export/"
     yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+    if symbol in index_symbol_maps.keys():
+        symbol = index_symbol_maps[symbol]
+        dest_file_name = dest_dir+ '%s.csv' % symbol
     if dest_df.empty:
         if symbol in index_symbol_maps.keys():
             symbol = index_symbol_maps[symbol]
