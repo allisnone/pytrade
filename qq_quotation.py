@@ -353,7 +353,15 @@ def get_qq_quotations_df(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_column
         codes = list(codes)
     for code in codes:
         #symbol = index_symbol_maps[index]
+        #print('code=',code)
+        if code=='sh' or code=='999999':
+            code='sh000001'
+            code = 'sh'
+        if code=='sh' or code=='000300':
+            code='sh000300'
+            code = 'hs300'
         quo_data = get_qq_quotation(code)
+        #print('quo_data=',quo_data)
         if not quo_data:
             continue
         this_data = format_quotation_data(quo_data,code)

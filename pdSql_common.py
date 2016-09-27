@@ -258,7 +258,7 @@ def get_all_code(hist_dir):
     return all_code
 
 def get_different_symbols(hist_dir='C:/hist/day/data/'):
-    indexs= ['cyb', 'zxb', 'sz', 'sh', 'sz300', 'zx300', 'hs300', 'sh50']
+    indexs= ['cyb', 'zxb', 'sz', 'sh', 'sz300', 'zx300', 'hs300']#, 'sh50']
     all_codes = get_all_code(hist_dir)
     funds =[]
     b_stock = []
@@ -318,7 +318,7 @@ def get_position(broker='yh',user_file='yh.json'):
     #print(holding_stocks_df)
     return holding_stocks_df,user_balance       
 
-def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False):
+def update_one_stock(symbol,realtime_update=False,dest_dir='C:/中国银河证券海王星/T0002/export/', force_update_from_YH=False):
     """
     运行之前先下载及导出YH历史数据
     """
@@ -349,13 +349,14 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
     if symbol in index_symbol_maps.keys():
         symbol = index_symbol_maps[symbol]
         dest_file_name = dest_dir+ '%s.csv' % symbol
+    #print('dest_file_name=',dest_file_name)
     if dest_df.empty:
         if symbol in index_symbol_maps.keys():
             symbol = index_symbol_maps[symbol]
         yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
         #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
         yh_index_df = pd.read_csv(yh_file_name)
-        yh_index_df['factor'] = 1.0
+        #yh_index_df['factor'] = 1.0
         yh_df = yh_index_df.set_index('date')
         yh_df.to_csv(dest_file_name ,encoding='utf-8')
         dest_df = yh_index_df
@@ -368,26 +369,27 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
     if dest_df_last_date<latest_date_str:     
         quotation_date = ''
         try:
-            quotation_index_df = qq.get_qq_quotations_df([symbol], ['code','datetime','date','open','high','low','close','volume','amount'])
+            quotation_index_df = qq.get_qq_quotations_df([symbol], ['code','date','open','high','low','close','volume','amount'])
             quotation_date = quotation_index_df.iloc[0]['date']
-            quotation_date = quotation_index_df.iloc[0]['date']
-            quotation_datetime = quotation_index_df.iloc[0]['datetime']
-            del quotation_index_df['datetime']
+            #quotation_date = quotation_index_df.iloc[0]['date']
+            #quotation_datetime = quotation_index_df.iloc[0]['datetime']
+            #del quotation_index_df['datetime']
             if dest_df_last_date==quotation_date:
                 return dest_df
             #quotation_index_df = ts.get_index()
         except:
             time.sleep(3)
             quotation_index_df = qq.get_qq_quotations_df([symbol], ['code','date','open','high','low','close','volume','amount'])
+            print(quotation_index_df)
             quotation_date = quotation_index_df.iloc[0]['date']
-            quotation_datetime = quotation_index_df.iloc[0]['datetime']
-            del quotation_index_df['datetime']
+            #quotation_datetime = quotation_index_df.iloc[0]['datetime']
+            #del quotation_index_df['datetime']
             if dest_df_last_date==quotation_date:
                 return dest_df
         #print('quotation_date=',quotation_date)
         #print(quotation_index_df)
-        quotation_index_df['factor'] = 1.0
-        quotation_index_df = quotation_index_df[['date','open','high','low','close','volume','amount','factor']]
+        #quotation_index_df['factor'] = 1.0
+        quotation_index_df = quotation_index_df[['date','open','high','low','close','volume','amount']]#,'factor']]
         #quotation_index_df.iloc[0]['volume'] = 0
         #quotation_index_df.iloc[0]['amount'] = 0
         #print(quotation_index_df)
@@ -404,7 +406,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
             yh_file_name = RAW_HIST_DIR+yh_symbol+'.'+file_type
             #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
             yh_index_df = pd.read_csv(yh_file_name,encoding='GBK')
-            yh_index_df['factor'] = FIX_FACTOR
+            #yh_index_df['factor'] = FIX_FACTOR
             yh_last_date = yh_index_df.tail(1).iloc[0]['date']
             #print('yh_last_date=',yh_last_date)
             #print( yh_index_df)#.head(len(yh_index_df)-1))
@@ -493,7 +495,8 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
         pass
     return dest_df
 
-#update_one_stock(symbol='999999',dest_dir="C:/中国银河证券海王星/T0002/export/", force_update_from_YH=False)
+#df = update_one_stock(symbol='399006',dest_dir="C:/中国银河证券海王星/T0002/export/", force_update_from_YH=False)
+#print(df)
 def update_realtime_k():
     RAW_HIST_DIR = "C:/中国银河证券海王星/T0002/export/"
     update_one_stock(symbol, realtime_update, RAW_HIST_DIR, force_update_from_YH)
@@ -505,6 +508,7 @@ def update_codes_from_YH(codes, realtime_update=False, dest_dir='C:/hist/day/dat
     #print(list(index_symbol_maps.keys()))
     #通常为指数和基金从银河的更新
     for symbol in codes: # #list(index_symbol_maps.keys()):
+        print(symbol)
         update_one_stock(symbol, realtime_update, dest_dir, force_update_from_YH)
     return
 

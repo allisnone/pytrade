@@ -88,7 +88,7 @@ if __name__ == "__main__":
         #pds.update_one_stock(symbol=stock,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=False)
         pass  
     
-    pds.update_codes_from_YH(indexs + hold_funds,realtime_update=False,dest_dir='C:/hist/day/data/', force_update_from_YH=True)
+    pds.update_codes_from_YH(indexs,realtime_update=False,dest_dir="C:/中国银河证券海王星/T0002/export/", force_update_from_YH=True)
     
     #back_test(k_num,given_codes=indexs,except_stocks=[],type='index')#except_stocks)
     except_stocks = ['002548','002220','300467','300459','300238','603588','300379','002528',
