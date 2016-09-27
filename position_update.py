@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 #import easytrader
 import easyhistory
-import pdSql as pds
+import pdSql0 as pds
 import sys
 #update_type = ''
 update_type = 'index'
