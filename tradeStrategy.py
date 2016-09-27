@@ -2331,7 +2331,7 @@ class Stockhistory:
         summary_profit['max_amount_distance'] = last_id - id_amount_rate_min2_max20 + 1
         
         #print(temp_df)
-        self.temp_hist_df.to_csv('./temp/hist_temp_%s.csv' % self.code)
+        #self.temp_hist_df.to_csv('./temp/hist_temp_%s.csv' % self.code)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)
         return summary_profit
     
