@@ -368,7 +368,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
     if dest_df_last_date<latest_date_str:     
         quotation_date = ''
         try:
-            quotation_index_df = qq.get_qq_quotations([symbol], ['code','datetime','date','open','high','low','close','volume','amount'])
+            quotation_index_df = qq.get_qq_quotations_df([symbol], ['code','datetime','date','open','high','low','close','volume','amount'])
             quotation_date = quotation_index_df.iloc[0]['date']
             quotation_date = quotation_index_df.iloc[0]['date']
             quotation_datetime = quotation_index_df.iloc[0]['datetime']
@@ -378,7 +378,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
             #quotation_index_df = ts.get_index()
         except:
             time.sleep(3)
-            quotation_index_df = qq.get_qq_quotations([symbol], ['code','date','open','high','low','close','volume','amount'])
+            quotation_index_df = qq.get_qq_quotations_df([symbol], ['code','date','open','high','low','close','volume','amount'])
             quotation_date = quotation_index_df.iloc[0]['date']
             quotation_datetime = quotation_index_df.iloc[0]['datetime']
             del quotation_index_df['datetime']
