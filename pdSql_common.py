@@ -490,6 +490,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/hist/day/data/', 
         pass
     return dest_df
 
+update_one_stock(symbol='999999',dest_dir="C:/中国银河证券海王星/T0002/export/", force_update_from_YH=False)
 def update_realtime_k():
     RAW_HIST_DIR = "C:/中国银河证券海王星/T0002/export/"
     update_one_stock(symbol, realtime_update, RAW_HIST_DIR, force_update_from_YH)
