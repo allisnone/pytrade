@@ -537,8 +537,8 @@ class StockSQL(object):
                 pass
     #for chunk_df in pd.read_sql_query("SELECT * FROM today_stock", engine, chunksize=5):
     #    print(chunk_df)
-stock_sql_obj=StockSQL()
-stock_sql_obj.update_index_chooce_time()
+#stock_sql_obj=StockSQL()
+#stock_sql_obj.update_index_chooce_time()
 def stock_sql_test():
     stock_sql_obj=StockSQL()
     table='test'
