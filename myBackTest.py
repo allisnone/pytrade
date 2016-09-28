@@ -135,6 +135,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
             result_df = s_stock.form_temp_df(stock_symbol)
             test_result = s_stock.regression_test(rate_to_confirm)
             recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
+            s_stock.diff_ma(ma=[10,30],target_column='close',win_num=5)
             temp_hist_df = s_stock.temp_hist_df.set_index('date')
             #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_symbol)
             temp_hist_df_tail = temp_hist_df.tail(1)
