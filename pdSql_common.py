@@ -524,6 +524,7 @@ def get_exit_data(symbol,dest_df,last_date_str):
     return
 
 def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王星/T0002/export/' ):#, has_update_history=False):
+    """获取包括股票的止损数据"""
     #exit_dict={'300162': {'exit_half':22.5, 'exit_all': 19.0},'002696': {'exit_half':17.10, 'exit_all': 15.60}}
     has_update_history = True
     """
@@ -587,21 +588,43 @@ def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王�
     #print('exit_dict=%s' % exit_dict)
     return exit_dict
 
+def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=datetime.datetime.now(),mail_to_list=None):
+    """发送止损退出email告警"""
+    exit_type = ""
+    if exit_state==1:
+        exit_type = "清仓 "
+    elif exit_state==0.5:
+        exit_type = "半仓 "
+    else:
+        return
+    stock_type = "个股风险"
+    if exit_code in ['sh','cyb','999999','399006'] :
+        stock_type = "系统风险"
+    sub = '[%s] %s触发<%s>止损,时间: %s' % (stock_type,exit_code,exit_type,exit_time)
+    content = '请确认已经止损！止损数据： \n %s' % exit_data
+    sm.send_mail(sub,content,mail_to_list)
+    return
+
 def get_index_exit_data(indexs=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'}):#['sh','sz','zxb','cyb','sz300','sh50']):
+    """获取包括指数在内的止损数据"""
     yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'}#'hs300':'000300'}
     hold_codes = []
     for index in indexs:
+        actual_code = index
         if index in list(yh_index_symbol_maps.keys()):
-            yh_code = yh_index_symbol_maps[index]
-            hold_codes.append(yh_code)
+            actual_code = yh_index_symbol_maps[index]
+        else:#stock
+            pass
+        hold_codes.append(actual_code)
     index_exit_data = get_exit_price(hold_codes)
     return index_exit_data
 
-def is_system_risk(indexs=['sh','cyb'],index_exit_data={},
+def is_risk_to_exit(indexs=['sh','cyb'],index_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'}):
+    """风险监测和emai告警"""
     #index_exit_data=get_index_exit_data(['sh','cyb']
     exit_data =index_exit_data
     if not exit_data:
@@ -614,10 +637,16 @@ def is_system_risk(indexs=['sh','cyb'],index_exit_data={},
     risk_datas = []
     for index in indexs:
         this_risk = {}
+        exit_p = 100000.0
         index_now = index_quot[index]['now']
-        index_exit_half = exit_data[yh_index_symbol_maps[index]]['exit_half']
-        index_exit_all = exit_data[yh_index_symbol_maps[index]]['exit_all']
-        index_exit_rate = exit_data[yh_index_symbol_maps[index]]['exit_rate']
+        code = index
+        if code in list(yh_index_symbol_maps.keys()):
+            code = yh_index_symbol_maps[index]
+        index_exit_half = exit_data[code]['exit_half']
+        index_exit_all = exit_data[code]['exit_all']
+        #index_exit_all = 52.52
+        #index_exit_all = 3098.89
+        index_exit_rate = exit_data[code]['exit_rate']
         risk_state = 0
         if index_exit_all==0:
             last_close = index_quot[index]['close']
@@ -627,19 +656,27 @@ def is_system_risk(indexs=['sh','cyb'],index_exit_data={},
             pass
         if index_now<index_exit_all:
             risk_state = 1.0
+            exit_p = index_exit_all
         elif index_now<index_exit_half:
             risk_state = 0.5
+            exit_p = index_exit_half
         else:
             pass
         if risk_state>0:
-            this_risk['index'] = index
-            this_risk['index_value'] = index_now
-            this_risk['index_state'] = risk_state
-            this_risk['date_time'] = datetime.datetime.now()
+            this_risk['risk_code'] = index
+            this_risk['risk_now'] = index_now
+            this_risk['risk_state'] = risk_state
+            this_risk['risk_time'] = datetime.datetime.now()
             risk_datas.append([])
-        risk_data[index] = this_risk
-    print(risk_data)
+            send_exit_mail(exit_code=index,exit_state=risk_state,exit_data=exit_data[code],exit_time=datetime.datetime.now(),mail_to_list=None)
+            risk_data[index] = this_risk
+        else:
+            pass
     return risk_data
+
+#is_risk_to_exit(indexs=['002095','sh'])
+#is_risk_to_exit(indexs=['sh'])
+
 
 def get_hold_stock_statistics(hold_stocks= ['000007', '000932', '601009', '150288', '300431', '002362', '002405', '600570', '603398'],
                               stock_dir='C:/hist/day/temp/'):
