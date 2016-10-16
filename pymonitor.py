@@ -29,7 +29,8 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     while True:
         if demo:
             risk_data,this_date_mail_count = is_risk_to_exit(symbols=list(set(available_sells)),
-                                                             init_exit_data=this_date_init_exit_data, mail_count=this_date_mail_count,demon_sql=stock_sql)
+                                                             init_exit_data=this_date_init_exit_data,
+                                                              mail_count=this_date_mail_count,demon_sql=stock_sql,mail2sql=stock_sql)
             print('risk_data=',risk_data)
             print('this_date_mail_count=',this_date_mail_count)
             count = count + 1
@@ -38,7 +39,8 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
         else:
             if tt.is_trade_time_now() and tt.is_trade_date():
                 risk_data,this_date_mail_count = is_risk_to_exit(symbols=list(set(available_sells)),
-                                                                 init_exit_data=this_date_init_exit_data, mail_count=this_date_mail_count)
+                                                                 init_exit_data=this_date_init_exit_data,
+                                                                  mail_count=this_date_mail_count,mail2sql=stock_sql)
                 print('risk_data=',risk_data)
                 print('this_date_mail_count=',this_date_mail_count)
                 count = count + 1

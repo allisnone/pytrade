@@ -523,6 +523,12 @@ class StockSQL(object):
     def get_demon_value(self,demon_type='common'):
         demon_df = self.query_data(table='demon',fields='value',condition="type='common'")
         return demon_df.tail(1).iloc[0].value
+    
+    def maillogs(self,data):
+        table='stock.maillogs'
+        fields = 'type,action,symbol,subject,save_time'
+        self.insert_data(table, fields, data)
+        return
       
     def get_forvary_stocks(self):
         return    
