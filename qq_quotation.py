@@ -149,7 +149,10 @@ def get_qq_quotation(symbol='000858',decode_type='gbk'):
     """
     base_url ='http://qt.gtimg.cn/q='
     #symbol = format_symbol(symbol)
-    content = get_url_content(base_url,symbol)
+    try:
+        content = get_url_content(base_url,symbol)
+    except:
+        content = get_url_content(base_url,symbol)
     if len(content.split('"'))==1:
         return list()
     data = content.split('"')[1].split('~')

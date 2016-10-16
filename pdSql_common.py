@@ -523,7 +523,7 @@ def get_exit_data(symbol,dest_df,last_date_str):
             exit_price = dest_df.tail(3)
     return
 
-def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王星/T0002/export/' ):#, has_update_history=False):
+def get_stock_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王星/T0002/export/' ):#, has_update_history=False):
     """获取包括股票的止损数据"""
     #exit_dict={'300162': {'exit_half':22.5, 'exit_all': 19.0},'002696': {'exit_half':17.10, 'exit_all': 15.60}}
     has_update_history = True
@@ -596,7 +596,7 @@ def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=date
     elif exit_state==0.5:
         exit_type = "半仓 "
     else:
-        return
+        pass
     stock_type = "个股风险"
     if exit_code in ['sh','cyb','999999','399006'] :
         stock_type = "系统风险"
@@ -615,30 +615,30 @@ def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=date
         pass
     return
 
-def get_index_exit_data(indexs=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
+def get_exit_price(symbols=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'}):#['sh','sz','zxb','cyb','sz300','sh50']):
     """获取包括指数在内的止损数据"""
     yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'}#'hs300':'000300'}
     hold_codes = []
-    for index in indexs:
-        actual_code = index
-        if index in list(yh_index_symbol_maps.keys()):
-            actual_code = yh_index_symbol_maps[index]
+    for symbol in symbols:
+        actual_code = symbol
+        if symbol in list(yh_index_symbol_maps.keys()):
+            actual_code = yh_index_symbol_maps[symbol]
         else:#stock
             pass
         hold_codes.append(actual_code)
-    index_exit_data = get_exit_price(hold_codes)
-    return index_exit_data
+    exit_data = get_stock_exit_price(hold_codes)
+    return exit_data
 
 def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},demon_sql=None):
     """风险监测和emai告警"""
-    #index_exit_data=get_index_exit_data(['sh','cyb']
+    #index_exit_data=get_exit_price(['sh','cyb']
     exit_data = init_exit_data
     if not exit_data:
-        exit_data = get_index_exit_data(symbols)
+        exit_data = get_exit_price(symbols)
     else:
         pass
     if not mail_count:
