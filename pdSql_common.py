@@ -588,7 +588,7 @@ def get_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王�
     #print('exit_dict=%s' % exit_dict)
     return exit_dict
 
-def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=datetime.datetime.now(),mail_to_list=None):
+def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=datetime.datetime.now(),mail_to_list=None,count=0,clear=0):
     """发送止损退出email告警"""
     exit_type = ""
     if exit_state==1:
@@ -600,9 +600,19 @@ def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=date
     stock_type = "个股风险"
     if exit_code in ['sh','cyb','999999','399006'] :
         stock_type = "系统风险"
-    sub = '[%s] %s触发<%s>止损,时间: %s' % (stock_type,exit_code,exit_type,exit_time)
+    sub = '[%s] %s触发<%s>止损,累计触发count=%s, 时间: %s' % (stock_type,exit_code,exit_type,count, exit_time)
     content = '请确认已经止损！止损数据： \n %s' % exit_data
-    sm.send_mail(sub,content,mail_to_list)
+    if clear:
+        sub = '[解除' + sub[1:]
+        content = '当日止损后重返止损之上！止损数据： \n %s' % exit_data
+    else:
+        pass
+    if count==1:
+        sm.send_mail(sub,content,mail_to_list)
+    elif count%10==0:
+        sm.send_mail(sub,content,mail_to_list)
+    else:
+        pass
     return
 
 def get_index_exit_data(indexs=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
@@ -621,27 +631,35 @@ def get_index_exit_data(indexs=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999
     index_exit_data = get_exit_price(hold_codes)
     return index_exit_data
 
-def is_risk_to_exit(indexs=['sh','cyb'],index_exit_data={},
+def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
-                         'sh50':'000016','sz300':'399007','zx300':'399008'}):
+                         'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},demon_sql=None):
     """风险监测和emai告警"""
     #index_exit_data=get_index_exit_data(['sh','cyb']
-    exit_data =index_exit_data
+    exit_data = init_exit_data
     if not exit_data:
-        exit_data = get_index_exit_data(indexs)
-    index_quot = qq.get_qq_quotations(codes=indexs)
-    #overlap_index = list(set(list(exit_data.keys())) & set(list(index_quot.keys())))
-    if not exit_data or not index_quot:
+        exit_data = get_index_exit_data(symbols)
+    else:
+        pass
+    if not mail_count:
+        for symbol in symbols:
+            mail_count[symbol] = 0
+    else:
+        pass
+    symbol_quot = qq.get_qq_quotations(codes=symbols)
+    #overlap_symbol = list(set(list(exit_data.keys())) & set(list(symbol_quot.keys())))
+    if not exit_data or not symbol_quot:
         return {}
     risk_data = {}
-    risk_datas = []
-    for index in indexs:
+    for symbol in symbols:
         this_risk = {}
         exit_p = 100000.0
-        index_now = index_quot[index]['now']
-        code = index
+        symbol_now_p = symbol_quot[symbol]['now']
+        if symbol=='002766' and demon_sql: #for test
+            symbol_now_p = demon_sql.get_demon_value()
+        code = symbol
         if code in list(yh_index_symbol_maps.keys()):
-            code = yh_index_symbol_maps[index]
+            code = yh_index_symbol_maps[symbol]
         index_exit_half = exit_data[code]['exit_half']
         index_exit_all = exit_data[code]['exit_all']
         #index_exit_all = 52.52
@@ -649,33 +667,53 @@ def is_risk_to_exit(indexs=['sh','cyb'],index_exit_data={},
         index_exit_rate = exit_data[code]['exit_rate']
         risk_state = 0
         if index_exit_all==0:
-            last_close = index_quot[index]['close']
+            last_close = symbol_quot[symbol]['close']
             index_exit_all = (1+2*index_exit_rate) * last_close
             index_exit_half = (1+index_exit_rate) * last_close
         else:
             pass
-        if index_now<index_exit_all:
+        if symbol_now_p<index_exit_all:
             risk_state = 1.0
             exit_p = index_exit_all
-        elif index_now<index_exit_half:
+        elif symbol_now_p<index_exit_half:
             risk_state = 0.5
             exit_p = index_exit_half
         else:
             pass
         if risk_state>0:
-            this_risk['risk_code'] = index
-            this_risk['risk_now'] = index_now
-            this_risk['risk_state'] = risk_state
-            this_risk['risk_time'] = datetime.datetime.now()
-            risk_datas.append([])
-            send_exit_mail(exit_code=index,exit_state=risk_state,exit_data=exit_data[code],exit_time=datetime.datetime.now(),mail_to_list=None)
-            risk_data[index] = this_risk
+            if  mail_count[symbol]>=0: #email to exit
+                mail_count[symbol] = mail_count[symbol] + 1
+                this_risk['risk_code'] = symbol
+                this_risk['risk_now'] = symbol_now_p
+                this_risk['risk_state'] = risk_state
+                this_risk['risk_time'] = datetime.datetime.now()
+                send_exit_mail(exit_code=symbol,exit_state=risk_state,exit_data=exit_data[code],exit_time=datetime.datetime.now(),mail_to_list=None,count=mail_count[symbol])
+                risk_data[symbol] = this_risk
+            else:
+                print('Have sent email before')
+        elif risk_state==0:# not exit or recover
+            if mail_count[symbol]==0:
+                pass
+            elif mail_count[symbol]>=1:
+                if mail_count[symbol]==1:
+                    send_exit_mail(exit_code=symbol,exit_state=risk_state,exit_data=exit_data[code],exit_time=datetime.datetime.now(),mail_to_list=None,count=mail_count[symbol],clear=1)
+                    this_risk['risk_code'] = symbol
+                    this_risk['risk_now'] = symbol_now_p
+                    this_risk['risk_state'] = risk_state
+                    this_risk['risk_time'] = datetime.datetime.now()
+                    risk_data[symbol] = this_risk
+                else:# still not descrease to 0
+                    pass
+                mail_count[symbol] = mail_count[symbol] - 1
+            else:#不存在的情况
+               pass 
         else:
+            #不存在的情况
             pass
-    return risk_data
+    return risk_data,mail_count
 
-#is_risk_to_exit(indexs=['002095','sh'])
-#is_risk_to_exit(indexs=['sh'])
+#is_risk_to_exit(symbols=['002095','sh'])
+#is_risk_to_exit(symbols=['sh'])
 
 
 def get_hold_stock_statistics(hold_stocks= ['000007', '000932', '601009', '150288', '300431', '002362', '002405', '600570', '603398'],

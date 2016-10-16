@@ -160,6 +160,10 @@ def get_remain_time_to_trade():
     this_time=datetime.datetime.now()
     next_trade_str=''
     remain_time=0.0
+    #MORNING_START = ' 9:15:00'
+    MORNING_START = ' 9:25:00'
+    MORNING_START_MINUTE = 25
+    NOON_START = ' 13:00:00'
     if is_trade_date():
         if is_trade_time_now():
             #print('00')
@@ -169,23 +173,23 @@ def get_remain_time_to_trade():
             hour=this_time.hour
             minute=this_time.minute
             second=this_time.second
-            if hour<9 or (hour==9 and minute<15):
-                next_trade_str=this_time_str + ' 9:15:00'
+            if hour<9 or (hour==9 and minute<MORNING_START_MINUTE):
+                next_trade_str=this_time_str + MORNING_START
                 #print('01')
             elif (hour==11 and minute>30) or hour==12:
-                next_trade_str=this_time_str + ' 13:00:00'
+                next_trade_str=this_time_str + NOON_START
                 #print('02')
             elif hour>=15:
                 #print('03')
                 next_date_str=get_next_trade_date()
-                next_trade_str=next_date_str + ' 9:15:00'
+                next_trade_str=next_date_str + MORNING_START
             else:#trade time
                 #print('04')
                 return 0.0
     else:
         #print('10')
         next_date_str=get_next_trade_date()
-        next_trade_str=next_date_str + ' 9:15:00'
+        next_trade_str=next_date_str +  MORNING_START
     print('next_trade_str=',next_trade_str)
     next_trade_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')
     delta_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')-this_time

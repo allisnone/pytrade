@@ -125,7 +125,7 @@ class StockSQL(object):
         :return: DataFrame type
         """
         query_sql=form_sql(table_name=table, oper_type='query', select_field=fields, where_condition=condition)
-        print(query_sql)
+        #print(query_sql)
         return pd.read_sql_query(query_sql, self.engine)
     
     def insert_data(self,table,fields,data):
@@ -500,8 +500,30 @@ class StockSQL(object):
             available_sell_df = hold_df[(hold_df['valid']==1) & (hold_df['股份可用']>=100)]
             if not available_sell_df.empty:
                 available_sells = available_sell_df['证券代码'].values.tolist()
+        available_sells = list(set(available_sells))
         return hold_df,hold_stocks,available_sells
-        
+    
+    def get_manual_holds(self,table_name='manual_holds'):
+        """
+        mysql -h 112.74.101.126 -u emsadmin -p    #Ems4you
+        use stock;
+        select * from stock.manual_holds;
+        insert into stock.manual_holds (code) values('002290');
+        SET SQL_SAFE_UPDATES=0;
+        update stock.manual_holds set valid=0 where code='002290';
+        update stock.manual_holds set name='禾盛新材'  where code='002290';
+        insert into stock.manual_holds (code,name) values('002290','禾盛新材');
+        """
+        hold_df = self.get_table_df(table_name)
+        valid_hold_df = hold_df[(hold_df['valid']==1)]
+        hold_stocks = valid_hold_df['code'].values.tolist()
+        hold_stocks = list(set(hold_stocks))
+        return hold_stocks
+    
+    def get_demon_value(self,demon_type='common'):
+        demon_df = self.query_data(table='demon',fields='value',condition="type='common'")
+        return demon_df.tail(1).iloc[0].value
+      
     def get_forvary_stocks(self):
         return    
     
