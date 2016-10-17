@@ -588,7 +588,8 @@ def get_stock_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券�
     #print('exit_dict=%s' % exit_dict)
     return exit_dict
 
-def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=datetime.datetime.now(),mail_to_list=None,count=0,clear=0,to_sql=None):
+def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=datetime.datetime.now(),
+                   mail_to_list=None,count=0,clear=0,to_sql=None,period_count=20):
     """发送止损退出email告警"""
     exit_type = ""
     if exit_state==1:
@@ -607,7 +608,7 @@ def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=date
         content = '当日止损后重返止损之上！止损数据： \n %s' % exit_data
     else:
         pass
-    if count==1 or count%20==0:
+    if count==1 or count%period_count==0:
         sm.send_mail(sub,content,mail_to_list)
         if to_sql:
             #type,symbol,subject,save_time
@@ -637,7 +638,8 @@ def get_exit_price(symbols=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999','s
 
 def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
-                         'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},demon_sql=None,mail2sql=None):
+                         'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},
+                    demon_sql=None,mail2sql=None,mail_period=20,mailto_list=None):
     """风险监测和emai告警"""
     #index_exit_data=get_exit_price(['sh','cyb']
     exit_data = init_exit_data
@@ -692,7 +694,8 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                 this_risk['risk_state'] = risk_state
                 this_risk['risk_time'] = datetime.datetime.now()
                 send_exit_mail(exit_code=symbol,exit_state=risk_state,exit_data=exit_data[code],
-                               exit_time=datetime.datetime.now(),mail_to_list=None,count=mail_count[symbol],to_sql=mail2sql)
+                               exit_time=datetime.datetime.now(),mail_to_list=mailto_list,count=mail_count[symbol],
+                               to_sql=mail2sql,period_count=mail_period)
                 risk_data[symbol] = this_risk
             else:
                 print('Have sent email before')
@@ -702,7 +705,8 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
             elif mail_count[symbol]>=1:
                 if mail_count[symbol]==1:
                     send_exit_mail(exit_code=symbol,exit_state=risk_state,exit_data=exit_data[code],
-                                   exit_time=datetime.datetime.now(),mail_to_list=None,count=mail_count[symbol],clear=1,to_sql=mail2sql)
+                                   exit_time=datetime.datetime.now(),mail_to_list=mailto_list,count=mail_count[symbol],
+                                   clear=1,to_sql=mail2sql,period_count=mail_period)
                     this_risk['risk_code'] = symbol
                     this_risk['risk_now'] = symbol_now_p
                     this_risk['risk_state'] = risk_state

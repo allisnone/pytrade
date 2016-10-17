@@ -26,11 +26,15 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     this_date_mail_count = {}
     this_date_init_exit_data = get_exit_price(symbols=available_sells)
     print('exit_data=',this_date_init_exit_data)
+    mailto = stock_sql.get_mailto()  #Get mailto list from SQL server
+    print('mailto=',mailto)
+    mail_period = 20
     while True:
         if demo:
             risk_data,this_date_mail_count = is_risk_to_exit(symbols=list(set(available_sells)),
                                                              init_exit_data=this_date_init_exit_data,
-                                                              mail_count=this_date_mail_count,demon_sql=stock_sql,mail2sql=stock_sql)
+                                                              mail_count=this_date_mail_count,demon_sql=stock_sql,
+                                                              mail2sql=stock_sql,mail_period=mail_period,mailto_list=mailto)
             print('risk_data=',risk_data)
             print('this_date_mail_count=',this_date_mail_count)
             count = count + 1

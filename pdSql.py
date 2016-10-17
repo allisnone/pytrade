@@ -524,6 +524,13 @@ class StockSQL(object):
         demon_df = self.query_data(table='demon',fields='value',condition="type='common'")
         return demon_df.tail(1).iloc[0].value
     
+    def get_mailto(self):
+        mail_df = self.get_table_df(table_name='stock.mailto')
+        valid_mail_df = mail_df[(mail_df['valid']==1)]
+        mailto = valid_mail_df['mail'].values.tolist()
+        mailto = list(set(mailto))
+        return mailtos
+    
     def maillogs(self,data):
         table='stock.maillogs'
         fields = 'type,action,symbol,subject,save_time'
