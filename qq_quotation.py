@@ -152,7 +152,8 @@ def get_qq_quotation(symbol='000858',decode_type='gbk'):
     try:
         content = get_url_content(base_url,symbol)
     except:
-        content = get_url_content(base_url,symbol)
+        print('QQ quotation exception, try to quote again ...')
+        return get_qq_quotation(symbol,decode_type)
     if len(content.split('"'))==1:
         return list()
     data = content.split('"')[1].split('~')
