@@ -607,7 +607,7 @@ def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=date
         content = '当日止损后重返止损之上！止损数据： \n %s' % exit_data
     else:
         pass
-    if count==1 or count%10==0:
+    if count==1 or count%20==0:
         sm.send_mail(sub,content,mail_to_list)
         if to_sql:
             #type,symbol,subject,save_time
