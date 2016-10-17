@@ -50,7 +50,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
                 first_sleep = tt.get_remain_time_to_trade() - 300
                 print('Wait to next trade date, first_sleep= %s' %first_sleep)
                 time.sleep(first_sleep)
-                this_date_str = datetime.datetime.now().strftime(date_format='%Y-%m-%d')
+                this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
                 if this_date_str>=next_trade_date_str and datetime.datetime.now().hour<=9:#第二天开盘前5分钟更新止损数据
                     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
                     available_sells = stock_sql.get_manual_holds(table_name='manual_holds') + monitor_indexs
