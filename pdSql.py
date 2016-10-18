@@ -525,7 +525,8 @@ class StockSQL(object):
         return demon_df.tail(1).iloc[0].value
     
     def get_mailto(self):
-        mail_df = self.get_table_df(table_name='stock.mailto')
+        table='stock.mailto'
+        mail_df = self.get_table_df(table)
         valid_mail_df = mail_df[(mail_df['valid']==1)]
         mailto = valid_mail_df['mail'].values.tolist()
         mailto = list(set(mailto))
