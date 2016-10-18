@@ -5,15 +5,6 @@ import datetime
 
 def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     stock_sql = StockSQL()
-    """
-    stock_sql.update_sql_position(users={'36005':{'broker':'yh','json':'yh.json'},'38736':{'broker':'yh','json':'yh1.json'}})
-    all_hold_stocks = []
-    for account in list(stock_sql.hold.keys()):
-        pos_df = stock_sql.hold[account]
-        hold_stocks = pos_df['证券代码'].values.tolist()
-        all_hold_stocks = list(set(all_hold_stocks)|set(hold_stocks))
-    print("all_hold_stocks=",all_hold_stocks)
-    """
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
@@ -30,12 +21,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     mailto = None
     print('mailto=',mailto)
     mail_period = 20
+    stopped_symbol = {}
     while True:
         if demo:
-            risk_data,this_date_mail_count = is_risk_to_exit(symbols=list(set(available_sells)),
+            risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=list(set(available_sells)),
                                                              init_exit_data=this_date_init_exit_data,
                                                               mail_count=this_date_mail_count,demon_sql=stock_sql,
-                                                              mail2sql=stock_sql,mail_period=mail_period,mailto_list=mailto)
+                                                              mail2sql=stock_sql,mail_period=mail_period,mailto_list=mailto,
+                                                              stopped=stopped_symbol)
             print('risk_data=',risk_data)
             print('this_date_mail_count=',this_date_mail_count)
             count = count + 1
@@ -63,6 +56,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
                     print('exit_data=',this_date_init_exit_data)
                     count = 0
                     this_date_mail_count = {}
+                    stopped_symbol = []
                 else:
                     pass
                 second_sleep = tt.get_remain_time_to_trade()

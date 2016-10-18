@@ -639,7 +639,8 @@ def get_exit_price(symbols=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999','s
 def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},
-                    demon_sql=None,mail2sql=None,mail_period=20,mailto_list=None):
+                    demon_sql=None,mail2sql=None,mail_period=20,mailto_list=None,
+                    stopped=[]):
     """风险监测和emai告警"""
     #index_exit_data=get_exit_price(['sh','cyb']
     exit_data = init_exit_data
@@ -657,10 +658,22 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
     if not exit_data or not symbol_quot:
         return {}
     risk_data = {}
+    if stopped:
+        symbols = list(set(symbols).difference(set(stopped)))
+    else:
+        pass
     for symbol in symbols:
         this_risk = {}
         exit_p = 100000.0
         symbol_now_p = symbol_quot[symbol]['now']
+        symbol_now_v = symbol_quot[symbol]['volume']
+        if symbol_now_v>=0:  #update stop stocks
+            pass
+        else:
+            if symbol in stopped:
+                stopped.append(symbol)
+            else:
+                pass
         if symbol=='002766' and demon_sql: #for test
             symbol_now_p = demon_sql.get_demon_value()
         code = symbol
@@ -720,7 +733,7 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
         else:
             #不存在的情况
             pass
-    return risk_data,mail_count
+    return risk_data,mail_count,stopped
 
 #is_risk_to_exit(symbols=['002095','sh'])
 #is_risk_to_exit(symbols=['sh'])
