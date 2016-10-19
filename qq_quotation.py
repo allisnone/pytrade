@@ -328,6 +328,29 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
     data_df = pd.DataFrame(data,columns=set_columns)
     return data_dict
 
+def update_quotation_k_datas(codes,this_date_str='20161019',path='',set_columns=[]):
+    #set_columns=['code,datetime,open,high,low,close,volume,amount']
+    #d_data = format_quotation_data(get_qq_quotation(symbol='000001'), code_str='000858')
+    #set_columns = list(d_data.keys())
+    #this_date_str = d_data[date]
+    this_datas = get_qq_quotations_df(codes)
+    this_datas = this_datas[set_columns]  
+    for code in codes:
+        file_name = path + '%s_%s.cvs' % (code,this_date_str)
+        #try:
+        if True:
+            exit_df = pd.read_csv(file_name,encoding='gb2312')
+        #except:
+            exit_df = pd.DataFrame({},columns=set_columns)
+            #exit_df.to_csv(path+'%s_%s.cvs' % (code,this_date_str))
+        this_code_df = this_datas[this_datas['code']==code]
+        #print(this_code_df)
+        update_df = exit_df.append(this_code_df,ignore_index=True)
+        update_df.to_csv(file_name)
+    return 
+        
+    
+
 def get_qq_quotations_df(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[]):
     #http://qt.gtimg.cn/q=sh000001
     #http://qt.gtimg.cn/q=sh000016
@@ -643,3 +666,19 @@ with open('sh0001.csv', 'wb') as csvfile:
 df = pd.DataFrame(data,columns=fields)
 print(df)
 """
+codes = ['002290','002054']
+columns= ['ask1', 'bid1_volume', 'code', 'price_volume_amount', 'ask5_volume', 'ask5', 
+                      'PE', 'now', 'bid2_volume', 'bid5', 'recent_trade', 'wave', 'high', 'close', 
+                      'circulation', 'bid2', 'bid3', 'ask1_volume', 'increase', 'name', 'low', 
+                      'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 
+                      'datetime', 'open', 'total_market', 'low_2', 'topest', 'ask2_volume', 'turnover', 
+                      'ask_volume', 'bid1', 'amount', 'increase_rate', 'PB', 'ask2', 'lowest', 
+                      'ask4_volume', 'date', 'bid4_volume', 'ask4', 'volume', 'unknown', 'bid4']
+
+columns= ['bid3', 'name', 'ask2', 'ask_volume', 'bid2_volume', 'PE', 'bid4_volume', 'volume', 'low', 'recent_trade', 'low_2', 'lowest', 'ask4_volume', 'bid5_volume', 'now', 'close0', 'ask2_volume', 'unknown', 'price_volume_amount', 'close', 'increase_rate', 'high_2', 'bid1_volume', 'bid3_volume', 'PB', 'topest', 'code', 'high', 'bid2', 'datetime', 'increase', 'bid5', 'ask1', 'bid_volume', 'total_market', 'date', 'wave', 'bid1', 'ask5_volume', 'ask3_volume', 'ask5', 'ask4', 'open', 'amount', 'bid4', 'circulation', 'ask1_volume', 'turnover', 'ask3']
+ 
+#d_data = format_quotation_data(get_qq_quotation(symbol='000858'), code_str='000858')
+#columns = list(d_data.keys())
+#print('columns=',columns)
+update_quotation_k_datas(codes,this_date_str='20161019',path='C:/work/temp_k/',
+                          set_columns=columns)
