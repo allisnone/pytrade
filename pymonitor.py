@@ -11,6 +11,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     available_sells = stock_sql.get_manual_holds(table_name='manual_holds') + monitor_indexs
     print(datetime.datetime.now())
     print('available_sells=',available_sells)
+    this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
     next_trade_date_str = tt.get_next_trade_date()
     print(next_trade_date_str)
     count = 0 
@@ -23,12 +24,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     mail_period = 20
     stopped_symbol = {}
     while True:
+        codes = list(set(available_sells))
         if demo:
-            risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=list(set(available_sells)),
+            risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                              init_exit_data=this_date_init_exit_data,
                                                               mail_count=this_date_mail_count,demon_sql=stock_sql,
                                                               mail2sql=stock_sql,mail_period=mail_period,mailto_list=mailto,
                                                               stopped=stopped_symbol)
+            qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
             print('risk_data=',risk_data)
             print('this_date_mail_count=',this_date_mail_count)
             count = count + 1
@@ -36,9 +39,10 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
             time.sleep(interval)
         else:
             if tt.is_trade_time_now() and tt.is_trade_date():
-                risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=list(set(available_sells)),
+                risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                  init_exit_data=this_date_init_exit_data,
                                                                   mail_count=this_date_mail_count,mail2sql=stock_sql)
+                qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
                 print('risk_data=',risk_data)
                 print('this_date_mail_count=',this_date_mail_count)
                 count = count + 1
