@@ -658,10 +658,7 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
     if not exit_data or not symbol_quot:
         return {}
     risk_data = {}
-    if stopped:
-        symbols = list(set(symbols).difference(set(stopped)))
-    else:
-        pass
+    symbols = list(set(symbols).difference(set(stopped)))
     for symbol in symbols:
         this_risk = {}
         exit_p = 100000.0
@@ -670,7 +667,7 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
         if symbol_now_v>=0:  #update stop stocks
             pass
         else:
-            if symbol in stopped:
+            if symbol not in stopped:
                 stopped.append(symbol)
             else:
                 pass
@@ -733,6 +730,9 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
         else:
             #不存在的情况
             pass
+    if stopped:
+        stopped=list(set(stopped))
+    
     return risk_data,mail_count,stopped
 
 #is_risk_to_exit(symbols=['002095','sh'])
