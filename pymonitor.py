@@ -36,7 +36,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
             time.sleep(interval)
         else:
             if tt.is_trade_time_now() and tt.is_trade_date():
-                risk_data,this_date_mail_count = is_risk_to_exit(symbols=list(set(available_sells)),
+                risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=list(set(available_sells)),
                                                                  init_exit_data=this_date_init_exit_data,
                                                                   mail_count=this_date_mail_count,mail2sql=stock_sql)
                 print('risk_data=',risk_data)
