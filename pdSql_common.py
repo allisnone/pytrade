@@ -682,12 +682,16 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
         #index_exit_all = 3098.89
         index_exit_rate = exit_data[code]['exit_rate']
         risk_state = 0
+        
         if index_exit_all==0:
             last_close = symbol_quot[symbol]['close']
             index_exit_all = (1+2*index_exit_rate) * last_close
             index_exit_half = (1+index_exit_rate) * last_close
         else:
             pass
+        print('symbol=',symbol)
+        print('symbol_now_p=',symbol_now_p)
+        print('index_exit_all',index_exit_all)
         if symbol_now_p<index_exit_all:
             risk_state = 1.0
             exit_p = index_exit_all
