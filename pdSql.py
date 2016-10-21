@@ -503,7 +503,7 @@ class StockSQL(object):
         available_sells = list(set(available_sells))
         return hold_df,hold_stocks,available_sells
     
-    def get_manual_holds(self,table_name='manual_holds'):
+    def get_manual_holds(self,table_name='manual_holds',valid=0):
         """
         mysql -h 112.74.101.126 -u emsadmin -p    #Ems4you
         use stock;
@@ -515,8 +515,9 @@ class StockSQL(object):
         insert into stock.manual_holds (code,name) values('002290','禾盛新材');
         """
         hold_df = self.get_table_df(table_name)
-        valid_hold_df = hold_df[(hold_df['valid']==1)]
-        hold_stocks = valid_hold_df['code'].values.tolist()
+        if valid:
+            hold_df = hold_df[(hold_df['valid']==1)]
+        hold_stocks = hold_df['code'].values.tolist()
         hold_stocks = list(set(hold_stocks))
         return hold_stocks
     
@@ -537,7 +538,10 @@ class StockSQL(object):
         fields = 'type,action,symbol,subject,save_time'
         self.insert_data(table, fields, data)
         return
-      
+    
+    def get_dapan(self,table):
+        return self.get_manual_holds(table)
+     
     def get_forvary_stocks(self):
         return    
     

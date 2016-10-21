@@ -8,7 +8,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
-    available_sells = stock_sql.get_manual_holds(table_name='manual_holds') + monitor_indexs
+    available_sells = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
     print(datetime.datetime.now())
     print('available_sells=',available_sells)
     this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -55,7 +55,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
                 this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
                 if this_date_str>=next_trade_date_str and datetime.datetime.now().hour<=9:#第二天开盘前5分钟更新止损数据
                     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
-                    available_sells = stock_sql.get_manual_holds(table_name='manual_holds') + monitor_indexs
+                    available_sells = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
                     this_date_init_exit_data = get_exit_price(symbols=available_sells)
                     print('exit_data=',this_date_init_exit_data)
                     count = 0

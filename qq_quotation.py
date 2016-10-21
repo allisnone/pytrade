@@ -357,10 +357,16 @@ def update_quotation_k_datas(codes,this_date_str='20161019',path='',
         update_df = update_df[set_columns]
         update_df.to_csv(file_name)
     return 
-        
-    
 
-def get_qq_quotations_df(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[]):
+
+
+def get_qq_quotations_df(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
+          'code','name','datetime','open','high','low','close','volume','amount','now', 'turnover', 
+          'increase_rate', 'increase','ask_volume', 'bid_volume', 'topest', 'lowest', 'close0',
+          'bid1','bid1_volume','bid2', 'bid2_volume','bid3', 'bid3_volume', 'bid4', 'bid4_volume','bid5','bid5_volume',
+          'ask1', 'ask1_volume', 'ask2', 'ask2_volume','ask3', 'ask3_volume', 'ask4', 'ask4_volume', 'ask5', 'ask5_volume', 
+          'PE', 'PB', 'total_market', 'wave', 'circulation','date',
+          'recent_trade', 'high_2', 'low_2', 'unknown', 'price_volume_amount']):
     #http://qt.gtimg.cn/q=sh000001
     #http://qt.gtimg.cn/q=sh000016
     #http://qt.gtimg.cn/q=sz399001
