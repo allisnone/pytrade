@@ -743,6 +743,9 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
 #is_risk_to_exit(symbols=['sh'])
 
 def get_HO_dapan(codes,ho_rate=0.0026, stock_sql=None):
+    """
+    找出高开的大盘股，并触发email
+    """
     ho_codes = []
     if stock_sql:
         codes = stock_sql.get_dapan(table='dapan_gu')
@@ -757,10 +760,15 @@ def get_HO_dapan(codes,ho_rate=0.0026, stock_sql=None):
         ho_datas['ho_chg'] = ho_datas['open']/ho_datas['close0'] - 1
         #mail_columns = ['code','name','ho_chg','increase_rate','datetime','open','high','low','close','PE', 'PB', 'total_market']
         #ho_datas = ho_datas[mail_columns]
-        sub = '[大盘股机会] 今日高开大盘股'
+        sub = '[大盘股机会] 今日高开大盘股有: %s' % ho_codes
         content = '高开大盘股： \n %s' % ho_datas
         sm.send_mail(sub,content,mail_to_list=None)
         return list(set(ho_codes))
+
+def get_std(data_df,windows=0,column='close'):
+    
+    return
+    
     
 
 def get_hold_stock_statistics(hold_stocks= ['000007', '000932', '601009', '150288', '300431', '002362', '002405', '600570', '603398'],

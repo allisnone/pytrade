@@ -23,6 +23,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     print('mailto=',mailto)
     mail_period = 20
     stopped_symbol = {}
+    one_time_action = True
     while True:
         codes = list(set(available_sells))
         if demo:
@@ -39,6 +40,11 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
             time.sleep(interval)
         else:
             if tt.is_trade_time_now() and tt.is_trade_date():
+                hour = datetime.datetime.now()
+                minute = datetime.datetime.now()
+                if (hour==9 and minute==26) or one_time_action:
+                    get_HO_dapan(codes,ho_rate=0.001, stock_sql=None)
+                    one_time_action = False
                 risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                  init_exit_data=this_date_init_exit_data,
                                                                   mail_count=this_date_mail_count,mail2sql=stock_sql)
@@ -52,6 +58,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
                 first_sleep = tt.get_remain_time_to_trade() - 300
                 print('Wait to next trade date, first_sleep= %s' %first_sleep)
                 time.sleep(first_sleep)
+                stock_sql = StockSQL()
                 this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
                 if this_date_str>=next_trade_date_str and datetime.datetime.now().hour<=9:#第二天开盘前5分钟更新止损数据
                     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
@@ -66,6 +73,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
                 second_sleep = tt.get_remain_time_to_trade()
                 print('Wait to next trade date, second_sleep= %s' % second_sleep)
                 time.sleep(second_sleep)
+                one_time_action = True
     return
 
 if __name__ == '__main__':
