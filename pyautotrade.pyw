@@ -10,7 +10,7 @@ import time
 
 import win32con
 import tushare as ts
-import pdsql
+import pdSql
 
 from winguiauto import (dumpWindow, dumpWindows, getWindowText,getParentWindow,activeWindow,
                         getWindowStyle,getListViewInfo, setEditText, clickWindow,getDictViewInfo,
