@@ -11,6 +11,7 @@ import win32con
 import tushare as ts
 import pdSql
 
+
 from winguiauto import (dumpWindow, dumpWindows, getWindowText,getParentWindow,activeWindow,
                         getWindowStyle,getListViewInfo, setEditText, clickWindow,getDictViewInfo,
                         click, closePopupWindows, findTopWindow,
