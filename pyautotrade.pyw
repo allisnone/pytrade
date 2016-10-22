@@ -7,7 +7,6 @@ import datetime
 import threading
 import pickle
 import time
-
 import win32con
 import tushare as ts
 import pdSql
