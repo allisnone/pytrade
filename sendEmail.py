@@ -21,7 +21,7 @@ def send_position_mail(position_df,symbol=None):
     for sendto in sendto_list:
         send_mail(sub,content,sendto)
 
-def send_mail(sub,content,mail_to_list=None):
+def send_mail(sub,content,mail_to_list=None,limit_try=50):
     """
     :param mailto_list: list type, receiver email address,like ['104450966@qq.com','3151173548@qq.com']
     :param sub: str type, subject of email title
@@ -55,8 +55,14 @@ def send_mail(sub,content,mail_to_list=None):
         return True  
     except:# SMTPDataError as e:
         print("send mail failure to ",mailto_list)
+        limit_try= limit_try -1
+        if limit_try>0:
+            print('Try to send mail again')
+            send_mail(sub,content,mail_to_list,limit_try)
+        else:
+            return False
         #print(e)
-        return False
+        
 #"""
 
 def get_score_content(score,symbol=None, position_unit=None,give_content=None):

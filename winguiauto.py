@@ -68,21 +68,40 @@ def getDictViewInfo(hwnd, cols):
     获取sysListView32的信息
     :param hwnd: sysListView32句柄
     :param cols: 读取的列数
-    :return: sysListView32中的内容
+    :return: sysListView32中的内容,以字典形式返回
     """
     row_dict={}
-    row_info=getListViewInfo(hwnd, cols)
+    cols = 14
+    row_info = getListViewInfo(hwnd, cols)
+    acount_dict = {'0130010635':'36005','A732980330':'36005','A355519785':'38736','0148358729':'38736'}
+    COLUMN_NAME = ['证券代码','证券名字' ,'当前持仓','股票余额','可用余额 ','买入冻结','卖出冻结','参考盈亏','盈亏比例','参考市值','参考成本价','参考市价','股东代码','交易市场']
     if row_info:
         for row in row_info:
-            code_str=row.pop(0)
-            print(code_str,type(code_str))
-            row_dict[code_str]=row
-            print('row=',row)
+            if len(row)!=cols:
+                continue
+            stock_dict = {}
+            code_str = row[0]
+            for i in range(1,cols):
+                field_value = row[i]
+                if i>=2 and i <=6:
+                    field_value = int(field_value)
+                elif i>=7 and i <=11:
+                    field_value = float(field_value)
+                else:
+                    pass
+                stock_dict.update({COLUMN_NAME[i]:field_value})
+            if stock_dict['股东代码'] in list(acount_dict.keys()):
+                stock_dict.update({'account':acount_dict[stock_dict['股东代码']]})    
+            #code_str=row.pop(0)
+            #print(code_str,type(code_str))
+            row_dict[code_str] = stock_dict
+    else:
+        pass
     #print('row_dict=',row_dict)
     """
     each row comtents:
     {'000060': ['中金岭南', '400', '400', '400', '0', '0', '-1305.00', '-20.86', '4952.00', '15.643', '12.380'],}
-    [证券名字 ,当前持仓，股票余额，可用余额 ，买入冻结，卖出冻结，参考盈亏，盈亏比例，参考市值，参考成本价，参考市价]
+    ['证券代码','证券名字' ,'当前持仓','股票余额','可用余额 ','买入冻结','卖出冻结','参考盈亏','盈亏比例','参考市值','参考成本价','参考市价','股东代码','交易市场','account']
     """
     return row_dict
 
@@ -430,14 +449,16 @@ def doubleClickStatic(hwnd):
     _sendNotifyMessage(hwnd, win32con.STN_DBLCLK)
 
 
-# def getEditText(hwnd):
-#     bufLen = win32gui.SendMessage(hwnd, win32con.WM_GETTEXTLENGTH, 0, 0) + 1
-#     print(bufLen)
-#     buffer = win32gui.PyMakeBuffer(bufLen)
-#     win32gui.SendMessage(hwnd, win32con.WM_GETTEXT, bufLen, buffer)
-#
-#     text = buffer[:bufLen]
-#     return text
+def getEditText(hwnd):
+    bufLen = win32gui.SendMessage(hwnd, win32con.WM_GETTEXTLENGTH, 0, 0) + 1
+    print(bufLen)
+    buffer = win32gui.PyMakeBuffer(bufLen)
+    win32gui.SendMessage(hwnd, win32con.WM_GETTEXT, bufLen, buffer)
+    print(buffer)
+
+    text = str(buffer[:bufLen])
+    #str = str(buffer[:-1])
+    return text
 
 def find_idxSubHandle(pHandle, winClass, index=0):
     """
@@ -469,7 +490,51 @@ def setEditText(hwnd, text):
     sendKeyMsg(hwnd, win32con.VK_RETURN)
     time.sleep(0.2)
 
+def get_valid_combobo_ids(PCB_handle,CB_handle, max_id=100):
+    """
+    获取全部 拉菜单 ComboBox 的有效id
+    :param PCB_handle: 下拉菜单父句柄
+    :param CB_handle: 下来菜单句柄
+    :param max_id: 最大下拉菜单序号
+    :return: list
+    """
+    valid_combobox_id = []
+    for id in range(0,max_id):
+        combobox_id = get_combobox_id(PCB_handle,CB_handle,index_id=id)
+        #print(id,combobox_id)
+        if combobox_id==-1:
+                    break
+        else:
+            if id==combobox_id:
+                valid_combobox_id.append(id)
+            else:
+                pass
+    return valid_combobox_id
 
+def get_combobox_id(PCB_handle,CB_handle,index_id=0):
+    return win32api.SendMessage(CB_handle, win32con.CB_SETCURSEL, index_id, 0)
+
+def select_combobox(PCB_handle,CB_handle,index_id=1):
+    """
+    下拉菜单 ComboBox 选择
+    :param PCB_handle: 下拉菜单父句柄
+    :param CB_handle: 下来菜单句柄
+    :param index_id: 下拉菜单序号
+    :return:
+    """
+    idx = win32api.SendMessage(CB_handle, win32con.CB_SETCURSEL, index_id, 0)
+    #print('idx=',idx)
+    if idx == index_id:  
+        time.sleep(0.01)
+        win32api.SendMessage(PCB_handle, win32con.WM_COMMAND, 0x90000, CB_handle)  
+        time.sleep(0.01)
+        win32api.SendMessage(PCB_handle, win32con.WM_COMMAND, 0x10000, CB_handle)
+        #print(CB_handle.GetDlgItemText(0xFFFF))
+        time.sleep(0.01)
+    else:
+        print('无效下拉菜单序号: idx= %s'%index_id)
+        pass
+    return idx
 # def setEditText(hwnd, text, append=False):
 #     '''Set an edit control's text.
 #

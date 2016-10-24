@@ -640,6 +640,162 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},
                     demon_sql=None,mail2sql=None,mail_period=20,mailto_list=None,
+                    stopped=[], operation_tdx=None):
+    """风险监测和emai告警"""
+    #index_exit_data=get_exit_price(['sh','cyb']
+    exit_data = init_exit_data
+    if not exit_data:
+        exit_data = get_exit_price(symbols)
+    else:
+        pass
+    if not mail_count:
+        for symbol in symbols:
+            mail_count[symbol] = 0
+    else:
+        pass
+    symbol_quot = qq.get_qq_quotations(codes=symbols)
+    #overlap_symbol = list(set(list(exit_data.keys())) & set(list(symbol_quot.keys())))
+    if not exit_data or not symbol_quot:
+        return {}
+    risk_data = {}
+    symbols = list(set(symbols).difference(set(stopped)))
+    for symbol in symbols:
+        this_risk = {}
+        exit_p = 100000.0
+        symbol_now_p = symbol_quot[symbol]['now']
+        symbol_now_v = symbol_quot[symbol]['volume']
+        if symbol_now_v>=0:  #update stop stocks
+            pass
+        else:
+            if symbol not in stopped:
+                stopped.append(symbol)
+            else:
+                pass
+        if symbol=='300431' and demon_sql: #for test
+            symbol_now_p = demon_sql.get_demon_value()
+        code = symbol
+        if code in list(yh_index_symbol_maps.keys()):
+            code = yh_index_symbol_maps[symbol]
+        index_exit_half = exit_data[code]['exit_half']
+        index_exit_all = exit_data[code]['exit_all']
+        #index_exit_all = 52.52
+        #index_exit_all = 3098.89
+        index_exit_rate = exit_data[code]['exit_rate']
+        risk_state = 0
+        
+        if index_exit_all==0:
+            last_close = symbol_quot[symbol]['close']
+            index_exit_all = (1+2*index_exit_rate) * last_close
+            index_exit_half = (1+index_exit_rate) * last_close
+        else:
+            pass
+        #print('symbol=',symbol)
+        #print('symbol_now_p=',symbol_now_p)
+        #print('index_exit_all',index_exit_all)
+        if symbol_now_p<index_exit_all:
+            risk_state = 1.0
+            exit_p = index_exit_all
+        elif symbol_now_p<index_exit_half:
+            risk_state = 0.5
+            exit_p = index_exit_half
+        else:
+            pass
+        if risk_state>0:
+            if  mail_count[symbol]>=0: #email to exit
+                mail_count[symbol] = mail_count[symbol] + 1
+                this_risk['risk_code'] = symbol
+                this_risk['risk_now'] = symbol_now_p
+                this_risk['risk_state'] = risk_state
+                this_risk['risk_time'] = datetime.datetime.now()
+                """
+                if operation_tdx:
+                    pre_position = operation_tdx.getPositionDict() 
+                    available_to_sell = pre_position[symbol]['可用余额'] * risk_state
+                    operation_tdx.order(code=symbol, direction='S', quantity=available_to_sell, actual_price=symbol_now_p)
+                    post_position = operation_tdx.getPositionDict()
+                    print('post_position=',post_position)
+                    pos_chg = operation_tdx.getPostionChange(pre_position,post_position)
+                """
+                send_exit_mail(exit_code=symbol,exit_state=risk_state,exit_data=exit_data[code],
+                               exit_time=datetime.datetime.now(),mail_to_list=mailto_list,count=mail_count[symbol],
+                               to_sql=mail2sql,period_count=mail_period)
+                risk_data[symbol] = this_risk
+            else:
+                print('Have sent email before')
+        elif risk_state==0:# not exit or recover
+            if mail_count[symbol]==0:
+                pass
+            elif mail_count[symbol]>=1:
+                if mail_count[symbol]==1:
+                    send_exit_mail(exit_code=symbol,exit_state=risk_state,exit_data=exit_data[code],
+                                   exit_time=datetime.datetime.now(),mail_to_list=mailto_list,count=mail_count[symbol],
+                                   clear=1,to_sql=mail2sql,period_count=mail_period)
+                    this_risk['risk_code'] = symbol
+                    this_risk['risk_now'] = symbol_now_p
+                    this_risk['risk_state'] = risk_state
+                    this_risk['risk_time'] = datetime.datetime.now()
+                    risk_data[symbol] = this_risk
+                else:# still not descrease to 0
+                    pass
+                mail_count[symbol] = mail_count[symbol] - 1
+            else:#不存在的情况
+               pass 
+        else:
+            #不存在的情况
+            pass
+    if stopped:
+        stopped=list(set(stopped))
+    
+    return risk_data,mail_count,stopped
+
+def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx,demon_sql=None):
+    #position,alv_sell_stocks = op_tdx.get_all_position()
+    risk_stocks = list(risk_data.keys())
+    current_acc_id,current_box_id = operation_tdx.get_acc_combobox_id()
+    this_acc_position = operation_tdx.getPositionDict() 
+    acc_list = list(alv_sell_stocks.keys())
+    if current_acc_id in acc_list:
+        this_acc_avl_sell = alv_sell_stocks[current_acc_id]
+        if this_acc_avl_sell:
+            this_acc_exit_stocks = list(set(risk_stocks) & set(this_acc_avl_sell))
+            for symbol in this_acc_exit_stocks:
+                this_acc_num_to_sell = this_acc_position[symbol]['可用余额 '] * risk_data[symbol]['risk_state']
+                symbol_now_p = symbol_quot[symbol]['now']
+                symbol_now_v = symbol_quot[symbol]['volume']
+                symbol_topest = symbol_quot[symbol]['topest']
+                symbol_lowest = symbol_quot[symbol]['lowest']
+                limit_p = [symbol_topest,symbol_lowest]
+                if symbol=='300432' and demon_sql: #for test
+                    symbol_now_p = demon_sql.get_demon_value()
+                operation_tdx.order(code=symbol, direction='S', quantity=this_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+        else:
+            pass
+    if len(acc_list)==2:
+        exchange_id = operation_tdx.change_account(current_acc_id, current_box_id)
+        second_acc_id,second_box_id = operation_tdx.get_acc_combobox_id()
+        second_acc_position = operation_tdx.getPositionDict() 
+        if second_acc_id in acc_list:
+            second_acc_avl_sell = alv_sell_stocks[second_acc_id]
+            if second_acc_avl_sell:
+                this_acc_exit_stocks = list(set(risk_stocks) & set(second_acc_avl_sell))
+                for symbol in this_acc_exit_stocks:
+                    second_acc_num_to_sell = second_acc_position[symbol]['可用余额 '] * risk_data[symbol]['risk_state']
+                    symbol_now_p = symbol_quot[symbol]['now']
+                    symbol_now_v = symbol_quot[symbol]['volume']
+                    symbol_topest = symbol_quot[symbol]['topest']
+                    symbol_lowest = symbol_quot[symbol]['lowest']
+                    limit_p = [symbol_topest,symbol_lowest]
+                    if symbol=='300432' and demon_sql: #for test
+                        symbol_now_p = demon_sql.get_demon_value()
+                    operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+            else:
+                pass
+    return
+
+def is_risk_to_exit0(symbols=['sh','cyb'],init_exit_data={},
+                   yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
+                         'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},
+                    demon_sql=None,mail2sql=None,mail_period=20,mailto_list=None,
                     stopped=[]):
     """风险监测和emai告警"""
     #index_exit_data=get_exit_price(['sh','cyb']
@@ -738,7 +894,6 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
         stopped=list(set(stopped))
     
     return risk_data,mail_count,stopped
-
 #is_risk_to_exit(symbols=['002095','sh'])
 #is_risk_to_exit(symbols=['sh'])
 
