@@ -89,4 +89,4 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
     return
 
 if __name__ == '__main__':
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=True)
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False)
