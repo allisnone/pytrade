@@ -54,7 +54,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False):
                 hour = datetime.datetime.now()
                 minute = datetime.datetime.now()
                 if (hour==9 and minute==26) or one_time_action:
-                    get_HO_dapan(codes,ho_rate=0.001, stock_sql=None)
+                    #get_HO_dapan(codes,ho_rate=0.001, stock_sql=None)
                     one_time_action = False
                 risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                  init_exit_data=this_date_init_exit_data,

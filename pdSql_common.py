@@ -914,7 +914,7 @@ def get_HO_dapan(codes,ho_rate=0.0026, stock_sql=None):
     if this_datas.empty:
         return ho_codes
     ho_datas = this_datas[(this_datas['open']>=(1 + ho_rate) * this_datas['close0'])]
-    if ho_datas:
+    if ho_datas.empty:
         return ho_codes
     else:
         ho_codes = ho_datas['code'].values.tolist()
