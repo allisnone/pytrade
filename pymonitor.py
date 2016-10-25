@@ -33,8 +33,8 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,trad
     
     while True:
         codes = list(set(available_sells))
+        symbol_quot = qq.get_qq_quotations(codes)
         if demo:
-            symbol_quot = qq.get_qq_quotations(codes)
             risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                              init_exit_data=this_date_init_exit_data,
                                                               mail_count=this_date_mail_count,demon_sql=stock_sql,
