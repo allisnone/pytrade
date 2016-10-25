@@ -69,11 +69,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False):
                 first_sleep = tt.get_remain_time_to_trade() - 300
                 print('Wait to next trade date, first_sleep= %s' %first_sleep)
                 time.sleep(first_sleep)
-                stock_sql = StockSQL()
+                #stock_sql = StockSQL()
                 this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
                 if this_date_str>=next_trade_date_str and datetime.datetime.now().hour<=9:#第二天开盘前5分钟更新止损数据
                     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
-                    available_sells = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
+                    position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
+                    #available_sells = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
+                    available_sells = monitor_stocks + monitor_indexs
+                    available_sells = list(set(available_sells).difference(set(['160722'])))
                     this_date_init_exit_data = get_exit_price(symbols=available_sells)
                     print('exit_data=',this_date_init_exit_data)
                     count = 0

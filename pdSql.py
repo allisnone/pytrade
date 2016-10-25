@@ -97,6 +97,8 @@ class StockSQL(object):
         self.engine = create_engine('mysql+pymysql://emsadmin:Ems4you@112.74.101.126/stock?charset=utf8')#,encoding='utf-8',echo=True,convert_unicode=True)
         self.hold = {}
         #self.engine = create_engine('mysql+pymysql://emsadmin:Ems4you@112.74.101.126/stock?charset=gbk')
+        #self.engine.connect()
+        #self.engine.close()
     def get_table_df(self,table,columns=None):
         """
         :param table: string type, db_name.table_name
