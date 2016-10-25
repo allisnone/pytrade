@@ -4,7 +4,7 @@ from pdSql import *
 import datetime
 from pytrade_tdx import OperationTdx
 
-def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False):
+def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,trade_disable=False):
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
@@ -45,8 +45,11 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False):
             print('this_date_mail_count=',this_date_mail_count)
             count = count + 1
             print('count=', count)
-            position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
-            sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
+            if not trade_disable:
+                position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
+                sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
+            else:
+                pass
     
             time.sleep(interval)
         else:
@@ -64,8 +67,11 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False):
                 print('this_date_mail_count=',this_date_mail_count)
                 count = count + 1
                 print('count=', count)
-                position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
-                sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
+                if not trade_disable:
+                    position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
+                    sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
+                else:
+                    pass
                 time.sleep(interval)
             else:
                 first_sleep = tt.get_remain_time_to_trade() - 300
@@ -94,4 +100,4 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False):
     return
 
 if __name__ == '__main__':
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=False)
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=False,trade_disable=False)
