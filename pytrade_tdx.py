@@ -418,6 +418,10 @@ class OperationTdx:
         if self.debug: print('money_hwnd=',self.__buy_sell_hwnds[12][0])
         #money = getWindowText(self.__buy_sell_hwnds[12][0]).strip()
         #setEditText(self.__buy_sell_hwnds[24][0], '')  # 测试时获得资金情况
+        buy1 = getWindowText(self.__buy_sell_hwnds[25][0]).strip()
+        sell1 = getWindowText(self.__buy_sell_hwnds[1][0]).strip()
+        print('buy1=',buy1)
+        print('sell1=',sell1)
         time.sleep(0.2)
         #print('money_str=',money)
         try:
