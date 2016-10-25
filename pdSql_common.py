@@ -748,7 +748,7 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
     
     return risk_data,mail_count,stopped
 
-def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx,demon_sql=None):
+def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx,demon_sql=None,half_self=False):
     #position,alv_sell_stocks = op_tdx.get_all_position()
     risk_stocks = list(risk_data.keys())
     current_acc_id,current_box_id = operation_tdx.get_acc_combobox_id()
@@ -759,7 +759,10 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
         if this_acc_avl_sell:
             this_acc_exit_stocks = list(set(risk_stocks) & set(this_acc_avl_sell))
             for symbol in this_acc_exit_stocks:
-                this_acc_num_to_sell = this_acc_position[symbol]['可用余额 '] * risk_data[symbol]['risk_state']
+                risk_state = risk_data[symbol]['risk_state']
+                if (risk_state==0.5 and not half_self) or risk_state==0:
+                    continue
+                this_acc_num_to_sell = this_acc_position[symbol]['可用余额 '] * risk_state
                 symbol_now_p = symbol_quot[symbol]['now']
                 symbol_now_v = symbol_quot[symbol]['volume']
                 symbol_topest = symbol_quot[symbol]['topest']
@@ -779,7 +782,10 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
             if second_acc_avl_sell:
                 this_acc_exit_stocks = list(set(risk_stocks) & set(second_acc_avl_sell))
                 for symbol in this_acc_exit_stocks:
-                    second_acc_num_to_sell = second_acc_position[symbol]['可用余额 '] * risk_data[symbol]['risk_state']
+                    risk_state = risk_data[symbol]['risk_state']
+                    if (risk_state==0.5 and not half_self) or risk_state==0:
+                        continue
+                    second_acc_num_to_sell = second_acc_position[symbol]['可用余额 '] * risk_state
                     symbol_now_p = symbol_quot[symbol]['now']
                     symbol_now_v = symbol_quot[symbol]['volume']
                     symbol_topest = symbol_quot[symbol]['topest']
