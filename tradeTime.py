@@ -161,8 +161,8 @@ def get_remain_time_to_trade():
     next_trade_str=''
     remain_time=0.0
     #MORNING_START = ' 9:15:00'
-    MORNING_START = ' 9:25:00'
-    MORNING_START_MINUTE = 25
+    MORNING_START = ' 9:20:00'
+    MORNING_START_MINUTE = 20
     NOON_START = ' 13:00:00'
     if is_trade_date():
         if is_trade_time_now():

@@ -85,7 +85,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,trad
                 print('this_date_mail_count=',this_date_mail_count)
                 count = count + 1
                 print('count=', count)
-                if not trade_disable:
+                if not trade_disable and ((hour==9 and minute>29) or (hour>9 and hour<15)):
                     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
                     sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
                 else:
