@@ -54,9 +54,9 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,trad
             time.sleep(interval)
         else:
             if tt.is_trade_time_now() and tt.is_trade_date():
-                hour = datetime.datetime.now()
-                minute = datetime.datetime.now()
-                if (hour==9 and minute==26) or one_time_action:
+                hour = datetime.datetime.now().hour
+                minute = datetime.datetime.now().minute
+                if (hour==9 and minute==27) or one_time_action:
                     da_pan_codes = ['600029', '600018', '000776', '600016', '600606', '601668', '600050', '601688', '600030', 
                                     '600104', '601377', '601633', '600585', '601186', '600036', '002450', '000538', '601818', 
                                     '601898', '002304', '601628', '600276', '601800', '002027', '600000', '601318', '601088', 
