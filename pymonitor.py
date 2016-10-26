@@ -70,6 +70,13 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,trad
                                      '601939', '603993', '601288', '601166', '000858', '601998', '600705']
                     get_HO_dapan(codes=da_pan_codes,ho_rate=0.0026, stock_sql=None)
                     one_time_action = False
+                elif (hour==11 and minute==35):
+                    pass
+                elif (hour==14 and minute==40):
+                    pass
+                else:
+                    pass
+                
                 risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                  init_exit_data=this_date_init_exit_data,
                                                                   mail_count=this_date_mail_count,mail2sql=stock_sql)
