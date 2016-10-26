@@ -57,7 +57,18 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,trad
                 hour = datetime.datetime.now()
                 minute = datetime.datetime.now()
                 if (hour==9 and minute==26) or one_time_action:
-                    #get_HO_dapan(codes,ho_rate=0.001, stock_sql=None)
+                    da_pan_codes = ['600029', '600018', '000776', '600016', '600606', '601668', '600050', '601688', '600030', 
+                                    '600104', '601377', '601633', '600585', '601186', '600036', '002450', '000538', '601818', 
+                                    '601898', '002304', '601628', '600276', '601800', '002027', '600000', '601318', '601088', 
+                                    '601601', '000001', '601988', '601390', '600015', '002673', '600547', '600340', '601238', 
+                                    '601006', '000783', '001979', '601857', '000768', '601766', '600518', '600011', '000166', 
+                                    '002024', '000002', '600519', '600048', '600383', '300498', '600028', '600999', '002142', 
+                                    '601018', '600887', '601336', '600958', '002252', '601328', '002594', '601398', '600115', 
+                                    '000063', '601618', '601727', '000895', '601985', '300104', '600900', '601989', '600019',
+                                     '601899', '600663', '600690', '000333', '600649', '600795', '002415', '000725', '601211', 
+                                     '000625', '000651', '601169', '601111', '601788', '002736', '601009', '601669', '600837', 
+                                     '601939', '603993', '601288', '601166', '000858', '601998', '600705']
+                    get_HO_dapan(codes=da_pan_codes,ho_rate=0.0026, stock_sql=None)
                     one_time_action = False
                 risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                  init_exit_data=this_date_init_exit_data,
@@ -76,6 +87,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,trad
             else:
                 first_sleep = tt.get_remain_time_to_trade() - 300
                 print('Wait to next trade date, first_sleep= %s' %first_sleep)
+                #first_sleep = 60
                 time.sleep(first_sleep)
                 #stock_sql = StockSQL()
                 this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -94,9 +106,10 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,trad
                     pass
                 second_sleep = tt.get_remain_time_to_trade()
                 print('Wait to next trade date, second_sleep= %s' % second_sleep)
+                #second_sleep = 1
                 time.sleep(second_sleep)
                 one_time_action = True
-                op_tdx = OperationTdx(debug=False)
+                op_tdx.init_hwnd()
     return
 
 if __name__ == '__main__':

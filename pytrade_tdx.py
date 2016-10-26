@@ -164,6 +164,8 @@ class OperationTdx:
     """
     def __init__(self,debug=False):
         self.debug = debug
+        self.init_hwnd()
+        """
         self.__top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
         self.__button = {'refresh': 180, 'position': 145, 'deal': 112, 'withdrawal': 83, 'sell': 50, 'buy': 20}
         windows = dumpWindows(self.__top_hwnd)
@@ -211,7 +213,60 @@ class OperationTdx:
         else:
             sm.send_mail(sub='无法获得  买卖关联同一支股票 的窗口句柄',content='请点击  双向委托 按钮' )
             tkinter.messagebox.showerror('错误', '无法获得 "买卖关联同一支股票"的窗口句柄')
-        
+        """
+            
+    def init_hwnd(self):
+        self.__top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
+        self.__button = {'refresh': 180, 'position': 145, 'deal': 112, 'withdrawal': 83, 'sell': 50, 'buy': 20}
+        windows = dumpWindows(self.__top_hwnd)
+        if self.debug: print('windows=',windows)
+        temp_hwnd = 0
+        temp_hwnd_guanlian=0
+        p_hwnd=0
+        self.p_acc_hwnd = 0
+        self.acc_hwnd = 0
+        for window in windows:
+            child_hwnd, window_text, window_class = window
+            if window_text=='买卖关联同一支股票':
+                temp_hwnd_guanlian = child_hwnd
+                print("find the hwnd: 买卖关联同一支股票, ",temp_hwnd_guanlian)
+            if window_class == 'MHPToolBar' and window_text=='MainViewBar':
+                self.p_acc_hwnd = child_hwnd
+                print('parent_acc_combobox_hwnd=',self.p_acc_hwnd)
+                p_p_acc_hwnd=getParentWindow(self.p_acc_hwnd)
+                acc_windows = dumpWindows(self.p_acc_hwnd)   
+                for window in acc_windows:
+                    child_hwnd, window_text, window_class = window
+                    if window_class == 'ComboBox':
+                        self.acc_hwnd = child_hwnd
+                        print('acc_combobox_hwnd=',self.acc_hwnd)
+        else:
+            pass  
+            #raise Exception("Change saving type failed") 
+                    
+        if temp_hwnd_guanlian:
+            p_hwnd=getParentWindow(temp_hwnd_guanlian) #买卖关联同一支股票的上一级句柄
+            if self.debug: print('p_hwnd=',p_hwnd)
+            p_hwnd_children = dumpWindow(p_hwnd)
+            if self.debug: print('p_hwnd_children=',p_hwnd_children)
+            p_p_hwnd=getParentWindow(p_hwnd) #股票交易第一级句柄
+            p_p_hwnd_children = dumpWindow(p_p_hwnd)   #右侧操作区
+            self.__menu_hwnds = dumpWindow(p_p_hwnd_children[0][0])
+            if self.debug: print(self.__menu_hwnds)
+            self.__buy_sell_hwnds = p_hwnd_children
+            EXPECT_LEN = 68
+            if len(self.__buy_sell_hwnds) != EXPECT_LEN:
+                sm.send_mail(sub='无法获得通达信对买对卖界面的窗口句柄',content='子句柄数量为 %s，不等于期望数量：%s.也许软件亿升级。' %(len(self.__buy_sell_hwnds),EXPECT_LEN))
+                tkinter.messagebox.showerror('错误', '无法获得通达信对买对卖界面的窗口句柄')
+            else:
+                pass
+        else:
+            sm.send_mail(sub='无法获得  买卖关联同一支股票 的窗口句柄',content='请点击  双向委托 按钮' )
+            tkinter.messagebox.showerror('错误', '无法获得 "买卖关联同一支股票"的窗口句柄')
+        return
+    
+    
+    
     def __buy0(self, code, quantity,actual_price):
         """
         买入函数
