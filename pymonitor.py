@@ -5,7 +5,7 @@ import datetime
 from pytrade_tdx import OperationTdx
 import sys
 
-def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_trade=False,mail_interval=10):
+def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_trade=True,mail_interval=10):
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
