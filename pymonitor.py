@@ -5,7 +5,7 @@ import datetime
 from pytrade_tdx import OperationTdx
 import sys
 
-def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_tr=False,mail_interval=10):
+def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_trade=False,mail_interval=10):
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
@@ -23,6 +23,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
     print(next_trade_date_str)
     count = 0 
     this_date_mail_count = {}
+    #available_sells = ['002290','002362']
     this_date_init_exit_data = get_exit_price(symbols=available_sells)
     print('exit_data=',this_date_init_exit_data)
     #mailto = stock_sql.get_mailto()  #Get mailto list from SQL server
@@ -35,18 +36,22 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
     while True:
         codes = list(set(available_sells))
         symbol_quot = qq.get_qq_quotations(codes)
+        is_trade_time_now = tt.is_trade_time_now() and tt.is_trade_date()
+        #this_date_str = '2016-10-24'
         if demo:
             risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                              init_exit_data=this_date_init_exit_data,
                                                               mail_count=this_date_mail_count,demon_sql=stock_sql,
                                                               mail2sql=stock_sql,mail_period=mail_period,mailto_list=mailto,
                                                               stopped=stopped_symbol,operation_tdx = op_tdx )
-            over_avrg_datas = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
+            over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
+                                                             is_trade_time=is_trade_time_now,is_analyze=True)
+            print('over_avrg_datas=',over_avrg_datas_df)
             print('risk_data=',risk_data)
             print('this_date_mail_count=',this_date_mail_count)
             count = count + 1
             print('count=', count)
-            if enable_tr:
+            if enable_trade:
                 position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
                 sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
             else:
@@ -54,7 +59,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
     
             time.sleep(interval)
         else:
-            if tt.is_trade_time_now() and tt.is_trade_date():
+            if is_trade_time_now:
                 hour = datetime.datetime.now().hour
                 minute = datetime.datetime.now().minute
                 if (hour==9 and minute==27) or one_time_action:
@@ -81,19 +86,24 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                 risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                  init_exit_data=this_date_init_exit_data,
                                                                   mail_count=this_date_mail_count,mail2sql=stock_sql)
-                over_avrg_datas = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
-                if (hour==9 and minute>30) or (hour==10) or (hour==11 and minute<=59) or (hour>=13 and hour<15):
+                if (hour==9 and minute>=30) or hour>9:
                     if minute % mail_interval == 0:
+                        over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
+                                                                     is_trade_time=is_trade_time_now,is_analyze=True)
+                        print('over_avrg_datas=',over_avrg_datas_df)
                         sub = '[%s:%:00]日内均线监测 ' %(hour,minute)
-                        content = '每%s分钟实时 均线监测数据如下：\n [name,over_avrg_rate,avrg_chg] \n %s ' % (mail_interval,over_avrg_datas)
+                        content = '每%s分钟实时 均线监测数据如下：\n  %s ' % (mail_interval,over_avrg_datas_df)
                         sm.send_mail(sub,content,mail_to_list=None)
                     else:
-                        pass
+                        over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
+                                                                     is_trade_time=is_trade_time_now,is_analyze=False)
+                else:
+                    pass
                 print('risk_data=',risk_data)
                 print('this_date_mail_count=',this_date_mail_count)
                 count = count + 1
                 print('count=', count)
-                if enable_tr and ((hour==9 and minute>29) or (hour>9 and hour<15)):
+                if enable_trade and ((hour==9 and minute>29) or (hour>9 and hour<15)):
                     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
                     sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
                 else:
@@ -129,14 +139,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
 
 if __name__ == '__main__':
     half_sell = False
-    enable_trade = True
+    enable_trd = True
     if len(sys.argv)>=2:
         if sys.argv[1] and int(sys.argv[1])==1:
             half_sell = True
             
         if len(sys.argv)==3:
             if sys.argv[2] and int(sys.argv[2])==0: #just test for a few stocks
-                enable_trade = False
+                enable_trd = False
     else:
         pass
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,enable_tr=enable_trade)
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=True, half_s=half_sell,enable_trade=enable_trd)

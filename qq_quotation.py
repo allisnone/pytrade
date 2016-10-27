@@ -7,6 +7,7 @@ import urllib.request
 import csv
 import pandas as pd
 import datetime as dt
+import numpy as np
 #http://hq.sinajs.cn/list=sh000001
 #http://qt.gtimg.cn/q=sh000001
 #http://qt.gtimg.cn/q=sh000001
@@ -328,18 +329,20 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
     data_df = pd.DataFrame(data,columns=set_columns)
     return data_dict
 
-def update_quotation_k_datas(codes,this_date_str='20161019',path='',
+def update_quotation_k_datas(codes,this_date_str='2016-10-19',path='',
                              set_columns= ['code','name','datetime','open','high','low','close','volume','amount','now', 'turnover', 
           'increase_rate', 'increase','ask_volume', 'bid_volume', 'topest', 'lowest', 'close0',
           'bid1','bid1_volume','bid2', 'bid2_volume','bid3', 'bid3_volume', 'bid4', 'bid4_volume','bid5','bid5_volume',
           'ask1', 'ask1_volume', 'ask2', 'ask2_volume','ask3', 'ask3_volume', 'ask4', 'ask4_volume', 'ask5', 'ask5_volume', 
           'PE', 'PB', 'total_market', 'wave', 'circulation','date',
-          'recent_trade', 'high_2', 'low_2', 'unknown', 'price_volume_amount'], this_datas=None):
+          'recent_trade', 'high_2', 'low_2', 'unknown', 'price_volume_amount'], is_trade_time=True,is_analyze=True):
     #set_columns=['code,datetime,open,high,low,close,volume,amount']
     #d_data = format_quotation_data(get_qq_quotation(symbol='000001'), code_str='000858')
     #set_columns = list(d_data.keys())
     #this_date_str = d_data[date]
     over_avrg_datas = {}
+    analyzed_datas = {}
+    over_avrg_datas_list = []
     this_datas = get_qq_quotations_df(codes)
     this_datas = this_datas[set_columns]  
     if this_datas.empty:
@@ -351,7 +354,8 @@ def update_quotation_k_datas(codes,this_date_str='20161019',path='',
         #if '-' in this_date_str:
         #    this_date_str = this_date_str.replace('-','')
         over_avrg_rate = -1
-        file_name = path + '%s_%s.csv' % (code,this_date_str)
+        file_name = path + 'minute_%s_%s.csv' % (code,this_date_str)
+        #file_name = path + '%s_%s.csv' % (code,this_date_str)
         try:
         #if True:
             exit_df = pd.read_csv(file_name,encoding='gb2312')
@@ -360,24 +364,65 @@ def update_quotation_k_datas(codes,this_date_str='20161019',path='',
             #exit_df.to_csv(path+'%s_%s.cvs' % (code,this_date_str))
         this_code_df = this_datas[this_datas['code']==code]
         #print(this_code_df)
-        update_df = exit_df.append(this_code_df,ignore_index=True)
-        update_df = update_df[set_columns]
-        if update_df.empty:
-            pass
+        update_df = exit_df
+        if is_trade_time:
+            update_df = exit_df.append(this_code_df,ignore_index=True)
         else:
-            avrg_temp_df = update_df
-            len_num = len(avrg_temp_df)
-            avrg_temp_df['avrg'] = avrg_temp_df['amount']/avrg_temp_df['volume']
-            avrg_temp_df['o_avrg'] = np.where(avrg_temp_df['now']>=avrg_temp_df['avrg'],1,0)
-            avrg_temp_df['avrg_rate'] = (temp_df['o_avrg'].cumsum()/len_num).round(2)
-            avrg_temp_df['avrg_chg'] = (avrg_temp_df['avrg']/avrg_temp_df['close0']-1)*100
-            name = avrg_temp_df.tail(1).iloc[0].name
-            avrg_chg = avrg_temp_df.tail(1).iloc[0].avr_chg
-            num_over_avrg_df = avrg_temp_df[avrg_temp_df['now']>avrg_temp_df['avrg']]
-            #temp_df['cum_prf'] = temp_df['profit'].cumsum()
-            over_avrg_rate = round(len(num_over_avrg_df),2)/len(avrg_temp_df)
-        over_avrg_datas[code] = [name,over_avrg_rate,avrg_chg]
+            pass
+        update_df = update_df[set_columns]
         update_df.to_csv(file_name)
+        if is_analyze:
+            analyzed_datas = analyze_quotation_datas(update_df)
+            over_avrg_datas[code] = analyzed_datas 
+            over_avrg_datas_list.append(analyzed_datas)
+        else:
+            pass 
+    over_avrg_datas_df = pd.DataFrame(over_avrg_datas_list,columns=analyzed_datas.keys())
+    #print(over_avrg_datas_df)
+    return over_avrg_datas_df
+
+"""
+def anylyze_quotation_datas(code,this_date_str='20161019',path='C:/work/temp_k/'):
+    #file_name = path + 'minute_%s_%s.csv' % (code,this_date_str)
+    over_avrg_datas ={}
+    file_name = path + '002807_2016-10-24.csv'
+    avrg_temp_df = pd.read_csv(file_name,encoding='gb2312')
+"""
+def analyze_quotation_datas(avrg_temp_df):
+    over_avrg_datas ={}
+    if avrg_temp_df.empty:
+        pass
+    else:
+        #avrg_temp_df = update_df
+        #len_num = len(avrg_temp_df)
+        avrg_temp_df['avrg'] = avrg_temp_df['amount']/avrg_temp_df['volume']
+        avrg_temp_df['o_avrg'] = np.where(avrg_temp_df['now']>=avrg_temp_df['avrg'],1,0)
+        avrg_temp_df['o_avrg_rate'] = (avrg_temp_df['o_avrg'].cumsum()/avrg_temp_df.index).round(2)
+        avrg_temp_df['avrg_chg'] = (avrg_temp_df['avrg']/avrg_temp_df['close0']-1)*100
+        avrg_temp_df['incrs_1m'] = avrg_temp_df['increase_rate'].diff(1)
+        columns = ['increase_rate','avrg','o_avrg_rate','avrg_chg','incrs_1m']
+        avrg_temp_df_describe = avrg_temp_df[columns].describe()
+        #print(avrg_temp_df[columns].describe())
+        #file_name = path + 'temp_002807_2016-10-24.csv'
+        #avrg_temp_df.to_csv(file_name)
+        name = avrg_temp_df['name'].values.tolist()[0]
+        code = avrg_temp_df['code'].values.tolist()[0]
+        last_avrg_chg = avrg_temp_df.tail(1).iloc[0].avrg_chg
+        last_o_avrg_rate = avrg_temp_df.tail(1).iloc[0].o_avrg_rate
+        max_avrg_chg = avrg_temp_df_describe.ix['max','avrg_chg']
+        min_avrg_chg = avrg_temp_df_describe.ix['min','avrg_chg']
+        is_strong = abs(last_avrg_chg-max_avrg_chg)<=0.05 and last_o_avrg_rate>0.7
+        max_incrs_1m = avrg_temp_df_describe.ix['max','incrs_1m']
+        min_incrs_1m = avrg_temp_df_describe.ix['min','incrs_1m']
+        std_incrs_rate = avrg_temp_df_describe.ix['std','increase_rate']
+        #num_over_avrg_df = avrg_temp_df[avrg_temp_df['now']>avrg_temp_df['avrg']]
+        #temp_df['cum_prf'] = temp_df['profit'].cumsum()
+        #over_avrg_rate = round(len(num_over_avrg_df),2)/len(avrg_temp_df)
+        over_avrg_datas.update({'code':code,'name':name, 'last_avrg_chg':last_avrg_chg,'last_o_avrg_rate':last_o_avrg_rate,
+                                'max_avrg_chg':max_avrg_chg, 'min_avrg_chg':min_avrg_chg, 'max_incrs_1m':max_incrs_1m,
+                                'min_incrs_1m':min_incrs_1m, 'std_incrs_rate':std_incrs_rate,'is_strong':is_strong
+                                }
+                               )
     return over_avrg_datas
 
 
