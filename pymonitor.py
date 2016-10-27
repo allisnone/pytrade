@@ -5,7 +5,7 @@ import datetime
 from pytrade_tdx import OperationTdx
 import sys
 
-def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_tr=False):
+def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_tr=False,mail_interval=10):
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
@@ -41,7 +41,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                                                               mail_count=this_date_mail_count,demon_sql=stock_sql,
                                                               mail2sql=stock_sql,mail_period=mail_period,mailto_list=mailto,
                                                               stopped=stopped_symbol,operation_tdx = op_tdx )
-            qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
+            over_avrg_datas = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
             print('risk_data=',risk_data)
             print('this_date_mail_count=',this_date_mail_count)
             count = count + 1
@@ -81,7 +81,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                 risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                  init_exit_data=this_date_init_exit_data,
                                                                   mail_count=this_date_mail_count,mail2sql=stock_sql)
-                qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
+                over_avrg_datas = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
+                if (hour==9 and minute>30) or (hour==10) or (hour==11 and minute<=59) or (hour>=13 and hour<15):
+                    if minute % mail_interval == 0:
+                        sub = '[%s:%:00]日内均线监测 ' %(hour,minute)
+                        content = '每%s分钟实时 均线监测数据如下：\n [name,over_avrg_rate,avrg_chg] \n %s ' % (mail_interval,over_avrg_datas)
+                        sm.send_mail(sub,content,mail_to_list=None)
+                    else:
+                        pass
                 print('risk_data=',risk_data)
                 print('this_date_mail_count=',this_date_mail_count)
                 count = count + 1

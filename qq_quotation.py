@@ -334,16 +334,23 @@ def update_quotation_k_datas(codes,this_date_str='20161019',path='',
           'bid1','bid1_volume','bid2', 'bid2_volume','bid3', 'bid3_volume', 'bid4', 'bid4_volume','bid5','bid5_volume',
           'ask1', 'ask1_volume', 'ask2', 'ask2_volume','ask3', 'ask3_volume', 'ask4', 'ask4_volume', 'ask5', 'ask5_volume', 
           'PE', 'PB', 'total_market', 'wave', 'circulation','date',
-          'recent_trade', 'high_2', 'low_2', 'unknown', 'price_volume_amount']):
+          'recent_trade', 'high_2', 'low_2', 'unknown', 'price_volume_amount'], this_datas=None):
     #set_columns=['code,datetime,open,high,low,close,volume,amount']
     #d_data = format_quotation_data(get_qq_quotation(symbol='000001'), code_str='000858')
     #set_columns = list(d_data.keys())
     #this_date_str = d_data[date]
+    over_avrg_datas = {}
     this_datas = get_qq_quotations_df(codes)
     this_datas = this_datas[set_columns]  
+    if this_datas.empty:
+        return over_avrg_datas
+    else:
+        pass
+    #codes = this_datas['code'].values.tolist()
     for code in codes:
         #if '-' in this_date_str:
         #    this_date_str = this_date_str.replace('-','')
+        over_avrg_rate = -1
         file_name = path + '%s_%s.csv' % (code,this_date_str)
         try:
         #if True:
@@ -355,8 +362,23 @@ def update_quotation_k_datas(codes,this_date_str='20161019',path='',
         #print(this_code_df)
         update_df = exit_df.append(this_code_df,ignore_index=True)
         update_df = update_df[set_columns]
+        if update_df.empty:
+            pass
+        else:
+            avrg_temp_df = update_df
+            len_num = len(avrg_temp_df)
+            avrg_temp_df['avrg'] = avrg_temp_df['amount']/avrg_temp_df['volume']
+            avrg_temp_df['o_avrg'] = np.where(avrg_temp_df['now']>=avrg_temp_df['avrg'],1,0)
+            avrg_temp_df['avrg_rate'] = (temp_df['o_avrg'].cumsum()/len_num).round(2)
+            avrg_temp_df['avrg_chg'] = (avrg_temp_df['avrg']/avrg_temp_df['close0']-1)*100
+            name = avrg_temp_df.tail(1).iloc[0].name
+            avrg_chg = avrg_temp_df.tail(1).iloc[0].avr_chg
+            num_over_avrg_df = avrg_temp_df[avrg_temp_df['now']>avrg_temp_df['avrg']]
+            #temp_df['cum_prf'] = temp_df['profit'].cumsum()
+            over_avrg_rate = round(len(num_over_avrg_df),2)/len(avrg_temp_df)
+        over_avrg_datas[code] = [name,over_avrg_rate,avrg_chg]
         update_df.to_csv(file_name)
-    return 
+    return over_avrg_datas
 
 
 

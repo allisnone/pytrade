@@ -798,6 +798,17 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 pass
     return
 
+def quotation_monitor(codes,this_date_str,hour,minute):
+    over_avrg_datas = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
+    if (hour==9 and minute>30) or (hour==10) or (hour==11 and minute<=59) or (hour>=13 and hour<15):
+        if minute % mail_interval == 0:
+            sub = '[%s:%:00]日内均线监测 ' %(hour,minute)
+            content = '每%s分钟实时 均线监测数据如下：\n %s ' % (mail_interval,over_avrg_datas)
+            sm.send_mail(sub,content,mail_to_list=None)
+        else:
+            pass
+    return
+
 def is_risk_to_exit0(symbols=['sh','cyb'],init_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},
