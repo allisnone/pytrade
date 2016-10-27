@@ -151,4 +151,4 @@ if __name__ == '__main__':
         pass
     print('enable_trade =',enable_trd)
     print('half_sell =',half_sell)
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=True, half_s=half_sell,enable_trade=enable_trd)
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,enable_trade=enable_trd)
