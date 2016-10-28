@@ -98,7 +98,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                         over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
                                                                      is_trade_time=is_trade_time_now,is_analyze=True)
                         print('over_avrg_datas=',over_avrg_datas_df)
-                        sub = '[%s:%:00]日内均线监测 ' %(hour,minute)
+                        sub = '[%s:%s:00]日内均线监测 ' %(hour,minute)
                         content = '每%s分钟实时 均线监测数据如下：\n  %s ' % (mail_interval,over_avrg_datas_df)
                         sm.send_mail(sub,content,mail_to_list=None)
                     else:
