@@ -23,6 +23,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
     print(next_trade_date_str)
     count = 0 
     this_date_mail_count = {}
+    risk_data = {}
     #available_sells = ['002290','002362']
     this_date_init_exit_data = get_exit_price(symbols=available_sells)
     print('exit_data=',this_date_init_exit_data)
@@ -62,7 +63,15 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
             if is_trade_time_now:
                 hour = datetime.datetime.now().hour
                 minute = datetime.datetime.now().minute
+                if (hour==9 and minute<20):
+                    pass
+                else:
+                    """实盘止损监测，email推送"""
+                    risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
+                                                                     init_exit_data=this_date_init_exit_data,
+                                                                      mail_count=this_date_mail_count,mail2sql=stock_sql)
                 if (hour==9 and minute==27) or one_time_action:
+                    """大盘股高开监测，email推送"""
                     da_pan_codes = ['600029', '600018', '000776', '600016', '600606', '601668', '600050', '601688', '600030', 
                                     '600104', '601377', '601633', '600585', '601186', '600036', '002450', '000538', '601818', 
                                     '601898', '002304', '601628', '600276', '601800', '002027', '600000', '601318', '601088', 
@@ -74,7 +83,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                                      '601899', '600663', '600690', '000333', '600649', '600795', '002415', '000725', '601211', 
                                      '000625', '000651', '601169', '601111', '601788', '002736', '601009', '601669', '600837', 
                                      '601939', '603993', '601288', '601166', '000858', '601998', '600705']
-                    get_HO_dapan(codes=da_pan_codes,ho_rate=0.0026, stock_sql=None)
+                    get_HO_dapan(codes=da_pan_codes,ho_rate=0.0026)#, stock_sql=None)
                     one_time_action = False
                 elif (hour==11 and minute==35):
                     pass
@@ -83,10 +92,8 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                 else:
                     pass
                 
-                risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
-                                                                 init_exit_data=this_date_init_exit_data,
-                                                                  mail_count=this_date_mail_count,mail2sql=stock_sql)
                 if (hour==9 and minute>=30) or hour>9:
+                    """实盘持仓监测"""
                     if minute % mail_interval == 0:
                         over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
                                                                      is_trade_time=is_trade_time_now,is_analyze=True)
@@ -97,17 +104,19 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                     else:
                         over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
                                                                      is_trade_time=is_trade_time_now,is_analyze=False)
+                    """实盘止损实施"""
+                    if enable_trade:
+                        position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
+                        sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
+                    else:
+                        pass
                 else:
                     pass
                 print('risk_data=',risk_data)
                 print('this_date_mail_count=',this_date_mail_count)
                 count = count + 1
                 print('count=', count)
-                if enable_trade and ((hour==9 and minute>29) or (hour>9 and hour<15)):
-                    position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
-                    sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
-                else:
-                    pass
+                
                 time.sleep(interval)
             else:
                 first_sleep = tt.get_remain_time_to_trade() - 300
@@ -125,6 +134,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                     this_date_init_exit_data = get_exit_price(symbols=available_sells)
                     print('exit_data=',this_date_init_exit_data)
                     count = 0
+                    risk_data = {}
                     this_date_mail_count = {}
                     stopped_symbol = []
                 else:
