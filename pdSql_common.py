@@ -942,9 +942,10 @@ def get_HO_dapan(dapan_codes=[],ho_rate=0.0026, stock_sql=None):
         return ho_codes
     else:
         ho_codes = ho_datas['code'].values.tolist()
-        ho_datas['ho_chg'] = ho_datas['open']/ho_datas['close0'] - 1
-        #mail_columns = ['code','name','ho_chg','increase_rate','datetime','open','high','low','close','PE', 'PB', 'total_market']
-        #ho_datas = ho_datas[mail_columns]
+        ho_datas['ho_chg'] = (ho_datas['open']/ho_datas['close0'] - 1)*100.0
+        mail_columns = ['code','name','ho_chg','PE','increase_rate','open','high','low','close', 'PB', 'total_market','datetime']
+        ho_datas = ho_datas.sort_values(axis=0, by='ho_chg', ascending=False)
+        ho_datas = ho_datas[mail_columns]
         sub = '[大盘股机会] 大盘股高开比率:%s%%, 今日高开大盘股有: %s' % (round(len(ho_codes),2)/len(codes)*100,ho_codes)
         content = '高开大盘股： \n %s' % ho_datas
         sm.send_mail(sub,content,mail_to_list=None)
