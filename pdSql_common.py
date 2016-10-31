@@ -748,7 +748,7 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
     
     return risk_data,mail_count,stopped
 
-def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx,demon_sql=None,half_self=False):
+def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx,demon_sql=None,half_sell=False):
     #position,alv_sell_stocks = op_tdx.get_all_position()
     risk_stocks = list(risk_data.keys())
     current_acc_id,current_box_id = operation_tdx.get_acc_combobox_id()
@@ -760,7 +760,7 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
             this_acc_exit_stocks = list(set(risk_stocks) & set(this_acc_avl_sell))
             for symbol in this_acc_exit_stocks:
                 risk_state = risk_data[symbol]['risk_state']
-                if (risk_state==0.5 and not half_self) or risk_state==0:
+                if (risk_state==0.5 and not half_sell) or risk_state==0:
                     continue
                 this_acc_num_to_sell = this_acc_position[symbol]['可用余额 '] * risk_state
                 symbol_now_p = symbol_quot[symbol]['now']
@@ -783,7 +783,7 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 this_acc_exit_stocks = list(set(risk_stocks) & set(second_acc_avl_sell))
                 for symbol in this_acc_exit_stocks:
                     risk_state = risk_data[symbol]['risk_state']
-                    if (risk_state==0.5 and not half_self) or risk_state==0:
+                    if (risk_state==0.5 and not half_sell) or risk_state==0:
                         continue
                     second_acc_num_to_sell = second_acc_position[symbol]['可用余额 '] * risk_state
                     symbol_now_p = symbol_quot[symbol]['now']
@@ -797,6 +797,44 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
             else:
                 pass
     return
+
+def get_potential_stocks(stock_sql=None):
+    potential_stocks = []
+    return potential_stocks
+
+def determine_buy_stocks(op_tdx,realtime_quotation, buy_stock_nums=1,potential_stocks=[]):
+    buy_stock_datas = {}
+    return {}
+
+def get_dapan_position(index=[]):
+    position = 0
+    
+    return position
+
+def get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=16600):
+    buy_num = 0
+    if acc_value/(acc_value+available_money)>max_positon:
+        pass
+    else:
+        if available_money<0.5*suitable_amount:
+            pass
+        elif available_money<=suitable_amount:
+            buy_num = 1
+        else:
+            buy_num = available_money//suitable_amount
+    return buy_num
+
+def buy_stocks(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,stock_sql=None,buy_rate=0.1):
+    dapan_pos = get_dapan_position()
+    if dapan_pos>0.3:
+        potential = get_potential_stocks(stock_sql)
+        acc = '36005'
+        buy_num = get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=16600)
+        buy_stock_datas = determine_buy_stocks(op_tdx,realtime_quotation, buy_stock_nums=buy_num,potential_stocks=potential)
+    else:
+        pass
+    return
+
 
 def quotation_monitor(codes,this_date_str,hour,minute):
     over_avrg_datas = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')

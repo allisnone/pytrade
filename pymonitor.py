@@ -5,7 +5,7 @@ import datetime
 from pytrade_tdx import OperationTdx
 import sys
 
-def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_trade=True,mail_interval=10):
+def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_exit=True,enable_buy=False,mail_interval=10):
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
@@ -52,9 +52,9 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
             print('this_date_mail_count=',this_date_mail_count)
             count = count + 1
             print('count=', count)
-            if enable_trade:
+            if enable_exit:
                 position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
-                sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
+                sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_sell=half_s)
             else:
                 pass
     
@@ -94,9 +94,15 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                         over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
                                                                      is_trade_time=is_trade_time_now,is_analyze=False)
                     """实盘止损实施"""
-                    if enable_trade:
+                    if enable_exit:
                         position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
-                        sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_self=half_s)
+                        sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_sell=half_s)
+                    else:
+                        pass
+                    """实盘买入"""
+                    if enable_buy:
+                        position,avl_sell_datas,monitor_stocks = op_tdx.getMoney()
+                        buy_stocks(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,stock_sql=None,buy_rate=0.1)
                     else:
                         pass
                 else:
@@ -148,6 +154,6 @@ if __name__ == '__main__':
                 enable_trd = False
     else:
         pass
-    print('enable_trade =',enable_trd)
+    print('enable_exit =',enable_trd)
     print('half_sell =',half_sell)
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,enable_trade=enable_trd)
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,enable_exit=enable_trd,enable_buy=False)
