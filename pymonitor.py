@@ -72,7 +72,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                                                                       mail_count=this_date_mail_count,mail2sql=stock_sql)
                 if (hour==9 and minute==27) or one_time_action:
                     """大盘股高开监测，email推送"""
-                    get_HO_dapan(codes=[],ho_rate=0.0026)#, stock_sql=None)
+                    get_HO_dapan(dapan_codes=[],ho_rate=0.0026)#, stock_sql=None)
                     one_time_action = False
                 elif (hour==11 and minute==35):
                     pass
