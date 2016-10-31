@@ -390,7 +390,8 @@ def update_quotation_k_datas(codes,this_date_str='2016-10-19',path='',
         else:
             pass 
     over_avrg_datas_df = pd.DataFrame(over_avrg_datas_list,columns=analyzed_datas.keys())
-    print(over_avrg_datas_df)
+    if over_avrg_datas_df.empty:
+        return over_avrg_datas_df
     columns = ['code','name','is_strong', 'last_avrg_chg','last_o_avrg_rate','max_avrg_chg',
                     'min_avrg_chg', 'max_incrs_1m','min_incrs_1m','std_incrs_rate']
     over_avrg_datas_df = over_avrg_datas_df[columns]
