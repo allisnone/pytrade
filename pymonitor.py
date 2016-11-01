@@ -119,6 +119,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                 #first_sleep = 60
                 time.sleep(first_sleep)
                 #stock_sql = StockSQL()
+                op_tdx.init_hwnd()
                 this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
                 if this_date_str>=next_trade_date_str and datetime.datetime.now().hour<=9:#第二天开盘前5分钟更新止损数据
                     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
@@ -139,7 +140,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                 #second_sleep = 1
                 time.sleep(second_sleep)
                 one_time_action = True
-                op_tdx.init_hwnd()
+                
     return
 
 if __name__ == '__main__':
