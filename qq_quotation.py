@@ -511,7 +511,7 @@ def get_qq_quotations_df(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_column
     #print(data)
     data_df = pd.DataFrame(data,columns=set_columns)
     return data_df
-#print(get_qq_quotations(codes=['sh','000001']))
+#print(get_qq_quotations_df(codes=['sh','000001']))
 #print(get_qq_quotations(codes=['sh','000001'],set_columns=['code','date','open','high','low','close','volume','amount']))
 
 def index_quotation(indexs=['sh','sz','zxb','cyb','sz300','sh50'],force_update=False):

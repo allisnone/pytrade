@@ -798,7 +798,7 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 pass
     return
 
-def get_potential_stocks(stock_sql=None):
+def get_potential_stocks(stock_sql=None,strategy='33'):
     potential_stocks = []
     return potential_stocks
 
