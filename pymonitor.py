@@ -14,6 +14,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
     #pre_position = op_tdx.getPositionDict()
     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
    # available_sells = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
+    print('monitor_stocks=',monitor_stocks)
     available_sells = monitor_stocks + monitor_indexs
     available_sells = list(set(available_sells).difference(set(['160722'])))
     print(datetime.datetime.now())

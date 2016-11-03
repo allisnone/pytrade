@@ -201,6 +201,7 @@ def format_quotation_data(q_data, code_str):
                 'ask5': float(q_data[27]),
                 'ask5_volume': int(q_data[28]) * 100,
                 'recent_trade': q_data[29],  # 换成英文  # 最近逐笔成交
+                'quot_time':dt.datetime.now(),
                 'datetime': dt.datetime.strptime(q_data[30], '%Y%m%d%H%M%S'),
                 'date': dt.datetime.strptime(q_data[30], '%Y%m%d%H%M%S').strftime('%Y/%m/%d'),
                 'increase': float(q_data[31]),  # 换成英文 #涨跌
@@ -309,7 +310,7 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
         set_columns= ['ask1', 'bid1_volume', 'code', 'price_volume_amount', 'ask5_volume', 'ask5', 
                       'PE', 'now', 'bid2_volume', 'bid5', 'recent_trade', 'wave', 'high', 'close', 
                       'circulation', 'bid2', 'bid3', 'ask1_volume', 'increase', 'name', 'low', 
-                      'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 
+                      'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 'quot_time',
                       'datetime', 'open', 'total_market', 'low_2', 'topest', 'ask2_volume', 'turnover', 
                       'ask_volume', 'bid1', 'amount', 'increase_rate', 'PB', 'ask2', 'lowest', 
                       'ask4_volume', 'date', 'bid4_volume', 'ask4', 'volume', 'unknown', 'bid4']
@@ -331,7 +332,7 @@ def get_qq_quotations(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
 
 
 def update_quotation_k_datas(codes,this_date_str='2016-10-19',path='',
-                             set_columns= ['code','name','datetime','open','high','low','close','volume','amount','now', 'turnover', 
+                             set_columns= ['code','name','quot_time','datetime','open','high','low','close','volume','amount','now', 'turnover', 
           'increase_rate', 'increase','ask_volume', 'bid_volume', 'topest', 'lowest', 'close0',
           'bid1','bid1_volume','bid2', 'bid2_volume','bid3', 'bid3_volume', 'bid4', 'bid4_volume','bid5','bid5_volume',
           'ask1', 'ask1_volume', 'ask2', 'ask2_volume','ask3', 'ask3_volume', 'ask4', 'ask4_volume', 'ask5', 'ask5_volume', 
@@ -419,9 +420,9 @@ def analyze_quotation_datas(avrg_temp_df,path='C:/work/temp_k/'):
         #if '/' in this_date_str:
         this_date_str = this_date_str.replace('/','').replace('-','')
         
-        avrg_temp_df['avrg'] = avrg_temp_df['amount']/avrg_temp_df['volume']
+        avrg_temp_df['avrg'] = np.where(avrg_temp_df['volume']>0,avrg_temp_df['amount']/avrg_temp_df['volume'],avrg_temp_df['now'])
         if code in ['sh','cyb']:
-            avrg_temp_df['avrg'] = (avrg_temp_df['close'].cumsum()/avrg_temp_df.index).round(2)
+            avrg_temp_df['avrg'] = np.where(avrg_temp_df.index>0,(avrg_temp_df['close'].cumsum()/avrg_temp_df.index).round(2),avrg_temp_df['close'])
         avrg_temp_df['o_avrg'] = np.where(avrg_temp_df['now']>=avrg_temp_df['avrg'],1,0)
         avrg_temp_df['o_avrg_rate'] = (avrg_temp_df['o_avrg'].cumsum()/avrg_temp_df.index).round(2)
         avrg_temp_df['avrg_chg'] = (avrg_temp_df['avrg']/avrg_temp_df['close0']-1)*100
@@ -457,7 +458,7 @@ def analyze_quotation_datas(avrg_temp_df,path='C:/work/temp_k/'):
 
 
 def get_qq_quotations_df(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_columns=[
-          'code','name','datetime','open','high','low','close','volume','amount','now', 'turnover', 
+          'code','name','quot_time','datetime','open','high','low','close','volume','amount','now', 'turnover', 
           'increase_rate', 'increase','ask_volume', 'bid_volume', 'topest', 'lowest', 'close0',
           'bid1','bid1_volume','bid2', 'bid2_volume','bid3', 'bid3_volume', 'bid4', 'bid4_volume','bid5','bid5_volume',
           'ask1', 'ask1_volume', 'ask2', 'ask2_volume','ask3', 'ask3_volume', 'ask4', 'ask4_volume', 'ask5', 'ask5_volume', 
@@ -481,7 +482,7 @@ def get_qq_quotations_df(codes=['sh','sz','zxb','cyb','sz300','sh50'],set_column
         set_columns= ['ask1', 'bid1_volume', 'code', 'price_volume_amount', 'ask5_volume', 'ask5', 
                       'PE', 'now', 'bid2_volume', 'bid5', 'recent_trade', 'wave', 'high', 'close', 
                       'circulation', 'bid2', 'bid3', 'ask1_volume', 'increase', 'name', 'low', 
-                      'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 
+                      'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 'quot_time',
                       'datetime', 'open', 'total_market', 'low_2', 'topest', 'ask2_volume', 'turnover', 
                       'ask_volume', 'bid1', 'amount', 'increase_rate', 'PB', 'ask2', 'lowest', 
                       'ask4_volume', 'date', 'bid4_volume', 'ask4', 'volume', 'unknown', 'bid4']
@@ -784,12 +785,12 @@ codes = ['002290','002054']
 columns= ['ask1', 'bid1_volume', 'code', 'price_volume_amount', 'ask5_volume', 'ask5', 
                       'PE', 'now', 'bid2_volume', 'bid5', 'recent_trade', 'wave', 'high', 'close', 
                       'circulation', 'bid2', 'bid3', 'ask1_volume', 'increase', 'name', 'low', 
-                      'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 
+                      'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 'quot_time',
                       'datetime', 'open', 'total_market', 'low_2', 'topest', 'ask2_volume', 'turnover', 
                       'ask_volume', 'bid1', 'amount', 'increase_rate', 'PB', 'ask2', 'lowest', 
                       'ask4_volume', 'date', 'bid4_volume', 'ask4', 'volume', 'unknown', 'bid4']
 
-columns= ['code','name','datetime','open','high','low','close','volume','amount','now', 'turnover', 
+columns= ['code','name','quot_time','datetime','open','high','low','close','volume','amount','now', 'turnover', 
           'increase_rate', 'increase','ask_volume', 'bid_volume', 'topest', 'lowest', 'close0',
           'bid1','bid1_volume','bid2', 'bid2_volume','bid3', 'bid3_volume', 'bid4', 'bid4_volume','bid5','bid5_volume',
           'ask1', 'ask1_volume', 'ask2', 'ask2_volume','ask3', 'ask3_volume', 'ask4', 'ask4_volume', 'ask5', 'ask5_volume', 
