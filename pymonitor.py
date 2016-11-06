@@ -5,13 +5,15 @@ import datetime
 from pytrade_tdx import OperationTdx
 import sys
 
-def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enable_exit=True,enable_buy=False,mail_interval=10):
+def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
+            enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,start_buy_minute=(9*60+30),mail_interval=10):
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
     op_tdx = OperationTdx(debug=False)
     #pre_position = op_tdx.getPositionDict()
+    print('start_exit_minute=',start_exit_minute)
     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
    # available_sells = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
     print('monitor_stocks=',monitor_stocks)
@@ -95,13 +97,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,enab
                         over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
                                                                      is_trade_time=is_trade_time_now,is_analyze=False)
                     """实盘止损实施"""
-                    if enable_exit:
+                    this_minute = hour * 60 + minute
+                    if enable_exit and this_minute>=start_exit_minute:
                         position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
                         sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_sell=half_s)
                     else:
                         pass
                     """实盘买入"""
-                    if enable_buy:
+                    if enable_buy and this_minute>=start_buy_minute:
                         position,avl_sell_datas,monitor_stocks = op_tdx.getMoney()
                         buy_stocks(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,stock_sql=None,buy_rate=0.1)
                     else:
@@ -158,4 +161,8 @@ if __name__ == '__main__':
         pass
     print('enable_exit =',enable_trd)
     print('half_sell =',half_sell)
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,enable_exit=enable_trd,enable_buy=False)
+    start_exit = 10*60+30
+    start_buy = 14*60
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,
+            enable_exit=enable_trd,start_exit_minute=start_exit, 
+            enable_buy=False,start_buy_minute=start_buy)
