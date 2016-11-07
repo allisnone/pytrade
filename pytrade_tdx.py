@@ -225,6 +225,10 @@ class OperationTdx:
         p_hwnd=0
         self.p_acc_hwnd = 0
         self.acc_hwnd = 0
+        self.new_stock_order_hwnd = 0
+        find_guan_lian = False
+        find_new_stock = False
+        find_combobox = False
         for window in windows:
             child_hwnd, window_text, window_class = window
             if window_text=='买卖关联同一支股票':
@@ -239,7 +243,13 @@ class OperationTdx:
                     child_hwnd, window_text, window_class = window
                     if window_class == 'ComboBox':
                         self.acc_hwnd = child_hwnd
+                        find_combobox = True
                         print('acc_combobox_hwnd=',self.acc_hwnd)
+            if window_text=='一键申购':
+                self.new_stock_order_hwnd = child_hwnd
+                find_new_stock = True
+            if find_guan_lian and find_new_stock and find_combobox:
+                break
         else:
             pass  
             #raise Exception("Change saving type failed") 
@@ -265,7 +275,15 @@ class OperationTdx:
             tkinter.messagebox.showerror('错误', '无法获得 "买卖关联同一支股票"的窗口句柄')
         return
     
-    
+    def _new_stock_order(self):
+        """
+        新股申购
+        :param code: 股票代码，字符串
+        :param quantity: 数量， 字符串
+        """
+        if self.new_stock_order_hwnd:
+            pass
+        return
     
     def __buy0(self, code, quantity,actual_price):
         """

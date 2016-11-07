@@ -99,13 +99,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
                     """实盘止损实施"""
                     this_minute = hour * 60 + minute
                     if enable_exit and this_minute>=start_exit_minute:
-                        position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
+                        #position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
                         sell_risk_stock(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,demon_sql=stock_sql,half_sell=half_s)
                     else:
                         pass
                     """实盘买入"""
                     if enable_buy and this_minute>=start_buy_minute:
-                        position,avl_sell_datas,monitor_stocks = op_tdx.getMoney()
+                        position,avl_sell_datas,monitor_stocks =  op_tdx.get_all_position()
+                        available_money = op_tdx.getMoney()
                         buy_stocks(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,stock_sql=None,buy_rate=0.1)
                     else:
                         pass

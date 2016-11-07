@@ -169,11 +169,19 @@ class OperationTdx:
         temp_hwnd = 0
         temp_hwnd1=0
         p_hwnd=0
+        find_guan_lian = False
+        find_new_stock = False
         for window in windows:
             child_hwnd, window_text, window_class = window
             if window_text=='买卖关联同一支股票':
                 temp_hwnd1 = child_hwnd
+                find_guan_lian = True
                 print("find the hwnd: 买卖关联同一支股票",temp_hwnd1)
+            if window_text=='一键申购':
+                new_stock_order_hwnd = child_hwnd
+                find_new_stock = True
+            if find_guan_lian and find_new_stock:
+                break
         p_hwnd=getParentWindow(temp_hwnd1)
         print('p_hwnd=',p_hwnd)
         p_hwnd_children = dumpWindow(p_hwnd)
@@ -186,6 +194,7 @@ class OperationTdx:
         print(len(p_hwnd_children))
         if len(self.__buy_sell_hwnds) != 68:
             tkinter.messagebox.showerror('错误', '无法获得通达信对买对卖界面的窗口句柄')
+            
     def __buy0(self, code, quantity,actual_price):
         """
         买入函数
