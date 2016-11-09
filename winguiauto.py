@@ -224,14 +224,14 @@ def closePopupWindow(top_hwnd, wantedText=None, wantedClass=None):
     return False
 
 
-def closePopupWindows(top_hwnd):
+def closePopupWindows(top_hwnd,wantedText=None, wantedClass=None):
     """
     连续关闭多个弹出式对话框，直到没有弹窗
     :param top_hwnd: 主窗口句柄
     :return:
     """
-    while closePopupWindow(top_hwnd):
-        time.sleep(2)
+    while closePopupWindow(top_hwnd,wantedText, wantedClass):
+        time.sleep(1)
 
 
 def findControl(topHwnd,

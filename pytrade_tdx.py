@@ -282,10 +282,14 @@ class OperationTdx:
         :param quantity: 数量， 字符串
         """
         if self.new_stock_order_hwnd:
+            click(self.new_stock_order_hwnd)
+            time.sleep(0.1)
+            closePopupWindows(self.new_stock_order_hwnd,wantedText='确认')
+        else:
             pass
         return
     
-    def __buy0(self, code, quantity,actual_price):
+    def __buy0(self, code, quantity,new_stock_order_hwnd):
         """
         买入函数
         :param code: 股票代码，字符串

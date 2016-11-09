@@ -42,4 +42,6 @@ if __name__ == '__main__':
     print(avl_sell)
     
     
-    op_tdx.getRealtimeQuotation(code='300431')
+    #op_tdx.getRealtimeQuotation(code='300431')
+    
+    op_tdx._new_stock_order()
