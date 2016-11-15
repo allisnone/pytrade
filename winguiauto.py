@@ -48,12 +48,16 @@ def getListViewInfo(hwnd, cols):
     for col in range(cols):
         col_info.append(_readListViewItems(hwnd, col))
     row_info = []
-
+    if not col_info:
+        return row_info
     # 按行
     for row in range(len(col_info[0])):
         row_info.append([])
         for col in range(len(col_info)):
-            row_info[row].append(col_info[col][row].decode('GB2312'))
+            if col_info[col]:
+                row_info[row].append(col_info[col][row].decode('GB2312'))
+            else:
+                pass
     #print('row_info=',row_info)
     """
     each row comtents:
@@ -525,12 +529,12 @@ def select_combobox(PCB_handle,CB_handle,index_id=1):
     idx = win32api.SendMessage(CB_handle, win32con.CB_SETCURSEL, index_id, 0)
     #print('idx=',idx)
     if idx == index_id:  
-        time.sleep(0.01)
+        time.sleep(0.1)
         win32api.SendMessage(PCB_handle, win32con.WM_COMMAND, 0x90000, CB_handle)  
-        time.sleep(0.01)
+        time.sleep(0.2)
         win32api.SendMessage(PCB_handle, win32con.WM_COMMAND, 0x10000, CB_handle)
         #print(CB_handle.GetDlgItemText(0xFFFF))
-        time.sleep(0.01)
+        time.sleep(0.2)
     else:
         print('无效下拉菜单序号: idx= %s'%index_id)
         pass
