@@ -422,9 +422,9 @@ def analyze_quotation_datas(avrg_temp_df,path='C:/work/temp_k/'):
         
         avrg_temp_df['avrg'] = np.where(avrg_temp_df['volume']>0,avrg_temp_df['amount']/avrg_temp_df['volume'],avrg_temp_df['now'])
         if code in ['sh','cyb']:
-            avrg_temp_df['avrg'] = np.where(avrg_temp_df.index>0,(avrg_temp_df['close'].cumsum()/avrg_temp_df.index).round(2),avrg_temp_df['close'])
+            avrg_temp_df['avrg'] = np.where(avrg_temp_df.index>0,(avrg_temp_df['close'].cumsum()/(avrg_temp_df.index + 1.0)).round(2),avrg_temp_df['close'])
         avrg_temp_df['o_avrg'] = np.where(avrg_temp_df['now']>=avrg_temp_df['avrg'],1,0)
-        avrg_temp_df['o_avrg_rate'] = (avrg_temp_df['o_avrg'].cumsum()/avrg_temp_df.index).round(2)
+        avrg_temp_df['o_avrg_rate'] = (avrg_temp_df['o_avrg'].cumsum()/(avrg_temp_df.index + 1.0)).round(2)
         avrg_temp_df['avrg_chg'] = (avrg_temp_df['avrg']/avrg_temp_df['close0']-1)*100
         avrg_temp_df['incrs_1m'] = avrg_temp_df['increase_rate'].diff(1)
         file_name = path + 'minute_%s_%s_analyzed.csv' % (code,this_date_str)
