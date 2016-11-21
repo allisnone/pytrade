@@ -730,7 +730,9 @@ class QQ(object):
             print( q_data)
         #quotation.stocks(['000001', '162411'])
     
-update_quotation_k_datas(['sh','cyb','300243','603398'])
+avrg_temp_df = update_quotation_k_datas(['sh','cyb','600479'])
+over_avrg_datas = analyze_quotation_datas(avrg_temp_df,path='C:/work/temp_k/')
+print(over_avrg_datas)
 """
 url = 'http://qt.gtimg.cn/q=sh000001'
 url = 'http://ichart.yahoo.com/table.csv?s=000001.SS&a=06&b=8&c=2016&d=07&e=8&f=2016&g=d'
