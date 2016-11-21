@@ -730,8 +730,8 @@ class QQ(object):
             print( q_data)
         #quotation.stocks(['000001', '162411'])
     
-avrg_temp_df = update_quotation_k_datas(['sh','cyb','600749'])
-print(avrg_temp_df)
+#avrg_temp_df = update_quotation_k_datas(['sh','cyb','600749'])
+#print(avrg_temp_df)
 #over_avrg_datas = analyze_quotation_datas(avrg_temp_df,path='C:/work/temp_k/')
 #print(over_avrg_datas)
 """
