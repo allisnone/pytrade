@@ -73,7 +73,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
                     risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                      init_exit_data=this_date_init_exit_data,
                                                                       mail_count=this_date_mail_count,mail2sql=stock_sql)
-                if (hour==9 and minute==27) or one_time_action:
+                if (hour==9 and minute==27) or one_time_action or (hour==14 and minute==50):
                     """大盘股高开监测，email推送"""
                     get_HO_dapan(dapan_codes=[],ho_rate=0.0026)#, stock_sql=None)
                     one_time_action = False
