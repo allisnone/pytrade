@@ -54,7 +54,7 @@ def getListViewInfo(hwnd, cols):
     for row in range(len(col_info[0])):
         row_info.append([])
         for col in range(len(col_info)):
-            if col_info[col]:
+            if col_info[col] and row<=len(col_info[col]) and row<len(row_info):
                 row_info[row].append(col_info[col][row].decode('GB2312'))
             else:
                 pass
