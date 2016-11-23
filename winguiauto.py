@@ -58,8 +58,7 @@ def getListViewInfo(hwnd, cols):
                 row_info[row].append(col_info[col][row].decode('GB2312'))
             else:
                 pass
-    #print('row_info=',row_info)
-    
+    #print('row_info=',row_info
     """
     each row comtents:
     ['000060', '中金岭南', '400', '400', '400', '0', '0', '-1305.00', '-20.86', '4952.00', '15.643', '12.380']
