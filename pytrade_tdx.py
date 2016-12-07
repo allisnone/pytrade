@@ -639,14 +639,14 @@ class OperationTdx:
                     exchange_id = select_combobox(self.p_acc_hwnd ,self.acc_hwnd,index_id=1)
                     #target_acc_id,target_box_id = self.get_acc_combobox_id(position_dict)
                     if self.debug: print('从%s账户切换成功到：%s ' % (current_acc_id,'38736'))
-                    time.sleep(0.2)
+                    time.sleep(1)
                 elif current_box_id==1 and current_acc_id=='38736':
                     exchange_id = select_combobox(self.p_acc_hwnd ,self.acc_hwnd,index_id=0)
                     #target_acc_id,target_box_id = self.get_acc_combobox_id(position_dict)
                     if self.debug: print('从%s账户切换成功到：%s ' % (current_acc_id,'36005'))
-                    time.sleep(0.2)
+                    time.sleep(1)
                 else:
-                    pass
+                    if self.debug: print('账户切换异常，请检查')
             elif len_id==1:
                 pass
                 if self.debug: print('仅有一个登录账户，无需切换')
