@@ -661,6 +661,7 @@ class OperationTdx:
         avl_sell_datas = {}
         position = self.getPositionDict()
         current_acc_id,current_box_id = self.get_acc_combobox_id(position_dict=position)
+        print('first_acc=%s' % current_acc_id)
         current_avl_sell = []
         for code in list(position.keys()):
             #print(position[code].keys())
@@ -671,6 +672,7 @@ class OperationTdx:
         exchange_id = self.change_account(current_acc_id, current_box_id, position)
         second_acc_position = self.getPositionDict()
         second_acc_id,second_box_id = self.get_acc_combobox_id(position_dict=second_acc_position)
+        print('second_acc=%s' % second_acc_id)
         second_avl_sell = []
         for code in list(second_acc_position.keys()):
             avl_to_sell = second_acc_position[code]['可用余额 ']

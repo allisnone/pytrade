@@ -6,12 +6,12 @@ from pytrade_tdx import OperationTdx
 import sys
 
 def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
-            enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,start_buy_minute=(9*60+30),mail_interval=10):
+            enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,start_buy_minute=(9*60+30),mail_interval=10,debug_enable=False):
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
     #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
-    op_tdx = OperationTdx(debug=False)
+    op_tdx = OperationTdx(debug=debug_enable)
     #pre_position = op_tdx.getPositionDict()
     print('start_exit_minute=',start_exit_minute)
     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
@@ -151,13 +151,18 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
 if __name__ == '__main__':
     half_sell = False
     enable_trd = True
+    debug = False
     if len(sys.argv)>=2:
         if sys.argv[1] and int(sys.argv[1])==1:
             half_sell = True
             
-        if len(sys.argv)==3:
+        if len(sys.argv)>=3:
             if sys.argv[2] and int(sys.argv[2])==0: #just test for a few stocks
                 enable_trd = False
+        
+        if len(sys.argv)>=4:
+            if sys.argv[3] and int(sys.argv[3])==1: #just test for a few stocks
+                debug = True
     else:
         pass
     print('enable_exit =',enable_trd)
@@ -166,4 +171,4 @@ if __name__ == '__main__':
     start_buy = 14*60
     monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,
             enable_exit=enable_trd,start_exit_minute=start_exit, 
-            enable_buy=False,start_buy_minute=start_buy)
+            enable_buy=False,start_buy_minute=start_buy,debug_enable=debug)
