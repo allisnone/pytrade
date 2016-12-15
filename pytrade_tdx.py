@@ -519,6 +519,36 @@ class OperationTdx:
         POSITION_COlS = 14 
         return getDictViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
         
+    def isRightAcc(self,acc='36005',pos_list=list()):
+        acount_dict = {'0130010635':'36005','A732980330':'36005','A355519785':'38736','0148358729':'38736'}
+        pos_list = self.getPosition()
+        print('pos_list=',pos_list)
+        is_right_acc = False
+        if pos_list:
+            stock_ower = pos_list[0][12]
+            if stock_ower in list(acount_dict.keys()):
+                is_right_acc = acc== acount_dict[stock_ower]
+        return is_right_acc
+    
+    def getAccountMoney(self,acc='36005'):
+        pos_list = self.getPosition()
+        market_value = 0.0
+        available_money = 0.0
+        if self.isRightAcc(acc, pos_list):
+            available_money = self.getMoney()
+        else:
+            current_acc_id,current_box_id = self.get_acc_combobox_id()
+            position_dict = self.getPositionDict() 
+            exchange_id = self.change_account(current_acc_id, current_box_id, position_dict)
+            pos_list = self.getPosition()
+            if self.isRightAcc(acc, pos_list):
+                available_money = self.getMoney()
+            else:
+                return market_value,available_money
+        if pos_list:
+            for stock_data in pos_list:
+                market_value = market_value + stock_data[9]  #9 for '参考市值'
+        return market_value,available_money
     
     def getCodePosition(self,code):
         """获取持仓股票信息

@@ -825,14 +825,16 @@ def get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=
     return buy_num
 
 def buy_stocks(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,stock_sql=None,buy_rate=0.1):
+    acc = '36005'
+    acc_value, available_money = op_tdx.getAccountMoney(acc)
+    buy_num = get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=16600)
     dapan_pos = get_dapan_position()
     if dapan_pos>0.3:
-        potential = get_potential_stocks(stock_sql)
-        acc = '36005'
-        buy_num = get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=16600)
-        buy_stock_datas = determine_buy_stocks(op_tdx,realtime_quotation, buy_stock_nums=buy_num,potential_stocks=potential)
-    else:
         pass
+    else:
+        buy_num = int(buy_num * 0.5)
+    potential = get_potential_stocks(stock_sql)
+    buy_stock_datas = determine_buy_stocks(op_tdx,realtime_quotation, buy_stock_nums=buy_num,potential_stocks=potential)
     return
 
 
