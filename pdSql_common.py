@@ -803,6 +803,10 @@ def get_potential_stocks(stock_sql=None,strategy='33'):
     return potential_stocks
 
 def determine_buy_stocks(op_tdx,realtime_quotation, buy_stock_nums=1,potential_stocks=[]):
+    hist_data = pd.read_csv('C:/hist/day/temp/regression_test.csv')
+    hist_data.index.isin(potential_stocks)
+    hist_data['sort_value']=hist_data
+    
     buy_stock_datas = {}
     return {}
 
