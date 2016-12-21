@@ -104,6 +104,7 @@ if __name__ == "__main__":
     
     hold_result_df = back_test(k_num,given_codes=holds,except_stocks=['002807','603515','160722'],type='hold',source=source_type)#,dapan_stocks=[])#except_stocks)
     addition_name = 'hold'
+    
     hold_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
     
     #hold_statistics = pds.get_hold_stock_statistics(hold_stocks=hold_stocks+hold_funds)
