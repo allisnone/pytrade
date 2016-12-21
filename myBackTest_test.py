@@ -109,7 +109,6 @@ if __name__ == "__main__":
     #hold_statistics = pds.get_hold_stock_statistics(hold_stocks=hold_stocks+hold_funds)
     #hold_statistics.to_csv('./temp/statistics_test_' + addition_name +'%s.csv' % date_str)
     #print(hold_statistics)
-    
     """ TA_LIB
     his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=hold_stocks+hold_funds)
     his.update_indicator_results()      #TA_lib 跟新指标
