@@ -1648,6 +1648,11 @@ class Stockhistory:
                                       & (temp_df['star'].shift(1).abs()>=0.5),
                                       -temp_df['k_rate']*temp_df['p_change']/(temp_df['p_change'].abs()),0)
         temp_df['p_rate'] = np.where(temp_df['p_change'].shift(1)!=0,(temp_df['p_change']/temp_df['p_change'].shift(1)).round(2),0)
+        """相对开盘价,用于大盘股高开"""
+        temp_df['oo_chg'] = ((temp_df['open'].shift(-1)-temp_df['open'])/temp_df['open']*100.0).round(2) #次日开盘价相对今天开盘价
+        temp_df['oh_chg'] = ((temp_df['high'].shift(-1)-temp_df['open'])/temp_df['open']*100.0).round(2) #次日最高价相对今天开盘价
+        temp_df['ol_chg'] = ((temp_df['low'].shift(-1)-temp_df['open'])/temp_df['open']*100.0).round(2) #次日最低价相对今天开盘价
+        temp_df['oc_chg'] = ((temp_df['close'].shift(-1)-temp_df['open'])/temp_df['open']*100.0).round(2) #次日收盘价相对今天开盘价
         #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
         """岛型反转"""
         gap_rate=0.005

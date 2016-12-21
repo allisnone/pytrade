@@ -71,7 +71,7 @@ def get_exit_data(symbols,last_date_str):
 #get_exit_data(symbols=['000029'],last_date_str='2016/08/23')
 #get_stopped_stocks()
 
-def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', source='easyhistory',rate_to_confirm = 0.01):
+def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', source='easyhistory',rate_to_confirm = 0.01,dapan_stocks=['000001','000002']):
     """
 高于三天收盘最大值时买入，低于三天最低价的最小值时卖出： 33策略
     """
@@ -124,6 +124,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #               'high_o_day5','high_o_day10','high_o_day20','high_o_day50']
     high_open_columns = []
     high_open_df = tds.pd.DataFrame({}, columns=high_open_columns)
+    dapan_high_open_df = tds.pd.DataFrame({}, columns=high_open_columns)
     regress_column_type = 'close'
     for stock_symbol in all_trade_codes:
         if stock_symbol=='000029' and source=='easyhistory':
@@ -149,6 +150,17 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                        base_column='close',fix_columns=['date','close','p_change','o_change','position'])
             high_o_df['code'] = stock_symbol
             high_open_df= high_open_df.append(high_o_df)
+            
+            if dapan_stocks and (stock_symbol in dapan_stocks):
+                dapan_criteria = ((s_stock.temp_hist_df['o_change']> 0.30) & (s_stock.temp_hist_df['pos20'].shift(1)<=1.0))
+                dapan_regress_column_type = 'open'
+                dapan_high_o_df,dapan_high_open_columns = s_stock.regress_common(dapan_criteria,post_days=[0,-1,-2,-3,-4,-5,-10,-20,-60],regress_column = dapan_regress_column_type,
+                           base_column='open',fix_columns=['date','close','p_change','o_change','position','oo_chg','oh_chg','ol_chg','oc_chg'])
+                dapan_high_o_df['code'] = stock_symbol
+                dapan_high_open_df= dapan_high_open_df.append(dapan_high_o_df)
+            else:
+                pass
+            
             #print(test_result)
             #print(recent_trend)
             i = i+1
@@ -208,6 +220,18 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     high_open_df['name'] = tds.Series(result_codes_dict,index=high_open_df.index)
     high_open_df = high_open_df[['code','name']+high_open_columns]
     
+    dapan_codes_dict = {}
+    if dapan_high_open_df.empty:
+        pass
+    else:
+        for code in dapan_stocks:
+            if code in basic_code_keys:
+                dapan_codes_dict[code] = basic_code[code]
+            else:
+                dapan_codes_dict[code] = 'NA'
+        dapan_high_open_df['name'] = tds.Series(dapan_codes_dict,index=dapan_high_open_df.index)
+        dapan_high_open_df = dapan_high_open_df[['code','name']+dapan_high_open_columns]
+    
     all_trend_result_df['name'] = tds.Series(result_codes_dict,index=all_trend_result_df.index)
     all_result_df['stopped'] = tds.Series(on_trade_dict,index=all_result_df.index)
     all_trend_result_df['stopped'] = tds.Series(on_trade_dict,index=all_trend_result_df.index)
@@ -238,6 +262,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                    'stopped','invalid','max_r','25%','50%','75%',]
     all_result_df.to_csv('./temp/regression_test_' + addition_name +tail_name)
     high_open_df.to_csv('./temp/pos20_star_%s'% regress_column_type + addition_name +tail_name)
+    dapan_high_open_df.to_csv('./temp/dapan_high_open%s'% regress_column_type + addition_name +tail_name)
     if all_result_df.empty:
         pass
     else:

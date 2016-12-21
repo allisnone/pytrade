@@ -102,7 +102,7 @@ if __name__ == "__main__":
     #givens = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     
-    hold_result_df = back_test(k_num,given_codes=holds,except_stocks=['002807','603515','160722'],type='hold',source=source_type)#except_stocks)
+    hold_result_df = back_test(k_num,given_codes=holds,except_stocks=['002807','603515','160722'],type='hold',source=source_type,dapan_stocks=[])#except_stocks)
     addition_name = 'hold'
     hold_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
     
@@ -125,7 +125,18 @@ if __name__ == "__main__":
         except:
             continue
     """
-    all_result_df = back_test(k_num,given_codes=[],except_stocks=[],type='stock',source=source_type,rate_to_confirm=0)#except_stocks)
+    dapan_codes = ['600029', '600018', '000776', '600016', '600606', '601668', '600050', '601688', '600030', 
+                    '600104', '601377', '601633', '600585', '601186', '600036', '002450', '000538', '601818', 
+                    '601898', '002304', '601628', '600276', '601800', '002027', '600000', '601318', '601088', 
+                    '601601', '000001', '601988', '601390', '600015', '002673', '600547', '600340', '601238', 
+                    '601006', '000783', '001979', '601857', '000768', '601766', '600518', '600011', '000166', 
+                    '002024', '000002', '600519', '600048', '600383', '300498', '600028', '600999', '002142', 
+                    '601018', '600887', '601336', '600958', '002252', '601328', '002594', '601398', '600115', 
+                    '000063', '601618', '601727', '000895', '601985', '300104', '600900', '601989', '600019',
+                    '601899', '600663', '600690', '000333', '600649', '600795', '002415', '000725', '601211', 
+                    '000625', '000651', '601169', '601111', '601788', '002736', '601009', '601669', '600837', 
+                    '601939', '603993', '601288', '601166', '000858', '601998', '600705']
+    all_result_df = back_test(k_num,given_codes=[],except_stocks=[],type='stock',source=source_type,rate_to_confirm=0,dapan_stocks=dapan_codes)#except_stocks)
     #all_codes = all_result_df.index.values.tolist()
     #all_statistics = pds.get_hold_stock_statistics(hold_stocks=all_stocks,stock_dir='C:/hist/day/temp/')
     #all_statistics.to_csv('./temp/statistics_test_' + 'all' +'%s.csv' % date_str)
