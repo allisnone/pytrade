@@ -28,7 +28,8 @@ def send_mail(sub,content,mail_to_list=None,limit_try=50):
     :param content: str type, content of email title
     :return: bool type 
     """
-    mailto_list=['104450966@qq.com','1016564866@qq.com']
+    mailto_list=['104450966@qq.com']
+    #mailto_list=['104450966@qq.com','1016564866@qq.com']
     if mail_to_list!=None:
         mailto_list=mail_to_list
     mail_host='smtp.163.com'
@@ -64,7 +65,7 @@ def send_mail(sub,content,mail_to_list=None,limit_try=50):
         #print(e)
         
 #"""
-send_mail(sub='test', content='test')
+#send_mail(sub='test', content='test')
 def get_score_content(score,symbol=None, position_unit=None,give_content=None):
     sub=''
     content=''

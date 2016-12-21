@@ -958,7 +958,7 @@ def is_risk_to_exit0(symbols=['sh','cyb'],init_exit_data={},
 #is_risk_to_exit(symbols=['002095','sh'])
 #is_risk_to_exit(symbols=['sh'])
 
-def get_HO_dapan(dapan_codes=[],ho_rate=0.0026, stock_sql=None):
+def get_HO_dapan(dapan_codes=[],ho_rate=0.0026, stock_sql=None,mailto=['104450966@qq.com','1016564866@qq.com']):
     """
     找出高开的大盘股，并触发email
     """
@@ -992,8 +992,10 @@ def get_HO_dapan(dapan_codes=[],ho_rate=0.0026, stock_sql=None):
         ho_datas = ho_datas[mail_columns]
         sub = '[大盘股机会] 大盘股高开比率:%s%%, 今日高开大盘股有: %s' % (round(len(ho_codes),2)/len(codes)*100,ho_codes)
         content = '高开大盘股： \n %s' % ho_datas
-        sm.send_mail(sub,content,mail_to_list=None)
+        sm.send_mail(sub,content,mail_to_list=mailto)
         return list(set(ho_codes))
+
+get_HO_dapan()
 
 def get_std(data_df,windows=0,column='close'):
     
