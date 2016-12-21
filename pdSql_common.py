@@ -995,7 +995,7 @@ def get_HO_dapan(dapan_codes=[],ho_rate=0.0026, stock_sql=None,mailto=['10445096
         sm.send_mail(sub,content,mail_to_list=mailto)
         return list(set(ho_codes))
 
-get_HO_dapan()
+#get_HO_dapan()
 
 def get_std(data_df,windows=0,column='close'):
     
