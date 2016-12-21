@@ -102,7 +102,7 @@ if __name__ == "__main__":
     #givens = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #             '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     
-    hold_result_df = back_test(k_num,given_codes=holds,except_stocks=['002807','603515','160722'],type='hold',source=source_type,dapan_stocks=[])#except_stocks)
+    hold_result_df = back_test(k_num,given_codes=holds,except_stocks=['002807','603515','160722'],type='hold',source=source_type)#,dapan_stocks=[])#except_stocks)
     addition_name = 'hold'
     hold_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
     
