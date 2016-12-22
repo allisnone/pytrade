@@ -39,7 +39,6 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
     mail_period = 20
     stopped_symbol = {}
     one_time_action = True
-    
     while True:
         codes = list(set(all_monitors))
         symbol_quot = qq.get_qq_quotations(codes)
