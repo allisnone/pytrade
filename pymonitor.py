@@ -9,6 +9,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
             enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,start_buy_minute=(9*60+30),mail_interval=10,debug_enable=False):
     hist_dir='C:/中国银河证券海王星/T0002/export/'
     all_stocks = get_all_code(hist_dir)
+    
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
