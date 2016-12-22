@@ -149,7 +149,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
             high_o_df,high_open_columns = s_stock.regress_common(criteria,post_days=[0,-1,-2,-3,-4,-5,-10,-20,-60],regress_column = regress_column_type,
                        base_column='close',fix_columns=['date','close','p_change','o_change','position','pos20','MAX20high','star_l'])
             high_o_df['code'] = stock_symbol
-            high_o_df['star_index'] = (high_o_df['star_l']/high_o_df['pos20']*((high_o_df['MAX20high']-high_o_df['close'])/high_o_df['MAX20high'])).round(2)
+            high_o_df['star_index'] = np.where(high_o_df['pos20']<=0,0,(high_o_df['star_l']/high_o_df['pos20']*((high_o_df['MAX20high']-high_o_df['close'])/high_o_df['MAX20high'])).round(2))
             deep_star_df= deep_star_df.append(high_o_df)
             
             if dapan_stocks and (stock_symbol in dapan_stocks):
@@ -158,7 +158,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                 dapan_high_o_df,dapan_high_open_columns = s_stock.regress_common(dapan_criteria,post_days=[0,-1,-2,-3,-4,-5,-10,-20,-60],regress_column = dapan_regress_column_type,
                            base_column='open',fix_columns=['date','close','p_change','o_change','position','pos20','oo_chg','oh_chg','ol_chg','oc_chg'])
                 dapan_high_o_df['code'] = stock_symbol
-                dapan_high_o_df['ho_index'] = (dapan_high_o_df['o_change']/dapan_high_o_df['pos20']).round(2)
+                dapan_high_o_df['ho_index'] = np.where(dapan_high_o_df['pos20']<=0,0,(dapan_high_o_df['o_change']/dapan_high_o_df['pos20']).round(2))
                 dapan_ho_df= dapan_ho_df.append(dapan_high_o_df)
             else:
                 pass
@@ -220,7 +220,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #all_result_df['name'] = result_codes_dict
     all_result_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
     deep_star_df['name'] = tds.Series(result_codes_dict,index=deep_star_df.index)
-    deep_star_df = star_df[['code','name','star_index']+high_open_columns]
+    deep_star_df = deep_star_df[['code','name','star_index']+high_open_columns]
     
     dapan_codes_dict = {}
     if dapan_ho_df.empty:
