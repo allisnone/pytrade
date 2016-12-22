@@ -7,28 +7,31 @@ import sys
 
 def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
             enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,start_buy_minute=(9*60+30),mail_interval=10,debug_enable=False):
+    hist_dir='C:/中国银河证券海王星/T0002/export/'
+    all_stocks = get_all_code(hist_dir)
     stock_sql = StockSQL()
     #indexs = ['sh','sz','zxb','cyb','hs300','sh50']
     print(datetime.datetime.now())
-    #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+    #hold_df,holds,all_monitors = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
     op_tdx = OperationTdx(debug=debug_enable)
     #pre_position = op_tdx.getPositionDict()
     print('start_exit_minute=',start_exit_minute)
     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
-   # available_sells = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
+   # all_monitors = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
     print('monitor_stocks=',monitor_stocks)
-    available_sells = monitor_stocks + monitor_indexs
-    available_sells = list(set(available_sells).difference(set(['160722'])))
+    monitor_stocks = list(set(monitor_stocks).intersection(set(all_stocks)))
+    all_monitors = monitor_stocks + monitor_indexs
+    #all_monitors = list(set(all_monitors).difference(set(['160722'])))
     print(datetime.datetime.now())
-    print('available_sells=',available_sells)
+    print('all_monitors=',all_monitors)
     this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
     next_trade_date_str = tt.get_next_trade_date()
     print(next_trade_date_str)
     count = 0 
     this_date_mail_count = {}
     risk_data = {}
-    #available_sells = ['002290','002362']
-    this_date_init_exit_data = get_exit_price(symbols=available_sells)
+    #all_monitors = ['002290','002362']
+    this_date_init_exit_data = get_exit_price(symbols=all_monitors)
     print('exit_data=',this_date_init_exit_data)
     #mailto = stock_sql.get_mailto()  #Get mailto list from SQL server
     mailto = None
@@ -38,7 +41,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
     one_time_action = True
     
     while True:
-        codes = list(set(available_sells))
+        codes = list(set(all_monitors))
         symbol_quot = qq.get_qq_quotations(codes)
         is_trade_time_now = tt.is_trade_time_now() and tt.is_trade_date()
         #this_date_str = '2016-10-24'
@@ -127,12 +130,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
                 op_tdx.init_hwnd()
                 this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
                 if this_date_str>=next_trade_date_str and datetime.datetime.now().hour<=9:#第二天开盘前5分钟更新止损数据
-                    #hold_df,holds,available_sells = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
+                    #hold_df,holds,all_monitors = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
                     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
-                    #available_sells = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
-                    available_sells = monitor_stocks + monitor_indexs
-                    available_sells = list(set(available_sells).difference(set(['160722'])))
-                    this_date_init_exit_data = get_exit_price(symbols=available_sells)
+                    #all_monitors = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
+                    all_stocks = get_all_code(hist_dir)
+                    monitor_stocks = list(set(monitor_stocks).intersection(set(all_stocks)))
+                    all_monitors = monitor_stocks + monitor_indexs
+                    all_monitors = list(set(all_monitors).difference(set(['160722'])))
+                    this_date_init_exit_data = get_exit_price(symbols=all_monitors)
                     print('exit_data=',this_date_init_exit_data)
                     count = 0
                     risk_data = {}
