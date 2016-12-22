@@ -6,6 +6,7 @@ import tradeTime as tt
 import tushare as ts
 import pdSql_common as pds
 from pdSql import StockSQL
+import numpy as np
 import sys
 from pydoc import describe
 
