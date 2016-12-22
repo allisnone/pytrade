@@ -123,8 +123,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #high_open_columns = ['date','close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3',
     #               'high_o_day5','high_o_day10','high_o_day20','high_o_day50']
     high_open_columns = []
-    high_open_df = tds.pd.DataFrame({}, columns=high_open_columns)
-    dapan_high_open_df = tds.pd.DataFrame({}, columns=high_open_columns)
+    deep_star_df = tds.pd.DataFrame({}, columns=high_open_columns)
+    dapan_ho_df = tds.pd.DataFrame({}, columns=high_open_columns)
     regress_column_type = 'close'
     for stock_symbol in all_trade_codes:
         if stock_symbol=='000029' and source=='easyhistory':
@@ -150,7 +150,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                        base_column='close',fix_columns=['date','close','p_change','o_change','position','pos20','MAX20high','star_l'])
             high_o_df['code'] = stock_symbol
             high_o_df['star_index'] = (high_o_df['star_l']/high_o_df['pos20']*((high_o_df['MAX20high']-high_o_df['close'])/high_o_df['MAX20high'])).round(2)
-            high_open_df= high_open_df.append(high_o_df)
+            deep_star_df= deep_star_df.append(high_o_df)
             
             if dapan_stocks and (stock_symbol in dapan_stocks):
                 dapan_criteria = ((s_stock.temp_hist_df['o_change']> 0.30) & (s_stock.temp_hist_df['pos20'].shift(1)<=1.0))
@@ -159,7 +159,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                            base_column='open',fix_columns=['date','close','p_change','o_change','position','pos20','oo_chg','oh_chg','ol_chg','oc_chg'])
                 dapan_high_o_df['code'] = stock_symbol
                 dapan_high_o_df['ho_index'] = (dapan_high_o_df['o_change']/dapan_high_o_df['pos20']).round(2)
-                dapan_high_open_df= dapan_high_open_df.append(dapan_high_o_df)
+                dapan_ho_df= dapan_ho_df.append(dapan_high_o_df)
             else:
                 pass
             
@@ -219,11 +219,11 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #print(tds.pd.DataFrame(result_codes_dict, columns=['name'], index=list(result_codes_dict.keys())))
     #all_result_df['name'] = result_codes_dict
     all_result_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
-    high_open_df['name'] = tds.Series(result_codes_dict,index=high_open_df.index)
-    high_open_df = high_open_df[['code','name']+high_open_columns]
+    deep_star_df['name'] = tds.Series(result_codes_dict,index=deep_star_df.index)
+    deep_star_df = star_df[['code','name','star_index']+high_open_columns]
     
     dapan_codes_dict = {}
-    if dapan_high_open_df.empty:
+    if dapan_ho_df.empty:
         pass
     else:
         for code in dapan_stocks:
@@ -231,8 +231,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                 dapan_codes_dict[code] = basic_code[code]
             else:
                 dapan_codes_dict[code] = 'NA'
-        dapan_high_open_df['name'] = tds.Series(dapan_codes_dict,index=dapan_high_open_df.index)
-        dapan_high_open_df = dapan_high_open_df[['code','name']+dapan_high_open_columns]
+        dapan_ho_df['name'] = tds.Series(dapan_codes_dict,index=dapan_ho_df.index)
+        dapan_ho_df = dapan_ho_df[['code','name','ho_index']+dapan_high_open_columns]
     
     all_trend_result_df['name'] = tds.Series(result_codes_dict,index=all_trend_result_df.index)
     all_result_df['stopped'] = tds.Series(on_trade_dict,index=all_result_df.index)
@@ -263,8 +263,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                    'break_in_count','break_in_date', 'break_in_distance',
                    'stopped','invalid','max_r','25%','50%','75%',]
     all_result_df.to_csv('./temp/regression_test_' + addition_name +tail_name)
-    high_open_df.to_csv('./temp/pos20_star_%s'% regress_column_type + addition_name +tail_name)
-    dapan_high_open_df.to_csv('./temp/dapan_high_open_%s'% regress_column_type + addition_name +tail_name)
+    deep_star_df.to_csv('./temp/pos20_star_%s'% regress_column_type + addition_name +tail_name)
+    dapan_ho_df.to_csv('./temp/dapan_high_open_%s'% regress_column_type + addition_name +tail_name)
     if all_result_df.empty:
         pass
     else:
