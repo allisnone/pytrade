@@ -281,6 +281,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                                 (all_result_df['invalid']==0) & (all_result_df['name']!='NA') & (all_result_df['last_trade_price']!=0)]# & (all_result_df['last_trade_price'] ==0)]
         tupo_df.to_csv('./temp/tupo_' + addition_name +tail_name)
         
+        
     result_summary.to_csv('./temp/result_summary_' + addition_name +tail_name)
     all_trend_result_df_chinese.to_csv('./temp/trend_result_%s' % ma_num + addition_name +'%s_to_%s_%s.csv' % (k_num,latest_date_str,rate_to_confirm_str))
     if not all_temp_hist_df.empty:
