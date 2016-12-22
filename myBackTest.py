@@ -147,16 +147,18 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
             #criteria = s_stock.temp_hist_df['low_high_open']!= 0
             criteria = ((s_stock.temp_hist_df['star_l']> 0.50) & (s_stock.temp_hist_df['l_change']<-3.0) & (s_stock.temp_hist_df['pos20'].shift(1)<0.2))
             high_o_df,high_open_columns = s_stock.regress_common(criteria,post_days=[0,-1,-2,-3,-4,-5,-10,-20,-60],regress_column = regress_column_type,
-                       base_column='close',fix_columns=['date','close','p_change','o_change','position'])
+                       base_column='close',fix_columns=['date','close','p_change','o_change','position','pos20','MAX20high','star_l'])
             high_o_df['code'] = stock_symbol
+            high_o_df['star_index'] = (high_o_df['star_l']/high_o_df['pos20']*((high_o_df['MAX20high']-high_o_df['close'])/high_o_df['MAX20high'])).round(2)
             high_open_df= high_open_df.append(high_o_df)
             
             if dapan_stocks and (stock_symbol in dapan_stocks):
                 dapan_criteria = ((s_stock.temp_hist_df['o_change']> 0.30) & (s_stock.temp_hist_df['pos20'].shift(1)<=1.0))
                 dapan_regress_column_type = 'open'
                 dapan_high_o_df,dapan_high_open_columns = s_stock.regress_common(dapan_criteria,post_days=[0,-1,-2,-3,-4,-5,-10,-20,-60],regress_column = dapan_regress_column_type,
-                           base_column='open',fix_columns=['date','close','p_change','o_change','position','oo_chg','oh_chg','ol_chg','oc_chg'])
+                           base_column='open',fix_columns=['date','close','p_change','o_change','position','pos20','oo_chg','oh_chg','ol_chg','oc_chg'])
                 dapan_high_o_df['code'] = stock_symbol
+                dapan_high_o_df['ho_index'] = (dapan_high_o_df['o_change']/dapan_high_o_df['pos20']).round(2)
                 dapan_high_open_df= dapan_high_open_df.append(dapan_high_o_df)
             else:
                 pass
@@ -262,7 +264,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                    'stopped','invalid','max_r','25%','50%','75%',]
     all_result_df.to_csv('./temp/regression_test_' + addition_name +tail_name)
     high_open_df.to_csv('./temp/pos20_star_%s'% regress_column_type + addition_name +tail_name)
-    dapan_high_open_df.to_csv('./temp/dapan_high_open%s'% regress_column_type + addition_name +tail_name)
+    dapan_high_open_df.to_csv('./temp/dapan_high_open_%s'% regress_column_type + addition_name +tail_name)
     if all_result_df.empty:
         pass
     else:
