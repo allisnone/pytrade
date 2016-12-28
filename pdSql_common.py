@@ -828,6 +828,12 @@ def get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=
             buy_num = available_money//suitable_amount
     return buy_num
 
+
+
+def get_buy_stock_datas(buy_stock_num=1,potential_stocks=[]):
+    
+    return
+
 def buy_stocks(risk_data,position,avl_sell_datas,symbol_quot,op_tdx,stock_sql=None,buy_rate=0.1):
     acc = '36005'
     acc_value, available_money = op_tdx.getAccountMoney(acc)
