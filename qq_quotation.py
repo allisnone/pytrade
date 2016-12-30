@@ -667,7 +667,7 @@ class QQ(object):
         return
     
     
-    def get_qq_quotations(indexs=['sh','sz','zxb','cyb','sz300','sh50'],force_update=False):
+    def get_qq_k_quotations(indexs=['sh','sz','zxb','cyb','sz300','sh50'],force_update=False):
         #http://qt.gtimg.cn/q=sh000001
         #http://qt.gtimg.cn/q=sh000016
         #http://qt.gtimg.cn/q=sz399001
@@ -692,7 +692,7 @@ class QQ(object):
             this_data['close'] = index_data[3]
             this_data['volume'] = index_data[36]
             this_data['amount'] = index_data[37]
-            print(this_data)
+            print('this_data=',this_data)
             #data.update({symbol:this_data})
             data.append(this_data)
         print(data)

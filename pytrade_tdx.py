@@ -325,7 +325,6 @@ class OperationTdx:
                 setEditText(self.__buy_sell_hwnds[1][0], str(highest))
                 time.sleep(0.2)
             else:
-                highest=limit[0]
                 setEditText(self.__buy_sell_hwnds[1][0], str(actual_price))
             click(self.__buy_sell_hwnds[5][0])
             if self.debug: print('buy_quantity=',final_quantity)
