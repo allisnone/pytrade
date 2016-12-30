@@ -523,7 +523,7 @@ def get_exit_data(symbol,dest_df,last_date_str):
             exit_price = dest_df.tail(3)
     return
 
-def get_stock_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券海王星/T0002/export/' ):#, has_update_history=False):
+def get_stock_exit_price(hold_codes=['300162'],confirm_rate=0.0,data_path='C:/中国银河证券海王星/T0002/export/'):#, has_update_history=False):
     """获取包括股票的止损数据"""
     #exit_dict={'300162': {'exit_half':22.5, 'exit_all': 19.0},'002696': {'exit_half':17.10, 'exit_all': 15.60}}
     has_update_history = True
@@ -580,8 +580,29 @@ def get_stock_exit_price(hold_codes=['300162'],data_path='C:/中国银河证券�
             min_close = round(round(describe_df.loc['min'].close,2),2)
             max_close = round(describe_df.loc['max'].close,2)
             max_high = round(describe_df.loc['max'].high,2)
-        exit_data['exit_half'] = min_close
-        exit_data['exit_all'] = min_low
+        exit_half_price = min_close * (1.0 + confirm_rate)
+        exit_all_price = min_low * (1.0 + confirm_rate)
+        """
+        if min_low<=5:
+            pass
+        elif min_low<=10:
+            exit_half_price = exit_half_price - 0.01
+            exit_all_price = exit_all_price - 0.01
+        elif min_low<=30:
+            exit_half_price = exit_half_price - 0.02
+            exit_all_price = exit_all_price - 0.02
+        elif min_low<=50:
+            exit_half_price = exit_half_price - 0.05
+            exit_all_price = exit_all_price - 0.05
+        elif min_low<=100:
+            exit_half_price = exit_half_price - 0.1
+            exit_all_price = exit_all_price - 0.1
+        else:
+            exit_half_price = exit_half_price - 0.2
+            exit_all_price = exit_all_price - 0.2
+        """
+        exit_data['exit_half'] = exit_half_price
+        exit_data['exit_all'] = exit_all_price
         exit_data['exit_rate'] = tolerance_exit_rate
         exit_data['t_rate'] = t_rate
         exit_dict[code] = exit_data
