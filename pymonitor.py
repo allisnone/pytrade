@@ -6,7 +6,9 @@ from pytrade_tdx import OperationTdx
 import sys
 
 def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
-            enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,start_buy_minute=(9*60+30),mail_interval=10,debug_enable=False):
+            enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,
+            start_buy_minute=(9*60+30),mail_interval=10,debug_enable=False,
+            except_stocks=['160722']):
     hist_dir='C:/中国银河证券海王星/T0002/export/'
     all_stocks = get_all_code(hist_dir)
     
@@ -22,7 +24,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
     print('monitor_stocks=',monitor_stocks)
     monitor_stocks = list(set(monitor_stocks).intersection(set(all_stocks)))
     all_monitors = monitor_stocks + monitor_indexs
-    #all_monitors = list(set(all_monitors).difference(set(['160722'])))
+    all_monitors = list(set(all_monitors).difference(set(except_stocks)))
     print(datetime.datetime.now())
     print('all_monitors=',all_monitors)
     this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -174,6 +176,8 @@ if __name__ == '__main__':
     print('half_sell =',half_sell)
     start_exit = 10*60+30
     start_buy = 14*60
+    excepts=['160722','601375']
     monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,
             enable_exit=enable_trd,start_exit_minute=start_exit, 
-            enable_buy=False,start_buy_minute=start_buy,debug_enable=debug)
+            enable_buy=False,start_buy_minute=start_buy,debug_enable=debug,
+            except_stocks=excepts)
