@@ -2288,6 +2288,24 @@ class Stockhistory:
         if natual_days!=0:
             yearly_prf = round(fuli_prf**(365.0/abs(natual_days))-1.0,4)
         #print('yearly_prf=',yearly_prf)
+        last_360_df = self.temp_hist_df.tail(250)
+        last_360_df['cum_amount'] = last_360_df['amount'].cumsum()
+        cum_amount = last_360_df.tail(1).iloc[0].cum_amount
+        n_last_360_df = len(last_360_df)
+        average_amount = cum_amount / n_last_360_df
+        n_topest = len(last_360_df[last_360_df['p_change']>9.2])/n_last_360_df
+        n_topest_one = len(last_360_df[(last_360_df['p_change']>9.2) & (last_360_df['high']==last_360_df['low'])])/n_last_360_df
+        great_incrs = 2.5
+        great_drop = -2.0
+        n_great_increase = len(last_360_df[last_360_df['p_change']>great_incrs])/n_last_360_df
+        n_great_drop = len(last_360_df[last_360_df['p_change']<great_drop])/n_last_360_df
+        """
+        print('average_amount=',average_amount)
+        print('n_topest=',n_topest)
+        print('n_topest_one=',n_topest_one)
+        print('n_great_increase=',n_great_increase)
+        print('n_great_drop=',n_great_drop)
+        """
         last_trade_price = temp_df.tail(1).iloc[0].trade
         last_trade_id = temp_df.tail(1).iloc[0].id
         last_id = temp_hist_df.tail(1).index.values.tolist()[0]
