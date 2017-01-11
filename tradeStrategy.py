@@ -2273,8 +2273,21 @@ class Stockhistory:
         temp_df['trade'] = temp_df['s_price'] + temp_df['b_price']
         temp_df['cum_prf'] = temp_df['profit'].cumsum()
         cum_prf = temp_df.tail(1).iloc[0].cum_prf
-        fuli_prf = temp_df.tail(1).iloc[0].fuli_prf
+        fuli_prf = temp_df.tail(1).iloc[0].fuli_prf  #倍数
+        #print('fuli_prf=',fuli_prf)
         last_trade_date = temp_df.tail(1).iloc[0].date
+        first_date = temp_hist_df.head(1).iloc[0].date
+        #print('first_date=',first_date)
+        last_date = temp_hist_df.tail(1).iloc[0].date
+        date_format = '%Y-%m-%d'
+        if '/' in last_trade_date:
+            date_format = date_format.replace('-', '/')
+        natual_days = (datetime.datetime.strptime(last_date,date_format)-datetime.datetime.strptime(first_date,date_format)).days
+        #print('natual_days=',natual_days)
+        yearly_prf = 0.0
+        if natual_days!=0:
+            yearly_prf = round(fuli_prf**(365.0/abs(natual_days))-1.0,4)
+        #print('yearly_prf=',yearly_prf)
         last_trade_price = temp_df.tail(1).iloc[0].trade
         last_trade_id = temp_df.tail(1).iloc[0].id
         last_id = temp_hist_df.tail(1).index.values.tolist()[0]
@@ -2334,7 +2347,7 @@ class Stockhistory:
         max_amount_rate_min2 = self.temp_hist_df.loc[id_amount_rate_min2_max20].amount_rate_min2
         summary_profit['max_amount_rate'] = max_amount_rate_min2 
         summary_profit['max_amount_distance'] = last_id - id_amount_rate_min2_max20 + 1
-        
+        summary_profit['yearly_prf'] = yearly_prf
         #print(temp_df)
         #self.temp_hist_df.to_csv('./temp/hist_temp_%s.csv' % self.code)
         temp_df.to_csv('./temp/bs_%s.csv' % self.code)

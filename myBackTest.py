@@ -106,10 +106,10 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #all_codes = ['300128', '002288', '002156', '300126','300162','002717','002799','300515','300516','600519',
     #            '000418','002673','600060','600887','000810','600115','600567','600199','000596','000538','002274','600036','600030','601398']
     column_list = ['count', 'mean', 'std', 'max', 'min', '25%','50%','75%','cum_prf',
-                   'fuli_prf','last_trade_date','last_trade_price','min_hold_count',
+                   'fuli_prf','yearly_prf','last_trade_date','last_trade_price','min_hold_count',
                    'max_hold_count','avrg_hold_count','this_hold_count','exit','enter',
                    'position','max_amount_rate','max_amount_distance','break_in', 
-                   'break_in_count','break_in_date', 'break_in_distance','success_rate']
+                   'break_in_count','break_in_date', 'break_in_distance','success_rate','days']
     all_result_df = tds.pd.DataFrame({}, columns=column_list)
     i=0
     trend_column_list = ['count', 'mean','chg_fuli', 'std', 'min', '25%', '50%', '75%', 'max', 'c_state',
@@ -257,12 +257,14 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     rate_to_confirm_str = 'rate' + rate_to_confirm_str.replace('.', '_')
     #print('latest_date_str=',latest_date_str)
     tail_name = '%s_from_%s_%s.csv' % (latest_date_str,k_num,rate_to_confirm_str)
-    column_list = ['count','name', 'mean', 'std', 'max', 'min', 'cum_prf',
-                   'fuli_prf','success_rate','last_trade_date','last_trade_price','min_hold_count',
+    #all_result_df['yearly_prf'] = all_result_df['fuli_prf']**(1.0/(all_result_df['days']/365.0))
+    result_column_list = ['count','name', 'mean', 'std', 'max', 'min', 'cum_prf',
+                   'fuli_prf','yearly_prf','success_rate','last_trade_date','last_trade_price','min_hold_count',
                    'max_hold_count','avrg_hold_count','this_hold_count','exit','enter',
                    'position','max_amount_rate','max_amount_distance','break_in', 
                    'break_in_count','break_in_date', 'break_in_distance',
                    'stopped','invalid','max_r','25%','50%','75%',]
+    all_result_df = all_result_df[result_column_list]
     all_result_df.to_csv('./temp/regression_test_' + addition_name +tail_name)
     deep_star_df.to_csv('./temp/pos20_star_%s'% regress_column_type + addition_name +tail_name)
     dapan_ho_df.to_csv('./temp/dapan_high_open_%s'% regress_column_type + addition_name +tail_name)
