@@ -840,13 +840,36 @@ def get_potential_stocks(stock_sql=None,strategy='33'):
     potential_stocks = []
     return potential_stocks
 
-def determine_buy_stocks(op_tdx,realtime_quotation, buy_stock_nums=1,potential_stocks=[]):
+def get_realtime_price(stocks=[]):
+    return {}
+
+def determine_buy_stocks(op_tdx,realtime_quotation, available_money, buy_stock_nums=1,potential_stocks=[],suitable_amount=16600):
     hist_data = pd.read_csv('C:/hist/day/temp/regression_test.csv')
     hist_data.index.isin(potential_stocks)
     hist_data['sort_value']=hist_data
-    
-    buy_stock_datas = {}
-    return {}
+    hist_reference_data = {'300062':12.0,'000060':10.2}  #to sort and get the sequence
+    sorted_stock_list =sorted(hist_reference_data.items(), lambda x, y: cmp(x[1], y[1]), reverse=True)   #code, value
+    buy_stock_datas = []
+    stocks_price = get_realtime_price(potential_stocks)
+    if len(sorted_stock_list)<=buy_stock_nums:
+        pass
+    else:
+        sorted_stock_list = sorted_stock_list[:buy_stock_nums]
+    if len(sorted_stock_list):
+        i = 0
+        while i <len(sorted_stock_list):
+            selected_symbol = sorted_stock_list[i][0]
+            buy_nums = suitable_amount//stocks_price
+            #buy_stock_datas[selected_symbol] = buy_nums
+            buy_stock_data = [selected_symbol,buy_nums,stocks_price]
+            buy_stock_datas.append(buy_stock_data)
+            available_money = available_money -buy_nums * stocks_price * 1.005
+            if available_money < suitable_amount * 0.5:
+                break
+            i = i + 1
+    else:
+        pass
+    return buy_stock_datas
 
 def get_dapan_position(index=[]):
     position = 0
