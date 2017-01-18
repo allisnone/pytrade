@@ -857,7 +857,7 @@ def get_sort_reference_datas(potential_stocks=[],sort_reverse=True):
     return sort_reference_list
 
 def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money, 
-                         buy_stock_nums=1,suitable_amount=16600,sort_reverse=True):
+                         buy_stock_nums=1,suitable_amount=16600,sort_reverse=True,max_buy_stocks=10):
     """
     hist_data = pd.read_csv('C:/hist/day/temp/regression_test.csv')
     hist_data.index.isin(potential_stocks)
@@ -868,17 +868,15 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
     buy_stock_datas = []
     #symbol_quot = qq.get_qq_quotations(potential_stocks)
     selected_list = sorted_stock_list
-    if potential_len<=buy_stock_nums:
-        pass
-    else:
-        selected_list = sorted_stock_list[:buy_stock_nums]
+    final_buy_stock_nums = min(potential_len,min(buy_stock_nums,max_buy_stocks))
     i = 0
-    if potential_len:
-        while i <potential_len:
+    if final_buy_stock_nums:
+        suitable_amount = max(available_money/final_buy_stock_nums,suitable_amount)
+        while i <final_buy_stock_nums:
             selected_symbol = sorted_stock_list[i][0]
             symbol_now_p = symbol_quot[selected_symbol]['now']
             buy_stock_share = suitable_amount//stocks_price
-            if i==(potential_len-1):
+            if i==(final_buy_stock_nums-1):
                 buy_stock_share = available_money//symbol_now_p
             #buy_stock_datas[selected_symbol] = buy_nums
             buy_stock_data = [selected_symbol,buy_stock_share,symbol_now_p]
@@ -892,7 +890,7 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
     return buy_stock_datas,sorted_stock_list[i:]
 
 def get_dapan_position(index=[]):
-    position = 0
+    position = 0.7
     
     return position
 
@@ -913,7 +911,7 @@ def get_buy_stock_datas(buy_stock_num=1,potential_stocks=[]):
     
     return
 
-def buy_stocks(op_tdx,acc_list=['36005'],stock_sql=None,buy_rate=1.0):
+def get_acc_buy_stocks(op_tdx,acc_list=['36005'],stock_sql=None,buy_rate=1.0):
     #acc = '36005'
     potential_stocks = get_potential_stocks(stock_sql)
     sorted_stock_list = get_sort_reference_datas(potential_stocks,sort_reverse=True)
@@ -934,6 +932,16 @@ def buy_stocks(op_tdx,acc_list=['36005'],stock_sql=None,buy_rate=1.0):
         
     return all_buy_stock_datas
 
+def buy_stocks(op_tdx, acc_list, stock_sql, buy_rate):
+    all_buy_stock_datas = get_acc_buy_stocks(op_tdx, acc_list, stock_sql, buy_rate)
+    for acc in list(all_buy_stock_datas.keys()):
+        this_acc_buy_data = all_buy_stock_datas[acc]
+        for stock_data in this_acc_buy_data:
+            symbol = stock_data[0]
+            buy_shares = stock_data[1]
+            buy_price = stock_data[2]
+            operation_tdx.order(code=symbol, direction='b', quantity=buy_shares, actual_price=buy_price,limit_price=None)
+    return 
 
 def quotation_monitor(codes,this_date_str,hour,minute):
     over_avrg_datas = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/')
