@@ -871,7 +871,8 @@ def get_sort_reference_datas(stock_sql, potential_stocks=[], value_column='refer
         reference_datas_df = reference_datas_df.set_index('code')
         print(reference_datas_df)
         overlap_stocks = list(set(potential_stocks).intersection(set(reference_stocks)))
-        reference_datas_df = reference_datas_df.isin(overlap_stocks)
+        reference_datas_df = reference_datas_df[reference_datas_df.index.isin(overlap_stocks)]
+        print(reference_datas_df)
         print(reference_datas_df[value_column])
         print(type(reference_datas_df[value_column]))
         sort_reference_datas = reference_datas_df[value_column].to_dict()
