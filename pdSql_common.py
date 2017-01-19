@@ -844,6 +844,7 @@ def get_potential_stocks(stock_sql,strategy='33'):
         pass
     else:
         potential_stocks = potential_stock_df['code'].tolist()
+    print('potential_stocks=',potential_stocks)
     return potential_stocks
 
 def get_realtime_price(stocks=[]):
