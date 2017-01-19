@@ -836,8 +836,14 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 pass
     return
 
-def get_potential_stocks(stock_sql=None,strategy='33'):
+def get_potential_stocks(stock_sql,strategy='33'):
     potential_stocks = []
+    table = 'potential'
+    potential_stock_df = stock_sql.get_table_df(table,columns=None)
+    if potential_stock_df.empty:
+        pass
+    else:
+        potential_stocks = potential_stock_df['code'].tolist()
     return potential_stocks
 
 def get_realtime_price(stocks=[]):
@@ -851,9 +857,18 @@ def get_realtime_price(stocks=[]):
     """
     return symbol_quot
 
-def get_sort_reference_datas(potential_stocks=[],sort_reverse=True):
-    sort_reference_datas = {'300062':12.0,'000060':10.2}  #to sort and get the sequence
-    sort_reference_list =sorted(sort_reference_datas.items(), lambda x, y: cmp(x[1], y[1]), reverse=sort_reverse)   #code, value
+def get_sort_reference_datas(stock_sql, potential_stocks=[], value_column='refer', sort_reverse=True):
+    sort_reference_list = []
+    table = 'reference'
+    reference_datas_df = stock_sql.get_table_df(table,columns=['code',value_column])
+    if preference_datas_df.empty:
+        pass
+    else:
+        reference_datas_df = reference_datas_df.set_index('code')
+        reference_datas_df = reference_datas_df.isin(potential_stocks)
+        sort_reference_datas = reference_datas_df.to_dict()
+        #sort_reference_datas = {'300062':12.0,'000060':10.2}  #to sort and get the sequence
+        sort_reference_list =sorted(sort_reference_datas.items(), lambda x, y: cmp(x[1], y[1]), reverse=sort_reverse)   #code, value
     return sort_reference_list
 
 def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money, 
@@ -941,6 +956,7 @@ def buy_stocks(op_tdx, acc_list, stock_sql, buy_rate):
             buy_shares = stock_data[1]
             buy_price = stock_data[2]
             operation_tdx.order(code=symbol, direction='b', quantity=buy_shares, actual_price=buy_price,limit_price=None)
+        #account switchover
     return 
 
 def quotation_monitor(codes,this_date_str,hour,minute):
