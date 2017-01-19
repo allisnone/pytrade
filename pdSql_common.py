@@ -865,6 +865,7 @@ def get_sort_reference_datas(stock_sql, potential_stocks=[], value_column='refer
     if reference_datas_df.empty:
         pass
     else:
+        print(reference_datas_df)
         reference_datas_df = reference_datas_df.set_index('code')
         reference_datas_df = reference_datas_df.isin(potential_stocks)
         sort_reference_datas = reference_datas_df.to_dict()
