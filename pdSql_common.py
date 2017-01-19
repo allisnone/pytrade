@@ -926,7 +926,7 @@ def get_buy_stock_datas(buy_stock_num=1,potential_stocks=[]):
     
     return
 
-def get_acc_buy_stocks(op_tdx,acc_list=['36005'],stock_sql=None,buy_rate=1.0):
+def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0):
     #acc = '36005'
     potential_stocks = get_potential_stocks(stock_sql)
     sorted_stock_list = get_sort_reference_datas(potential_stocks,sort_reverse=True)
