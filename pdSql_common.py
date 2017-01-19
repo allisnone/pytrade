@@ -867,7 +867,10 @@ def get_sort_reference_datas(stock_sql, potential_stocks=[], value_column='refer
     else:
         print(reference_datas_df)
         reference_datas_df = reference_datas_df.set_index('code')
-        reference_datas_df = reference_datas_df.isin(potential_stocks)
+        print(reference_datas_df)
+        reference_stocks = reference_datas_df['code'].tolist()
+        overlap_stocks = list(set(potential_stocks).intersection(set(reference_stocks)))
+        reference_datas_df = reference_datas_df.isin(overlap_stocks)
         sort_reference_datas = reference_datas_df[value_column].to_dict()
         print('sort_reference_datas=',sort_reference_datas)
         #sort_reference_datas = {'300062':12.0,'000060':10.2}  #to sort and get the sequence
