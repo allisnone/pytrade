@@ -878,7 +878,8 @@ def get_sort_reference_datas(stock_sql, potential_stocks=[], value_column='refer
         sort_reference_datas = reference_datas_df[value_column].to_dict()
         print('sort_reference_datas=',sort_reference_datas)
         #sort_reference_datas = {'300062':12.0,'000060':10.2}  #to sort and get the sequence
-        sort_reference_list =sorted(sort_reference_datas.items(), lambda x, y: cmp(x[1], y[1]), reverse=sort_reverse)   #code, value
+        #sort_reference_list =sorted(sort_reference_datas.items(), lambda x, y: cmp(x[1], y[1]), reverse=sort_reverse)   #code, value  python2.7
+        sort_reference_list =sorted(list(sort_reference_datas.items()), lambda x, y: cmp(x[1], y[1]), reverse=sort_reverse)   #code, value  python3.0
     print('sort_reference_list=',sort_reference_list)
     return sort_reference_list
 
