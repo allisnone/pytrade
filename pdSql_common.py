@@ -946,6 +946,7 @@ def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0):
     sorted_stock_list = get_sort_reference_datas(stock_sql, potential_stocks, value_column='refer', sort_reverse=True)
     symbol_quot = qq.get_qq_quotations(potential_stocks)
     dapan_pos = get_dapan_position()
+    print('dapan_pos=',dapan_pos)
     all_buy_stock_datas = {}
     for acc in acc_list:
         acc_value, available_money = op_tdx.getAccountMoney(acc)
@@ -953,7 +954,9 @@ def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0):
         print('available_money=',available_money)
         acc_value, available_money = 100000.0,70000.0
         buy_num = get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=16600)
-        if dapan_pos>0.3:
+        print('buy_num=',buy_num)
+        dapan_po = 0.9
+        if dapan_pos<0.3:
             pass
         else:
             buy_num = int(buy_num * buy_rate)
