@@ -948,6 +948,9 @@ def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0):
     all_buy_stock_datas = {}
     for acc in acc_list:
         acc_value, available_money = op_tdx.getAccountMoney(acc)
+        print('acc_value=',acc_value)
+        print('available_money=',available_money)
+        acc_value, available_money = 100000.0,70000.0
         buy_num = get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=16600)
         if dapan_pos>0.3:
             pass
