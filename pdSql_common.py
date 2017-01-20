@@ -906,7 +906,7 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
             buy_stock_share = int(suitable_amount//symbol_now_p/100)*100
             
             if i==(final_buy_stock_nums-1):
-                buy_stock_share = available_money//symbol_now_p
+                buy_stock_share = int(available_money//symbol_now_p/100)*100
             #buy_stock_datas[selected_symbol] = buy_nums
             buy_stock_data = [selected_symbol,buy_stock_share,symbol_now_p]
             buy_stock_datas.append(buy_stock_data)
@@ -949,6 +949,7 @@ def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0):
     print('dapan_pos=',dapan_pos)
     all_buy_stock_datas = {}
     for acc in acc_list:
+        buy_stock_datas = []
         acc_value, available_money = op_tdx.getAccountMoney(acc)
         print('acc_value=',acc_value)
         print('available_money=',available_money)
