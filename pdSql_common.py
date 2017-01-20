@@ -903,7 +903,7 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
         while i <final_buy_stock_nums:
             selected_symbol = sorted_stock_list[i][0]
             symbol_now_p = symbol_quot[selected_symbol]['now']
-            buy_stock_share = suitable_amount//symbol_now_p
+            buy_stock_share = int(suitable_amount//symbol_now_p/100)*100
             if i==(final_buy_stock_nums-1):
                 buy_stock_share = available_money//symbol_now_p
             #buy_stock_datas[selected_symbol] = buy_nums
