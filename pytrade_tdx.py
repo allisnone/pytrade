@@ -546,7 +546,7 @@ class OperationTdx:
                 return market_value,available_money
         if pos_list:
             for stock_data in pos_list:
-                market_value = market_value + stock_data[9]  #9 for '参考市值'
+                market_value = market_value + float(stock_data[9])  #9 for '参考市值'
         return market_value,available_money
     
     def getCodePosition(self,code):
