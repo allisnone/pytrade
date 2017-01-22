@@ -895,7 +895,7 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
     potential_len = len(sorted_stock_list)
     buy_stock_datas = []
     #symbol_quot = qq.get_qq_quotations(potential_stocks)
-    selected_list = sorted_stock_list
+    remained_list = sorted_stock_list
     final_buy_stock_nums = min(potential_len,min(buy_stock_nums,max_buy_stocks))
     i = 0
     if final_buy_stock_nums:
@@ -909,7 +909,7 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
                 buy_stock_share = int(available_money//symbol_now_p/100)*100
             #buy_stock_datas[selected_symbol] = buy_nums
             if buy_stock_share>=100:
-                selected_list.pop(0)
+                remained_list.pop(0)
                 buy_stock_data = [selected_symbol,buy_stock_share,symbol_now_p]
                 buy_stock_datas.append(buy_stock_data)
                 available_money = available_money -buy_stock_share * symbol_now_p * 1.005
@@ -920,7 +920,7 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
             i = i + 1
     else:
         pass
-    return buy_stock_datas,selected_list
+    return buy_stock_datas,remained_list
 
 def get_dapan_position(index=[]):
     position = 0.7
@@ -945,7 +945,7 @@ def get_buy_stock_datas(buy_stock_num=1,potential_stocks=[]):
     
     return
 
-def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=1.0):
+def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=1.0,max_buy_num=3.0):
     #acc = '36005'
     potential_stocks = get_potential_stocks(stock_sql)
     sorted_stock_list = get_sort_reference_datas(stock_sql, potential_stocks, value_column='refer', sort_reverse=True)
@@ -970,7 +970,7 @@ def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=
             buy_num = int(buy_num * buy_rate)
         print('sorted_stock_list=',sorted_stock_list)
         buy_stock_datas,sorted_stock_list = determine_buy_stocks(sorted_stock_list,symbol_quot, actual_available_money, 
-                         buy_stock_nums=buy_num,suitable_amount=16600,sort_reverse=True,max_buy_stocks=10)
+                         buy_stock_nums=buy_num,suitable_amount=16600,sort_reverse=True,max_buy_stocks=max_buy_num)
         print('sorted_stock_list1=',sorted_stock_list)
         all_buy_stock_datas[acc] = buy_stock_datas
     return all_buy_stock_datas
