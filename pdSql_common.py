@@ -908,15 +908,19 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
             if i==(final_buy_stock_nums-1):
                 buy_stock_share = int(available_money//symbol_now_p/100)*100
             #buy_stock_datas[selected_symbol] = buy_nums
-            buy_stock_data = [selected_symbol,buy_stock_share,symbol_now_p]
-            buy_stock_datas.append(buy_stock_data)
-            available_money = available_money -buy_stock_share * symbol_now_p * 1.005
+            if buy_stock_share>=100:
+                selected_list.pop(0)
+                buy_stock_data = [selected_symbol,buy_stock_share,symbol_now_p]
+                buy_stock_datas.append(buy_stock_data)
+                available_money = available_money -buy_stock_share * symbol_now_p * 1.005
             if available_money < suitable_amount * 0.5:
                 break
+            else:
+                pass
             i = i + 1
     else:
         pass
-    return buy_stock_datas,sorted_stock_list[i:]
+    return buy_stock_datas,selected_list
 
 def get_dapan_position(index=[]):
     position = 0.7
