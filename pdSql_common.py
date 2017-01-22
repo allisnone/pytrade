@@ -964,9 +964,10 @@ def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=
             pass
         else:
             buy_num = int(buy_num * buy_rate)
-        
+        print('sorted_stock_list=',sorted_stock_list)
         buy_stock_datas,sorted_stock_list = determine_buy_stocks(sorted_stock_list,symbol_quot, actual_available_money, 
                          buy_stock_nums=buy_num,suitable_amount=16600,sort_reverse=True,max_buy_stocks=10)
+        print('sorted_stock_list1=',sorted_stock_list)
         all_buy_stock_datas[acc] = buy_stock_datas
     return all_buy_stock_datas
 
