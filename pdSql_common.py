@@ -865,18 +865,18 @@ def get_sort_reference_datas(stock_sql, potential_stocks=[], value_column='refer
     if reference_datas_df.empty:
         pass
     else:
-        print(reference_datas_df)
+        #print(reference_datas_df)
         del reference_datas_df['id']
         reference_stocks = reference_datas_df['code'].tolist()
         reference_datas_df = reference_datas_df.set_index('code')
-        print(reference_datas_df)
+        #print(reference_datas_df)
         overlap_stocks = list(set(potential_stocks).intersection(set(reference_stocks)))
         reference_datas_df = reference_datas_df[reference_datas_df.index.isin(overlap_stocks)]
-        print(reference_datas_df)
+        #print(reference_datas_df)
         print(reference_datas_df[value_column])
-        print(type(reference_datas_df[value_column]))
+        #print(type(reference_datas_df[value_column]))
         sort_reference_datas = reference_datas_df[value_column].to_dict()
-        print('sort_reference_datas=',sort_reference_datas)
+        #print('sort_reference_datas=',sort_reference_datas)
         #sort_reference_datas = {'300062':12.0,'000060':10.2}  #to sort and get the sequence
         #sort_reference_list =sorted(sort_reference_datas.items(), lambda x, y: cmp(x[1], y[1]), reverse=sort_reverse)   #code, value  python2.7
         sort_reference_list = sorted(sort_reference_datas.items(), key=lambda d: d[1],reverse=True)
@@ -903,10 +903,10 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
         suitable_amount = max(available_money/final_buy_stock_nums,suitable_amount)
         print('suitable_amount=',suitable_amount)
         while i <final_buy_stock_nums:
-            print('i=',i)
+            #print('i=',i)
             this_buy = remained_list.pop(0)
             selected_symbol = this_buy[0]
-            print('selected_symbol=',selected_symbol)
+            #print('selected_symbol=',selected_symbol)
             selected_symbol_indicator = this_buy[1]
             symbol_now_p = symbol_quot[selected_symbol]['now']
             buy_stock_share = int(suitable_amount//symbol_now_p/100)*100
