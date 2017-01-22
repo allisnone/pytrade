@@ -925,22 +925,23 @@ def get_dapan_position(index=[]):
 
 def get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=16600):
     buy_num = 0
+    actual_available_money = min(available_money,((acc_value+available_money)*max_positon-acc_value))
     if acc_value/(acc_value+available_money)>max_positon:
         pass
     else:
-        if available_money<0.5*suitable_amount:
+        if actual_available_money<0.5*suitable_amount:
             pass
-        elif available_money<=suitable_amount:
+        elif actual_available_money<=suitable_amount:
             buy_num = 1
         else:
-            buy_num = available_money//suitable_amount
-    return buy_num
+            buy_num = actual_available_money//suitable_amount
+    return buy_num,actual_available_money
 
 def get_buy_stock_datas(buy_stock_num=1,potential_stocks=[]):
     
     return
 
-def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0):
+def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=1.0):
     #acc = '36005'
     potential_stocks = get_potential_stocks(stock_sql)
     sorted_stock_list = get_sort_reference_datas(stock_sql, potential_stocks, value_column='refer', sort_reverse=True)
@@ -951,19 +952,21 @@ def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0):
     for acc in acc_list:
         buy_stock_datas = []
         acc_value, available_money = op_tdx.getAccountMoney(acc)
+        print('account=',acc)
         print('acc_value=',acc_value)
         print('available_money=',available_money)
         acc_value, available_money = 100000.0,70000.0
-        buy_num = get_acc_buy_nums(acc_value, available_money,max_positon=0.7,suitable_amount=16600)
+        buy_num,actual_available_money = get_acc_buy_nums(acc_value, available_money,max_positon=max_pos,suitable_amount=16600)
         print('buy_num=',buy_num)
+        print('actual_available_money=',actual_available_money)
         dapan_po = 0.9
         if dapan_pos<0.3:
             pass
         else:
             buy_num = int(buy_num * buy_rate)
         
-        buy_stock_datas,sorted_stock_list = determine_buy_stocks(sorted_stock_list,symbol_quot, available_money, 
-                         buy_stock_nums=buy_num,suitable_amount=16600,sort_reverse=True)
+        buy_stock_datas,sorted_stock_list = determine_buy_stocks(sorted_stock_list,symbol_quot, actual_available_money, 
+                         buy_stock_nums=buy_num,suitable_amount=16600,sort_reverse=True,max_buy_stocks=10)
         all_buy_stock_datas[acc] = buy_stock_datas
     print('all_buy_stock_datas=',all_buy_stock_datas)
     return all_buy_stock_datas
