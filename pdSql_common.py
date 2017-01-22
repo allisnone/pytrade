@@ -903,7 +903,9 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
         suitable_amount = max(available_money/final_buy_stock_nums,suitable_amount)
         while i <final_buy_stock_nums:
             print('i=',i)
-            selected_symbol = sorted_stock_list[i][0]
+            this_buy = remained_list.pop(0)
+            selected_symbol = this_buy[0]
+            selected_symbol_indicator = this_buy[1]
             symbol_now_p = symbol_quot[selected_symbol]['now']
             buy_stock_share = int(suitable_amount//symbol_now_p/100)*100
             
@@ -911,7 +913,6 @@ def determine_buy_stocks(sorted_stock_list,symbol_quot, available_money,
                 buy_stock_share = int(available_money//symbol_now_p/100)*100
             #buy_stock_datas[selected_symbol] = buy_nums
             if buy_stock_share>=100:
-                remained_list.pop(0)
                 buy_stock_data = [selected_symbol,buy_stock_share,symbol_now_p]
                 buy_stock_datas.append(buy_stock_data)
                 available_money = available_money -buy_stock_share * symbol_now_p * 1.005
