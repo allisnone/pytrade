@@ -978,6 +978,42 @@ def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=
         all_buy_stock_datas[acc] = buy_stock_datas
     return all_buy_stock_datas
 
+def get_dynamic_stop_profit_price(this_highest,stop_profit_price=0.0,stop_rate_from_highest=0.0):
+    stop_price = this_highest
+    if stop_profit_price>0:
+        stop_price = min(stop_profit_price,this_highest)
+    elif stop_profit_price==0.0:
+        if stop_rate_from_highest<0:
+            stop_price = round(this_highest*(1+0.01*stop_rate_from_highest),2)
+        else:
+            pass
+    else:
+        pass    
+    return stop_price
+
+
+def get_stop_profit_datas(symbol_quot,fix_price_data={},stop_type='fixed_drop_rate'):
+    stop_profit_stocks = list(symbol_quot.keys())
+    stop_profit_datas = dict()
+    for symbol in stop_profit_stocks:
+        symbol_high_price = symbol_quot[symbol]['high']
+        symbol_now_price = symbol_quot[symbol]['now']
+        symbol_stop_price = symbol_high_price
+        stop_rate = -2.5
+        if stop_type=='fixed_drop_rate':
+            symbol_stop_price = get_dynamic_stop_profit_price(this_highest=symbol_high_price, stop_rate_from_highest=stop_rate)
+        elif stop_type=='fixed_price':
+            fix_price = symbol_now_price
+            if symbol in list(fix_price_data.keys()):
+                fix_price = fix_price_data[symbol]
+            else:
+                pass
+            symbol_stop_price = get_dynamic_stop_profit_price(this_highest=symbol_high_price, stop_profit_price=fix_price)
+        else:
+            pass
+        stop_profit_datas[symbol] = symbol_stop_price
+    return stop_profit_datas
+
 def buy_stocks(op_tdx, acc_list, stock_sql, buy_rate):
     all_buy_stock_datas = get_acc_buy_stocks(op_tdx, acc_list, stock_sql, buy_rate)
     for acc in list(all_buy_stock_datas.keys()):
