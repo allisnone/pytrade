@@ -263,7 +263,9 @@ def get_all_quotation():
     quotation_data = qq.get_qq_quotations_df(all_codes)
     print('quotation_data:',quotation_data)
     return quotation_data
-get_all_quotation()
+#get_all_quotation()
+
+
 def get_different_symbols(hist_dir='C:/hist/day/data/'):
     indexs= ['cyb', 'zxb', 'sz', 'sh', 'sz300', 'zx300', 'hs300']#, 'sh50']
     all_codes = get_all_code(hist_dir)
