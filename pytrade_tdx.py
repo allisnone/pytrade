@@ -593,7 +593,7 @@ class OperationTdx:
         :param trade_num: 计划成交数量, int type (getPosition)
         :return pos_chg, 持仓变化，dict type
         """
-        if trade_num==0:
+        if trade_num==0:# no trade
             return
         if not pos_chg or code not in list(pos_chg.keys()):
             if self.debug: print('请手动确认股票  %s交易是否成功 !', code)
