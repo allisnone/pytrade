@@ -587,6 +587,14 @@ class OperationTdx:
         return pos_chg
     
     def trade_confirm(self,code, trade_num, pos_chg={}):
+        """
+    确认成交并email通知
+        :param code: 股票代码, char type  (getPosition)
+        :param trade_num: 计划成交数量, int type (getPosition)
+        :return pos_chg, 持仓变化，dict type
+        """
+        if trade_num==0:
+            return
         if not pos_chg or code not in list(pos_chg.keys()):
             if self.debug: print('请手动确认股票  %s交易是否成功 !', code)
             pass
