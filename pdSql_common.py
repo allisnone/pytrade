@@ -957,9 +957,11 @@ def get_buy_stock_datas(buy_stock_num=1,potential_stocks=[]):
     
     return
 
-def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=1.0,max_buy_num=3.0):
+def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=1.0,max_buy_num=3.0,given_stocks=[]):
     #acc = '36005'
     potential_stocks = get_potential_stocks(stock_sql)
+    if given_stocks:
+        potential_stocks = given_stocks
     sorted_stock_list = get_sort_reference_datas(stock_sql, potential_stocks, value_column='refer', sort_reverse=True)
     symbol_quot = qq.get_qq_quotations(potential_stocks)
     dapan_pos = get_dapan_position()
