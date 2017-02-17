@@ -845,7 +845,7 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 pass
     return
 
-def get_potential_stocks(stock_sql,strategy='33'):
+def get_potential_stocks(stock_sql,strategy=33):
     potential_stocks = []
     table = 'potential'
     potential_stock_df = stock_sql.get_table_df(table,columns=None)
@@ -957,7 +957,7 @@ def get_buy_stock_datas(buy_stock_num=1,potential_stocks=[]):
     
     return
 
-def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=1.0,max_buy_num=3.0,given_stocks=[]):
+def get_acc_buy_stocks(op_tdx,stock_sql,acc_list=['36005'],buy_rate=1.0,max_pos=1.0,max_buy_num=3.0,given_stocks=[],strategy_id=1):
     #acc = '36005'
     potential_stocks = get_potential_stocks(stock_sql)
     if given_stocks:
@@ -1025,8 +1025,8 @@ def get_stop_profit_datas(symbol_quot,fix_price_data={},stop_type='fixed_drop_ra
         stop_profit_datas[symbol] = symbol_stop_price
     return stop_profit_datas
 
-def buy_stocks(op_tdx, acc_list, stock_sql, buy_rate):
-    all_buy_stock_datas = get_acc_buy_stocks(op_tdx, acc_list, stock_sql, buy_rate)
+def buy_stocks(op_tdx, acc_list, stock_sql, buy_rate,strategy=1,given_buy_stocks=[]):
+    all_buy_stock_datas = get_acc_buy_stocks(op_tdx, acc_list, stock_sql, buy_rate,strategy_id=strategy,given_stocks=given_buy_stocks)
     for acc in list(all_buy_stock_datas.keys()):
         this_acc_buy_data = all_buy_stock_datas[acc]
         for stock_data in this_acc_buy_data:
