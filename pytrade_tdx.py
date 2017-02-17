@@ -427,6 +427,9 @@ class OperationTdx:
         #    lowest=limit_price[1]
         # restoreFocusWindow(self.__top_hwnd)
         pre_position = self.getPositionDict()
+        if quantity<=0:#invalid quantity
+            if self.debug: print('Please input valid quantity!')
+            return
         trade_num = quantity
         if direction == 'B':
             self.__buy(code, quantity,actual_price,limit_price)
