@@ -424,12 +424,15 @@ def analyze_quotation_datas(avrg_temp_df,path='C:/work/temp_k/'):
         if code in ['sh','cyb']:
             avrg_temp_df['avrg'] = np.where(avrg_temp_df.index>0,(avrg_temp_df['close'].cumsum()/(avrg_temp_df.index + 1.0)).round(2),avrg_temp_df['close'])
         avrg_temp_df['o_avrg'] = np.where(avrg_temp_df['now']>=avrg_temp_df['avrg'],1,0)
+        avrg_temp_df['avrg_distance'] = np.where(avrg_temp_df.index>0,(avrg_temp_df['now']-avrg_temp_df['avrg'])/avrg_temp_df['avrg']*100.0,0)
+        #avrg_rolling_window = 10
+        #avrg_temp_df['avrg_distance_mean'] = avrg_temp_df['avrg_distance'].rolling(window=avrg_rolling_window,center=False).mean().round(2)
         avrg_temp_df['o_avrg_rate'] = (avrg_temp_df['o_avrg'].cumsum()/(avrg_temp_df.index + 1.0)).round(2)
         avrg_temp_df['avrg_chg'] = (avrg_temp_df['avrg']/avrg_temp_df['close0']-1)*100
         avrg_temp_df['incrs_1m'] = avrg_temp_df['increase_rate'].diff(1)
         file_name = path + 'minute_%s_%s_analyzed.csv' % (code,this_date_str)
         avrg_temp_df.to_csv(file_name)
-        columns = ['increase_rate','avrg','o_avrg_rate','avrg_chg','incrs_1m']
+        columns = ['increase_rate','avrg','o_avrg_rate','avrg_chg','incrs_1m','avrg_distance']#,'avrg_distance_mean']
         avrg_temp_df_describe = avrg_temp_df[columns].describe()
         #print(avrg_temp_df[columns].describe())
         #file_name = path + 'temp_002807_2016-10-24.csv'
@@ -443,12 +446,16 @@ def analyze_quotation_datas(avrg_temp_df,path='C:/work/temp_k/'):
         max_incrs_1m = avrg_temp_df_describe.ix['max','incrs_1m']
         min_incrs_1m = avrg_temp_df_describe.ix['min','incrs_1m']
         std_incrs_rate = avrg_temp_df_describe.ix['std','increase_rate']
+        last_avrg_distance = avrg_temp_df.tail(1).iloc[0].avrg_distance
+        std_avrg_distance = avrg_temp_df_describe.ix['std','avrg_distance']
+        avrg_distance_mean = avrg_temp_df_describe.ix['mean','avrg_distance']
         #num_over_avrg_df = avrg_temp_df[avrg_temp_df['now']>avrg_temp_df['avrg']]
         #temp_df['cum_prf'] = temp_df['profit'].cumsum()
         #over_avrg_rate = round(len(num_over_avrg_df),2)/len(avrg_temp_df)
         over_avrg_datas.update({'code':code,'name':name, 'last_avrg_chg':last_avrg_chg,'last_o_avrg_rate':last_o_avrg_rate,
                                 'max_avrg_chg':max_avrg_chg, 'min_avrg_chg':min_avrg_chg, 'max_incrs_1m':max_incrs_1m,
-                                'min_incrs_1m':min_incrs_1m, 'std_incrs_rate':std_incrs_rate,'is_strong':is_strong
+                                'min_incrs_1m':min_incrs_1m, 'std_incrs_rate':std_incrs_rate,'is_strong':is_strong,
+                                'last_avrg_distance':last_avrg_distance,'avrg_distance_mean':avrg_distance_mean,'std_avrg_distance':std_avrg_distance
                                 }
                                )
         #columns = ['code','name','is_strong', 'last_avrg_chg','last_o_avrg_rate','max_avrg_chg',
