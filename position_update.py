@@ -4,12 +4,20 @@ import easyhistory
 import pdSql_common as pds
 from pdSql import StockSQL
 import sys
+import datetime
 #update_type = ''
 update_type = 'index'
 #update_type = 'position'
 #update_type = 'stock'
 update_type = 'yh'
 #update_type = 'aa'
+now_time =datetime.datetime.now()
+now_time_str = now_time.strftime('%Y/%m/%d %X')
+d_format='%Y/%m/%d'
+last_date_str = pds.tt.get_last_trade_date(date_format=d_format)
+print('now_time = ',now_time_str)
+print('last_date = ',last_date_str)
+
 if len(sys.argv)>=2:
     if sys.argv[1] and isinstance(sys.argv[1], str):
         update_type = sys.argv[1]  #start date string   
@@ -51,7 +59,6 @@ print(potential_df)
 lanchou_df = potential_df[potential_df['category_id']==1]
 print(lanchou_df['code'].values.tolist())
 """
-
 #"""
 indexs,funds,b_stock,all_stocks = pds.get_different_symbols()
 if update_type == 'index':
