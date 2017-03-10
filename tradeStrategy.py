@@ -2348,7 +2348,10 @@ class Stockhistory:
         summary_profit['min_hold_count'] = min_hold_count
         summary_profit['max_hold_count'] = max_hold_count
         summary_profit['avrg_hold_count'] = avrg_hold_count
-        summary_profit['this_hold_count'] = last_id - last_trade_id + 1
+        this_trade_count = last_id - last_trade_id + 1
+        if last_trade_price >0:#last trade to be sell
+            this_trade_count = -1*this_trade_count
+        summary_profit['this_hold_count'] = this_trade_count
         summary_profit['exit'] = dynamic_exit_price 
         summary_profit['enter'] = dynamic_buy_price
         summary_profit['position'] = this_position 
