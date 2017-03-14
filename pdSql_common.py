@@ -810,6 +810,8 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 symbol_now_v = symbol_quot[symbol]['volume']
                 symbol_topest = symbol_quot[symbol]['topest']
                 symbol_lowest = symbol_quot[symbol]['lowest']
+                if symbol_now_v<=0 or symbol_now_p<=0:#stop trade
+                    continue
                 limit_p = [symbol_topest,symbol_lowest]
                 if symbol=='300432' and demon_sql: #for test
                     symbol_now_p = demon_sql.get_demon_value()
@@ -835,6 +837,8 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                     symbol_ask5_p = symbol_quot[symbol]['ask5']
                     symbol_now_p = symbol_quot[symbol]['now']
                     symbol_now_v = symbol_quot[symbol]['volume']
+                    if symbol_now_v<=0 or symbol_now_p<=0:#stop trade
+                        continue
                     symbol_topest = symbol_quot[symbol]['topest']
                     symbol_lowest = symbol_quot[symbol]['lowest']
                     limit_p = [symbol_topest,symbol_lowest]
