@@ -174,7 +174,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
 if __name__ == '__main__':
     half_sell = False
     enable_trd = True
-    debug = False
+    debug = True
     if len(sys.argv)>=2:
         if sys.argv[1] and int(sys.argv[1])==1:
             half_sell = True
