@@ -587,6 +587,7 @@ class StockSQL(object):
         
     #for chunk_df in pd.read_sql_query("SELECT * FROM today_stock", engine, chunksize=5):
     #    print(chunk_df)
+    
 stock_sql_obj=StockSQL()
 setting_dict = stock_sql_obj.get_exit_setting_data() 
 print(setting_dict)
