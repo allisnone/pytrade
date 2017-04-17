@@ -532,8 +532,36 @@ def get_exit_data(symbol,dest_df,last_date_str):
             exit_price = dest_df.tail(3)
     return
 
-def get_stock_exit_price(hold_codes=['300162'],confirm_rate=0.0,data_path='C:/中国银河证券海王星/T0002/export/'):#, has_update_history=False):
+def get_exit_comnfirm_rate(sql=None):
+    """
+    Get from SQL
+    """
+    confirm_rate=0.0026#卖出交易费
+    if sql:
+        setting_dict = stock_sql_obj.get_exit_setting_data()
+        if setting_dict and 'exit_confirm_rate' in list(setting_dict.keys()):
+            confirm_rate = setting_dict['exit_confirm_rate']
+    return confirm_rate
+
+def get_exit_setting_rate(exit_setting_dict={}):
+    """
+    Get from SQL
+    """
+    confirm_rate=0.0026
+    tolerate_dropdown_rate = -0.05
+    if exit_setting_dict:
+        if 'tolerate_loss' in list(exit_setting_dict.keys()):
+            tolerate_dropdown_rate = exit_setting_dict['tolerate_loss']
+        if 'exit_confirm_rate' in list(exit_setting_dict.keys()):
+            confirm_rate = exit_setting_dict['exit_confirm_rate']
+    return confirm_rate,tolerate_dropdown_rate
+
+def get_stock_exit_price(hold_codes=['300162'],exit_setting_dict={},data_path='C:/中国银河证券海王星/T0002/export/'):#, has_update_history=False):
     """获取包括股票的止损数据"""
+    """
+    confirm_rate:超过止损价后再次下跌的幅度，以确认止损
+    """
+    confirm_rate,tolerate_dropdown_rate = get_exit_setting_rate(exit_setting_dict)
     #exit_dict={'300162': {'exit_half':22.5, 'exit_all': 19.0},'002696': {'exit_half':17.10, 'exit_all': 15.60}}
     has_update_history = True
     """
@@ -560,8 +588,8 @@ def get_stock_exit_price(hold_codes=['300162'],confirm_rate=0.0,data_path='C:/�
         hist_df  =his[code].ROC(1) 
         hist_last_date = hist_df.tail(1).iloc[0].date
         #print('hist_last_date=',hist_last_date)
-        tolerance_exit_rate = 0.0
-        t_rate = 0.0
+        great_drop_rate = 0.0
+        geat_increase_rate = 0.0
         min_close = 0.0
         min_low =0.0
         if hist_last_date<last_date_str:
@@ -569,28 +597,34 @@ def get_stock_exit_price(hold_codes=['300162'],confirm_rate=0.0,data_path='C:/�
             hist_df['h_change'] = ((hist_df['high']-hist_df['close'].shift(1))/hist_df['close'].shift(1)).round(3)
             hist_low_describe = hist_df.tail(60).describe()
             #print(hist_low_describe)
-            tolerance_exit_rate = round(hist_low_describe.loc['25%'].l_change,4)
-            t_rate = round(hist_low_describe.loc['75%'].h_change,4)
+            great_drop_rate = round(hist_low_describe.loc['25%'].l_change,4)#表征下跌时，异常大的下跌幅度
+            geat_increase_rate = round(hist_low_describe.loc['75%'].h_change,4)#表征上涨时，较大的上涨幅度
+            if tolerate_dropdown_rate<0: #如果有给定容许回撤
+                great_drop_rate = max(great_drop_rate,tolerate_dropdown_rate)
             #print('hist_low_change=',hist_low_change)
-            #if hist_low_change< tolerance_exit_rate:
-            #tolerance_exit_rate = hist_low_change
-            #print('tolerance_exit_rate=',tolerance_exit_rate)
+            #if hist_low_change< great_drop_rate:
+            #great_drop_rate = hist_low_change
+            #print('great_drop_rate=',great_drop_rate)
         else:
             hist_df['l_change'] = ((hist_df['low']-hist_df['close'].shift(1))/hist_df['close'].shift(1)).round(3)
             hist_df['h_change'] = ((hist_df['high']-hist_df['close'].shift(1))/hist_df['close'].shift(1)).round(3)
             hist_low_describe = hist_df.tail(60).describe()
-            tolerance_exit_rate = round(hist_low_describe.loc['25%'].l_change,4)
-            t_rate = round(hist_low_describe.loc['75%'].h_change,4)
-            #tolerance_exit_rate = hist_low_change
-            #print('tolerance_exit_rate=',tolerance_exit_rate)
+            great_drop_rate = round(hist_low_describe.loc['25%'].l_change,4)
+            geat_increase_rate = round(hist_low_describe.loc['75%'].h_change,4)
+            #great_drop_rate = hist_low_change
+            #print('great_drop_rate=',great_drop_rate)
             hist_df = hist_df[hist_df.date<=last_date_str]
             describe_df = his[code].MA(1).tail(3).describe()
-            min_low =round(describe_df.loc['min'].low, 2)
+            min_low =round(describe_df.loc['min'].low, 2) #撒内最低价的最小值
             min_close = round(round(describe_df.loc['min'].close,2),2)
             max_close = round(describe_df.loc['max'].close,2)
-            max_high = round(describe_df.loc['max'].high,2)
+            max_high = round(describe_df.loc['max'].high,2)#三日最高价的最大值
+            if tolerate_dropdown_rate<0: #如果有给定容许回撤
+                last_close = his[code].tail(1).iloc[0].close
+                min_low = max(min_low,round(last_close*(1.0+tolerate_dropdown_rate),2))
         exit_half_price = min_close * (1.0 + confirm_rate)
         exit_all_price = min_low * (1.0 + confirm_rate)
+        
         """
         if min_low<=5:
             pass
@@ -612,8 +646,8 @@ def get_stock_exit_price(hold_codes=['300162'],confirm_rate=0.0,data_path='C:/�
         """
         exit_data['exit_half'] = exit_half_price
         exit_data['exit_all'] = exit_all_price
-        exit_data['exit_rate'] = tolerance_exit_rate
-        exit_data['t_rate'] = t_rate
+        exit_data['exit_rate'] = great_drop_rate
+        exit_data['t_rate'] = geat_increase_rate
         exit_dict[code] = exit_data
     #print('exit_dict=%s' % exit_dict)
     return exit_dict
@@ -650,7 +684,7 @@ def send_exit_mail(exit_code='002290',exit_state=1.0,exit_data={},exit_time=date
         pass
     return
 
-def get_exit_price(symbols=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
+def get_exit_price(symbols=['sh','cyb'],exit_setting={},yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'}):#['sh','sz','zxb','cyb','sz300','sh50']):
     """获取包括指数在内的止损数据"""
     yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
@@ -663,16 +697,17 @@ def get_exit_price(symbols=['sh','cyb'],yh_index_symbol_maps = {'sh':'999999','s
         else:#stock
             pass
         hold_codes.append(actual_code)
-    exit_data = get_stock_exit_price(hold_codes)
+    exit_data = get_stock_exit_price(hold_codes,exit_setting_dict=exit_setting)
     return exit_data
 
 def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                    yh_index_symbol_maps = {'sh':'999999','sz':'399001','zxb':'399005','cyb':'399006',
                          'sh50':'000016','sz300':'399007','zx300':'399008'},mail_count={},
                     demon_sql=None,mail2sql=None,mail_period=20,mailto_list=None,
-                    stopped=[], operation_tdx=None):
+                    stopped=[], operation_tdx=None,exit_setting_dict={}):
     """风险监测和emai告警"""
     #index_exit_data=get_exit_price(['sh','cyb']
+    confirm_rate,tolerate_dropdown_rate = get_exit_setting_rate(exit_setting_dict)
     exit_data = init_exit_data
     if not exit_data:
         exit_data = get_exit_price(symbols)
@@ -722,10 +757,10 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
         #print('symbol=',symbol)
         #print('symbol_now_p=',symbol_now_p)
         #print('index_exit_all',index_exit_all)
-        if symbol_now_p<index_exit_all:
+        if symbol_now_p<=index_exit_all*(1+confirm_rate):
             risk_state = 1.0
             exit_p = index_exit_all
-        elif symbol_now_p<index_exit_half:
+        elif symbol_now_p<=index_exit_half*(1+confirm_rate):
             risk_state = 0.5
             exit_p = index_exit_half
         else:

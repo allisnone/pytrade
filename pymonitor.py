@@ -18,7 +18,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
     #hold_df,holds,all_monitors = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
     op_tdx = OperationTdx(debug=debug_enable)
     #pre_position = op_tdx.getPositionDict()
-    print('start_exit_minute=',start_exit_minute)
+    
     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
    # all_monitors = stock_sql.get_manual_holds(table_name='manual_holds',valid=1) + monitor_indexs
     print('monitor_stocks=',monitor_stocks)
@@ -34,7 +34,18 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
     this_date_mail_count = {}
     risk_data = {}
     #all_monitors = ['002290','002362']
-    this_date_init_exit_data = get_exit_price(symbols=all_monitors)
+    """
+    get exit_setting_data from SQL
+    """
+    exit_setting_data = stock_sql.get_exit_setting_data()
+    print('exit_setting_data=',exit_setting_data)
+    if exit_setting_data:
+        if 'start_exit_minute' in list(exit_setting_data.keys()):
+            start_exit_minute = exit_setting_data['start_exit_minute']
+        if 'start_buy_minute' in list(exit_setting_data.keys()):
+            start_buy_minute = exit_setting_data['start_buy_minute']
+    this_date_init_exit_data = get_exit_price(symbols=all_monitors,exit_setting=exit_setting_data)
+    print('start_exit_minute=',start_exit_minute)
     print('exit_data=',this_date_init_exit_data)
     #mailto = stock_sql.get_mailto()  #Get mailto list from SQL server
     mailto = None
@@ -52,7 +63,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
                                                              init_exit_data=this_date_init_exit_data,
                                                               mail_count=this_date_mail_count,demon_sql=stock_sql,
                                                               mail2sql=stock_sql,mail_period=mail_period,mailto_list=mailto,
-                                                              stopped=stopped_symbol,operation_tdx = op_tdx )
+                                                              stopped=stopped_symbol,operation_tdx = op_tdx, exit_setting_dict=exit_setting_data)
             over_avrg_datas_df = qq.update_quotation_k_datas(codes,this_date_str,path='C:/work/temp_k/',
                                                              is_trade_time=is_trade_time_now,is_analyze=True)
             print('over_avrg_datas=',over_avrg_datas_df)
@@ -77,7 +88,8 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
                     """实盘止损监测，email推送"""
                     risk_data,this_date_mail_count,stopped_symbol = is_risk_to_exit(symbols=codes,
                                                                      init_exit_data=this_date_init_exit_data,
-                                                                      mail_count=this_date_mail_count,mail2sql=stock_sql)
+                                                                      mail_count=this_date_mail_count,mail2sql=stock_sql,
+                                                                      exit_setting_dict=exit_setting_data)
                 if (hour==9 and minute==27) or (hour==11 and minute==29) or one_time_action or (hour==14 and minute==50):
                     """大盘股高开监测，email推送"""
                     get_HO_dapan(dapan_codes=[],ho_rate=0.0026)#, stock_sql=None)
@@ -139,7 +151,9 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
                     monitor_stocks = list(set(monitor_stocks).intersection(set(all_stocks)))
                     all_monitors = monitor_stocks + monitor_indexs
                     all_monitors = list(set(all_monitors).difference(set(['160722'])))
-                    this_date_init_exit_data = get_exit_price(symbols=all_monitors)
+                    #this_date_init_exit_data = get_exit_price(symbols=all_monitors)
+                    exit_setting_data = stock_sql.get_exit_setting_data()
+                    this_date_init_exit_data = get_exit_price(symbols=all_monitors,exit_setting=exit_setting_data)
                     print('exit_data=',this_date_init_exit_data)
                     count = 0
                     risk_data = {}

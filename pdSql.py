@@ -581,16 +581,23 @@ class StockSQL(object):
                 pass
             
     def get_exit_setting_data(self):
+        """
+        return example:
+        {'exit_confirm_rate': 0.0025999999999999999, 'start_exit_minute': 600.0, 'key': 1.0, 'is_to_t': 0.0,
+         'tolerate_loss': -0.029999999999999999, 'start_buy_minute': 870.0, 'valid': 1.0, 'is_system_risk': 0.0}
+
+        """
         exit_setting_df = self.get_table_df('exit_setting')
         setting_dict = exit_setting_df.iloc[0].to_dict()
         return setting_dict
         
     #for chunk_df in pd.read_sql_query("SELECT * FROM today_stock", engine, chunksize=5):
     #    print(chunk_df)
-    
+"""   
 stock_sql_obj=StockSQL()
 setting_dict = stock_sql_obj.get_exit_setting_data() 
 print(setting_dict)
+"""
 #stock_sql_obj.update_index_chooce_time()
 def stock_sql_test():
     stock_sql_obj=StockSQL()
