@@ -174,7 +174,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
 if __name__ == '__main__':
     half_sell = False
     enable_trd = True
-    debug = True
+    debug = False
     if len(sys.argv)>=2:
         if sys.argv[1] and int(sys.argv[1])==1:
             half_sell = True
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     start_exit = 10*60+30
     start_buy = 14*60
     excepts=['160722','601375']
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=True, half_s=half_sell,
             enable_exit=enable_trd,start_exit_minute=start_exit, 
             enable_buy=False,start_buy_minute=start_buy,debug_enable=debug,
             except_stocks=excepts)
