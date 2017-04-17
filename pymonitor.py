@@ -44,8 +44,10 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
             start_exit_minute = exit_setting_data['start_exit_minute']
         if 'start_buy_minute' in list(exit_setting_data.keys()):
             start_buy_minute = exit_setting_data['start_buy_minute']
-    this_date_init_exit_data = get_exit_price(symbols=all_monitors,exit_setting=exit_setting_data)
     print('start_exit_minute=',start_exit_minute)
+    print('start_buy_minute=',start_buy_minute)
+    this_date_init_exit_data = get_exit_price(symbols=all_monitors,exit_setting=exit_setting_data)
+    
     print('exit_data=',this_date_init_exit_data)
     #mailto = stock_sql.get_mailto()  #Get mailto list from SQL server
     mailto = None

@@ -587,6 +587,7 @@ def get_stock_exit_price(hold_codes=['300162'],exit_setting_dict={},data_path='C
         exit_data = dict()
         hist_df  =his[code].ROC(1) 
         hist_last_date = hist_df.tail(1).iloc[0].date
+        last_close = hist_df.tail(1).iloc[0].close
         #print('hist_last_date=',hist_last_date)
         great_drop_rate = 0.0
         geat_increase_rate = 0.0
@@ -620,7 +621,6 @@ def get_stock_exit_price(hold_codes=['300162'],exit_setting_dict={},data_path='C
             max_close = round(describe_df.loc['max'].close,2)
             max_high = round(describe_df.loc['max'].high,2)#三日最高价的最大值
             if tolerate_dropdown_rate<0: #如果有给定容许回撤
-                last_close = his[code].tail(1).iloc[0].close
                 min_low = max(min_low,round(last_close*(1.0+tolerate_dropdown_rate),2))
         exit_half_price = min_close * (1.0 + confirm_rate)
         exit_all_price = min_low * (1.0 + confirm_rate)
