@@ -579,9 +579,17 @@ class StockSQL(object):
                 #print('firstly update: last_db_time',update_date)
             else:
                 pass
+            
+    def get_exit_setting_data(self):
+        exit_setting_df = self.get_table_df('exit_setting')
+        setting_dict = exit_setting_df.iloc[0].to_dict()
+        return setting_dict
+        
     #for chunk_df in pd.read_sql_query("SELECT * FROM today_stock", engine, chunksize=5):
     #    print(chunk_df)
-#stock_sql_obj=StockSQL()
+stock_sql_obj=StockSQL()
+setting_dict = stock_sql_obj.get_exit_setting_data() 
+print(setting_dict)
 #stock_sql_obj.update_index_chooce_time()
 def stock_sql_test():
     stock_sql_obj=StockSQL()
