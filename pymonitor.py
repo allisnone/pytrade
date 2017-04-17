@@ -47,7 +47,6 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
     print('start_exit_minute=',start_exit_minute)
     print('start_buy_minute=',start_buy_minute)
     this_date_init_exit_data = get_exit_price(symbols=all_monitors,exit_setting=exit_setting_data)
-    
     print('exit_data=',this_date_init_exit_data)
     #mailto = stock_sql.get_mailto()  #Get mailto list from SQL server
     mailto = None
@@ -193,7 +192,7 @@ if __name__ == '__main__':
     start_exit = 10*60+30
     start_buy = 14*60
     excepts=['160722','601375']
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=True, half_s=half_sell,
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,
             enable_exit=enable_trd,start_exit_minute=start_exit, 
             enable_buy=False,start_buy_minute=start_buy,debug_enable=debug,
             except_stocks=excepts)
