@@ -51,10 +51,15 @@ def getListViewInfo(hwnd, cols):
     if not col_info:
         return row_info
     # 按行
+    print(col_info)
     for row in range(len(col_info[0])):
         row_info.append([])
         for col in range(len(col_info)):
             if col_info[col] and row<=len(col_info[col]) and row<len(row_info):
+                #print(col_info[col][row])
+                if 'x95' in str(col_info[col][row]):
+                    continue
+                #print(col_info[col][row].decode('GB2312'))
                 row_info[row].append(col_info[col][row].decode('GB2312'))
             else:
                 pass
