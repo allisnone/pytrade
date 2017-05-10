@@ -1041,28 +1041,89 @@ def get_dynamic_stop_profit_price(this_highest,stop_profit_price=0.0,stop_rate_f
         pass    
     return stop_price
 
+def get_stop_profit_stocks():
+    #from sql query
+    return ['300085']
 
-def get_stop_profit_datas(symbol_quot,fix_price_data={},stop_type='fixed_drop_rate'):
-    stop_profit_stocks = list(symbol_quot.keys())
-    stop_profit_datas = dict()
-    for symbol in stop_profit_stocks:
+def get_realtime_stop_profit_price(symbol,symbol_quot,stop_profit_stocks,fix_stop_price_data={},fix_drop_rate_data={},stop_type='fixed_drop_rate'):
+    #quot_stocks = list(symbol_quot.keys())
+    #stop_profit_stocks = list(set(quot_stocks).intersection(set(permit_stop_profit_stocks)))
+    symbol_stop_price = 0.0
+    if  symbol in stop_profit_stocks:
         symbol_high_price = symbol_quot[symbol]['high']
         symbol_now_price = symbol_quot[symbol]['now']
-        symbol_stop_price = symbol_high_price
-        stop_rate = -2.5
+        
         if stop_type=='fixed_drop_rate':
-            symbol_stop_price = get_dynamic_stop_profit_price(this_highest=symbol_high_price, stop_rate_from_highest=stop_rate)
-        elif stop_type=='fixed_price':
-            fix_price = symbol_now_price
-            if symbol in list(fix_price_data.keys()):
-                fix_price = fix_price_data[symbol]
+            stop_rate = -2.5
+            if symbol in list(fix_drop_rate_data.keys()):
+                stop_rate = fix_drop_rate_data[symbol]
             else:
                 pass
-            symbol_stop_price = get_dynamic_stop_profit_price(this_highest=symbol_high_price, stop_profit_price=fix_price)
+            symbol_stop_price = get_dynamic_stop_profit_price(this_highest=symbol_high_price, stop_rate_from_highest=stop_rate)
+        elif stop_type=='fixed_price':
+            if symbol in list(fix_stop_price_data.keys()):
+                fix_price = fix_stop_price_data[symbol]
+                symbol_stop_price = get_dynamic_stop_profit_price(this_highest=symbol_high_price, stop_profit_price=fix_price)
+            else:
+                pass
         else:
             pass
-        stop_profit_datas[symbol] = symbol_stop_price
+    return symbol_stop_price
+
+def get_stop_profit_flag():
+    stop_type='fixed_drop_rate'
+    stop_profit_enable=False
+    return stop_type,stop_profit_enable
+
+def get_stop_profit_datas(stop_profit_stocks):
+    fix_price_data = {}
+    fix_drop_rate_data = {}
+    return fix_price_data,fix_drop_rate_data
+
+def to_sell_and_lock_profit(symbol,symbol_quot,stop_profit_stocks,fix_price_data,stop_type='fixed_drop_rate',stop_profit_enable=False):
+    """
+    To sell stock and lock the profit
+    """
+    if stop_profit_enable:
+            symbol_now_price = symbol_quot[symbol]['now']
+            symbol_stop_profit_price = get_realtime_stop_profit_price(symbol,symbol_quot,stop_profit_stocks,fix_price_data,fix_drop_rate_data,stop_type)
+            if symbol_now_price<symbol_stop_profit_price and stop_profit_enable:
+                 """To sell and stop prifit"""
+                 second_acc_num_to_sell =[]
+                 operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_stop_profit_price,limit_price=None)
+                 """Write to sql, and T action or not"""
+                 pass
+            
+    else:
+        pass
+    return 
+
+def to_stop_profit(symbol_quot,stop_type='fixed_drop_rate',stop_profit_enable=False):
+    """
+    To sell stock and lock the profit
+    """
+    stop_type,stop_profit_enable = get_stop_profit_flag()
+    stop_profit_datas = dict()
+    if stop_profit_enable:
+        quot_stocks = list(symbol_quot.keys())
+        permit_stop_profit_stocks = get_stop_profit_stocks()
+        stop_profit_stocks = list(set(quot_stocks).intersection(set(permit_stop_profit_stocks)))
+        fix_price_data,fix_drop_rate_data = get_stop_profit_datas(stop_profit_stocks)
+        for symbol in stop_profit_stocks:
+            symbol_now_price = symbol_quot[symbol]['now']
+            symbol_stop_profit_price = get_realtime_stop_profit_price(symbol,symbol_quot,stop_profit_stocks,fix_price_data,fix_drop_rate_data,stop_type)
+            if symbol_now_price<symbol_stop_profit_price and stop_profit_enable:
+                 """To sell and stop prifit"""
+                 second_acc_num_to_sell =[]
+                 operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_stop_profit_price,limit_price=None)
+                 """Write to sql, and T action or not"""
+                 pass
+            
+            stop_profit_datas[symbol] = symbol_stop_profit_price
+    else:
+        pass
     return stop_profit_datas
+
 
 def buy_stocks(op_tdx, acc_list, stock_sql, buy_rate,strategy=1,given_buy_stocks=[]):
     all_buy_stock_datas = get_acc_buy_stocks(op_tdx, acc_list, stock_sql, buy_rate,strategy_id=strategy,given_stocks=given_buy_stocks)
