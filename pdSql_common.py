@@ -1056,7 +1056,7 @@ def get_realtime_stop_profit_price(symbol,symbol_quot,stop_profit_stocks,fix_sto
         if stop_type=='fixed_drop_rate':
             stop_rate = -2.5
             if symbol in list(fix_drop_rate_data.keys()):
-                stop_rate = fix_drop_rate_data[symbol]
+                stop_rate = fix_drop_rate_data[symbol]   #stop_rate>0, will sell when higher; stop_rate<0, will sell when drop down to lowwer
             else:
                 pass
             symbol_stop_price = get_dynamic_stop_profit_price(this_highest=symbol_high_price, stop_rate_from_highest=stop_rate)
@@ -1100,7 +1100,7 @@ def to_sell_and_lock_profit(symbol,symbol_quot,stop_profit_stocks,fix_price_data
 
 def to_stop_profit(symbol_quot,stop_type='fixed_drop_rate',stop_profit_enable=False):
     """
-    To sell stock and lock the profit
+    To sell stocks and lock the profit
     """
     stop_type,stop_profit_enable = get_stop_profit_flag()
     stop_profit_datas = dict()
@@ -1123,6 +1123,77 @@ def to_stop_profit(symbol_quot,stop_type='fixed_drop_rate',stop_profit_enable=Fa
     else:
         pass
     return stop_profit_datas
+
+def sell_stock_to_stop_profit(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx,demon_sql=None,half_sell=False):
+    #position,alv_sell_stocks = op_tdx.get_all_position()
+    risk_stocks = list(risk_data.keys())
+    current_acc_id,current_box_id = operation_tdx.get_acc_combobox_id()
+    this_acc_position = operation_tdx.getPositionDict() 
+    acc_list = list(alv_sell_stocks.keys())
+    if current_acc_id in acc_list:
+        this_acc_avl_sell = alv_sell_stocks[current_acc_id]
+        if this_acc_avl_sell:
+            this_acc_exit_stocks = list(set(risk_stocks) & set(this_acc_avl_sell))
+            for symbol in this_acc_exit_stocks:
+                risk_state = risk_data[symbol]['risk_state']
+                if (risk_state==0.5 and not half_sell) or risk_state==0:
+                    continue
+                this_acc_num_to_sell = this_acc_position[symbol]['可用余额 '] * risk_state
+                """
+                set_columns= ['ask1', 'bid1_volume', 'code', 'price_volume_amount', 'ask5_volume', 'ask5', 
+                              'PE', 'now', 'bid2_volume', 'bid5', 'recent_trade', 'wave', 'high', 'close', 
+                              'circulation', 'bid2', 'bid3', 'ask1_volume', 'increase', 'name', 'low', 
+                              'bid3_volume', 'ask3', 'high_2', 'bid_volume', 'bid5_volume', 'ask3_volume', 'quot_time',
+                              'datetime', 'open', 'total_market', 'low_2', 'topest', 'ask2_volume', 'turnover', 
+                              'ask_volume', 'bid1', 'amount', 'increase_rate', 'PB', 'ask2', 'lowest', 
+                              'ask4_volume', 'date', 'bid4_volume', 'ask4', 'volume', 'unknown', 'bid4']
+                """
+                symbol_bid1_p = symbol_quot[symbol]['bid1']
+                symbol_bid5_p = symbol_quot[symbol]['bid5']
+                symbol_ask1_p = symbol_quot[symbol]['ask1']
+                symbol_ask5_p = symbol_quot[symbol]['ask5']
+                symbol_now_p = symbol_quot[symbol]['now']
+                symbol_now_v = symbol_quot[symbol]['volume']
+                symbol_topest = symbol_quot[symbol]['topest']
+                symbol_lowest = symbol_quot[symbol]['lowest']
+                if symbol_now_v<=0 or symbol_now_p<=0:#stop trade
+                    continue
+                limit_p = [symbol_topest,symbol_lowest]
+                if symbol=='300432' and demon_sql: #for test
+                    symbol_now_p = demon_sql.get_demon_value()
+                operation_tdx.order(code=symbol, direction='S', quantity=this_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+        else:
+            pass
+    if len(acc_list)==2:
+        exchange_id = operation_tdx.change_account(current_acc_id, current_box_id)
+        second_acc_id,second_box_id = operation_tdx.get_acc_combobox_id()
+        second_acc_position = operation_tdx.getPositionDict() 
+        if second_acc_id in acc_list:
+            second_acc_avl_sell = alv_sell_stocks[second_acc_id]
+            if second_acc_avl_sell:
+                this_acc_exit_stocks = list(set(risk_stocks) & set(second_acc_avl_sell))
+                for symbol in this_acc_exit_stocks:
+                    risk_state = risk_data[symbol]['risk_state']
+                    if (risk_state==0.5 and not half_sell) or risk_state==0:
+                        continue
+                    second_acc_num_to_sell = second_acc_position[symbol]['可用余额 '] * risk_state
+                    symbol_bid1_p = symbol_quot[symbol]['bid1']
+                    symbol_bid5_p = symbol_quot[symbol]['bid5']
+                    symbol_ask1_p = symbol_quot[symbol]['ask1']
+                    symbol_ask5_p = symbol_quot[symbol]['ask5']
+                    symbol_now_p = symbol_quot[symbol]['now']
+                    symbol_now_v = symbol_quot[symbol]['volume']
+                    if symbol_now_v<=0 or symbol_now_p<=0:#stop trade
+                        continue
+                    symbol_topest = symbol_quot[symbol]['topest']
+                    symbol_lowest = symbol_quot[symbol]['lowest']
+                    limit_p = [symbol_topest,symbol_lowest]
+                    if symbol=='300432' and demon_sql: #for test
+                        symbol_now_p = demon_sql.get_demon_value()
+                    operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+            else:
+                pass
+    return
 
 
 def buy_stocks(op_tdx, acc_list, stock_sql, buy_rate,strategy=1,given_buy_stocks=[]):
