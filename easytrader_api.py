@@ -52,6 +52,13 @@ class myYHClientTrader(YHClientTrader):
             password = account['password']
         self.login(user, password, exe_path)
         self.trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
+    
+    def _has_login_window(self):
+        for title in [' - 广州电信', ' - 广州电信 - 广州电信',' - 北京电信', ' - 北京电信 - 北京电信']:
+            self.login_hwnd = win32gui.FindWindow(None, title)
+            if self.login_hwnd != 0:
+                return True
+        return False
         
     def myposition(self):
         print('111')
