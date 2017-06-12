@@ -191,7 +191,7 @@ if __name__ == '__main__':
     print('half_sell =',half_sell)
     start_exit = 10*60+30
     start_buy = 14*60
-    excepts=['160722','601375']
+    excepts=['160722','601375','300668']
     monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,
             enable_exit=enable_trd,start_exit_minute=start_exit, 
             enable_buy=False,start_buy_minute=start_buy,debug_enable=debug,
