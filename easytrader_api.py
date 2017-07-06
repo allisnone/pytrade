@@ -187,41 +187,101 @@ class myYHClientTrader(YHClientTrader):
             return self.buy(stock_code, price, amount)
         else:
             pass
-
-    def order_acc_stock(self,stock_code, price, amount,acc_id=LI[0],direct='S'):
+    
+    def get_absolute_order_price(self,stock_code,direct='S'):
+        last_close = 10
+        return
+    
+    def order_acc_stock(self,stock_code, price, amount,acc_id=LI[0],direct='S',is_absolute_order=False,limit_price=None):
+        if is_absolute_order and limit_price:
+                price = limit_price
         if self.is_right_acc(acc_id):
             pass
         else:
             self.change_acc()
         return _order_stock(stock_code, price, amount,direct)
     
-    def order_acc_stocks(self,stock_datas,direct='S'):
+    def get_stock_exit_datas(self,position):
+        return
+    
+    def get_stock_buy_datas(self,position,avaiable_money):
+        return
+    
+    def order_acc_stocks(self,stock_order_datas,direct='S'):
         """
-        stock_datas = {'12345':[[stock_code, price, amount],],'12346':[[stock_code, price, amount],]}
+        stock_order_datas = {'12345':[
+        [stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price],],
+        '12346':[[stock_code, price, amount],]}
         """
-        acc_ids = list(stock_datas.keys())
+        def get_stock_order_price(stock):
+            #stock=[stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price]
+            direction =stock[3]
+            is_absolute_order = stock[4]
+            price = stock[1]
+            if is_absolute_order and direction=='B':
+                price = stock[5]
+            elif is_absolute_order and direction=='S':
+                price = stock[6]
+            else:
+                pass
+            return price
+        acc_ids = list(stock_order_datas.keys())
         valid_acc_ids = list(set(LI).intersection(set(acc_ids)))
+        order_num = 0
         if len(valid_acc_ids)==1:
             if self.is_right_acc(valid_acc_ids[0]):
                 pass
             else:
                 self.change_acc()
-            for stock in stock_datas[valid_acc_ids[0]]:
-                self._order_stock(stock[0], stock[1], stock[2],direct)
+            for stock in stock_order_datas[valid_acc_ids[0]]:
+                price = get_stock_order_price(stock)
+                self._order_stock(stock[0], price, stock[2],direct)
+                order_num = order_num + 1
         elif len(valid_acc_ids)==2:
             this_acc_id = self.get_acc_id()
-            for stock in stock_datas[this_acc_id]:
-                self._order_stock(stock[0], stock[1], stock[2],direct)
+            for stock in stock_order_datas[this_acc_id]:
+                price = get_stock_order_price(stock)
+                self._order_stock(stock[0], price, stock[2],direct)
+                order_num = order_num + 1
             valid_acc_ids.pop(valid_acc_ids.index(this_acc_id))
             second_acc_id = valid_acc_ids[0]
             self.change_acc()
-            for stock1 in stock_datas[second_acc_id]:
-                self._order_stock(stock1[0], stock1[1], stock1[2],direct)
+            for stock1 in stock_order_datas[second_acc_id]:
+                price = get_stock_order_price(stock)
+                self._order_stock(stock1[0], price, stock1[2],direct)
+                order_num = order_num + 1
         else:
-            pass
-        return 
+            order_num = -1
+        return order_num
     
-       
+class Position():
+    def __init__(self,position_datas= {},potential_buy_stocks=[]):
+        self.pos = position_datas
+        self.order_datas = []
+        self.potentials = potential_buy_stocks
+    """
+    all position: {'38736': [{'可用余额': 50, '买入冻结': 0, '当前持仓': 50, '证券名称': '四维图新', '股份余额': 50, '交易市场': '深Ａ', '参考市价': 19.74, '参考成本价': -42.32, '盈亏比例(%)': 0.0, '证券代码': 2405, '卖出冻结': 0, '参考盈亏': 3103.02, '参考市值': 987.0, '股东代码': '0148358729'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 600, '证券名称': '岭南园林', '股份余额': 600, '交易市场': '深Ａ', '参考市价': 28.41, '参考成本价': 28.34, '盈亏比例(%)': 0.247, '证券代码': 2717, '卖出冻结': 0, '参考盈亏': 42.0, '参考市值': 17046.0, '股东代码': '0148358729'}, {'可用余额': 1600, '买入冻结': 0, '当前持仓': 1600, '证券名称': '朗源股份', '股份余额': 1600, '交易市场': '深Ａ', '参考市价': 8.26, '参考成本价': 8.402999999999999, '盈亏比例(%)': -1.703, '证券代码': 300175, '卖出冻结': 0, '参考盈亏': -229.0, '参考市值': 13216.0, '股东代码': '0148358729'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 3000, '证券名称': '健康元', '股份余额': 3000, '交易市场': '沪Ａ', '参考市价': 9.18, '参考成本价': 10.869000000000002, '盈亏比例(%)': -15.54, '证券代码': 600380, '卖出冻结': 0, '参考盈亏': -5067.16, '参考市值': 27540.0, '股东代码': 'A355519785'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 400, '证券名称': '恒生电子', '股份余额': 400, '交易市场': '沪Ａ', '参考市价': 45.57, '参考成本价': 62.231, '盈亏比例(%)': -26.772, '证券代码': 600570, '卖出冻结': 0, '参考盈亏': -6664.26, '参考市值': 18228.0, '股东代码': 'A355519785'}, {'可用余额': 600, '买入冻结': 0, '当前持仓': 1700, '证券名称': '邦宝益智', '股份余额': 1700, '交易市场': '沪Ａ', '参考市价': 21.59, '参考成本价': 31.996, '盈亏比例(%)': -32.524, '证券代码': 603398, '卖出冻结': 0, '参考盈亏': -17691.01, '参考市值': 36703.0, '股东代码': 'A355519785'}],
+     '36005': [{'可用余额': 0, '买入冻结': 0, '当前持仓': 900, '证券名称': '京山轻机', '股份余额': 900, '交易市场': '深Ａ', '参考市价': 13.28, '参考成本价': 16.24, '盈亏比例(%)': -18.227, '证券代码': 821, '卖出冻结': 0, '参考盈亏': -2664.0, '参考市值': 11952.0, '股东代码': '0130010635'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 1100, '证券名称': '中科新材', '股份余额': 1100, '交易市场': '深Ａ', '参考市价': 16.94, '参考成本价': 18.64, '盈亏比例(%)': -9.12, '证券代码': 2290, '卖出冻结': 0, '参考盈亏': -1870.0, '参考市值': 18634.0, '股东代码': '0130010635'}, {'可用余额': 200, '买入冻结': 0, '当前持仓': 200, '证券名称': '八菱科技', '股份余额': 200, '交易市场': '深Ａ', '参考市价': 28.19, '参考成本价': 29.125, '盈亏比例(%)': -3.21, '证券代码': 2592, '卖出冻结': 0, '参考盈亏': -187.0, '参考市值': 5638.0, '股东代码': '0130010635'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 400, '证券名称': '索菱股份', '股份余额': 400, '交易市场': '深Ａ', '参考市价': 33.18, '参考成本价': 33.2, '盈亏比例(%)': -0.06, '证券代码': 2766, '卖出冻结': 0, '参考盈亏': -8.0, '参考市值': 13272.0, '股东代码': '0130010635'}, {'可用余额': 1300, '买入冻结': 0, '当前持仓': 1300, '证券名称': '朗玛信息', '股份余额': 1300, '交易市场': '深Ａ', '参考市价': 27.75, '参考成本价': 27.838, '盈亏比例(%)': -0.318, '证券代码': 300288, '卖出冻结': 0, '参考盈亏': -115.0, '参考市值': 36075.0, '股东代码': '0130010635'}, {'可用余额': 300, '买入冻结': 0, '当前持仓': 300, '证券名称': '天和防务', '股份余额': 300, '交易市场': '深Ａ', '参考市价': 25.29, '参考成本价': 26.789, '盈亏比例(%)': -5.596, '证券代码': 300397, '卖出冻结': 0, '参考盈亏': -449.73, '参考市值': 7587.0, '股��代码': '0130010635'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 1900, '证券名称': '暴风集团', '股份余额': 1900, '交易市场': '深Ａ', '参考市价': 24.16, '参考成本价': 23.926, '盈亏比例(%)': 0.976, '证券代码': 300431, '卖出冻结': 0, '参考盈亏': 443.69, '参考市值': 45904.0, '股东代码': '0130010635'}, {'可用余额': 43, '买入冻结': 0, '当前持仓': 43, '证券名称': '美康生物', '股份余额': 43, '交易市场': '深Ａ', '参考市价': 21.73, '参考成本价': 17.24, '盈亏比例(%)': 26.046, '证券代码': 300439, '卖出冻结': 0, '参考盈亏': 193.08, '参考市值': 934.39, '股东代码': '0130010635'}, {'可用余额': 1200, '买入冻结': 0, '当前持仓': 1200, '证券名称': '乐心医疗', '股份余额': 1200, '交易市场': '深Ａ', '参考市价': 28.6, '参考成本价': 28.346, '盈亏比例(%)': 0.898, '证券代码': 300562, '卖出冻结': 0, '参考盈亏': 305.3, '参考市值': 34320.0, '股东代码': '0130010635'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 2400, '证券名称': '浙江龙盛', '股份余额': 2400, '交易市场': '沪Ａ', '参考市价': 9.56, '参考成本价': 9.654, '盈亏比例(%)': -0.977, '证券代码': 600352, '卖出冻结': 0, '参考盈亏': -226.46, '参考市值': 22944.0, '股东代码': 'A732980330'}, {'可用余额': 60, '买入冻结': 0, '当前持仓': 1460, '证券名称': '南京银行', '股份余额': 1460, '交易市场': '沪Ａ', '参考市价': 11.2, '参考成本价': 9.486, '盈亏比例(%)': 18.067, '证券代码': 601009, '卖出冻结': 0, '参考盈亏': 2502.28, '参考市值': 16352.0, '股东代码': 'A732980330'}]}    
+    """
+    def update_position(self):
+        return    
+    
+    def update_potential_datas(self):
+        return    
+    
+    def get_stock_exit_datas(self,position):
+        return
+    
+    def get_stock_buy_datas(self,position,avaiable_money):
+        return
+    
+    def position_change(self,acc_id):
+        return
+    
+    def position_optimize(self):
+        return
+    
+           
 def use(broker, debug=True, **kwargs):
     """用于生成特定的券商对象
     :param broker:券商名支持 ['yh', 'YH', '银河'] ['gf', 'GF', '广发']
@@ -243,4 +303,6 @@ def use(broker, debug=True, **kwargs):
         return myYHClientTrader()
     else:
         pass
+
+
 
