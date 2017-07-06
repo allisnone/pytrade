@@ -16,6 +16,7 @@ user.prepare(user='331600036005', password='821853')
 
 #print(user.get_add_acc_handles())
 print('is 36005: ', user.is_right_acc(acc_id='36005'))
+print('36005 positon:\n')
 print(user.position)
 #user.change_acc()
 all_pos = user.get_all_position()

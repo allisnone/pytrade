@@ -36,6 +36,11 @@ def get_exist_hwnd(hwnd,wantedtest=''):
     
         
 class myYHClientTrader(YHClientTrader):
+    enable_trade = False
+    
+    def is_enable_trade(self,is_trade=True):
+        self.enable_trade = is_trade
+        return
     
     def prepare(self, config_path=None, user=None, password=None, exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
         """
@@ -59,10 +64,7 @@ class myYHClientTrader(YHClientTrader):
             if self.login_hwnd != 0:
                 return True
         return False
-        
-    def myposition(self):
-        print('111')
-        #print(self.position)
+            
     
     def close_window(self,hwnd):#, extra):
         if hwnd and win32gui.IsWindowVisible(hwnd):
@@ -180,26 +182,110 @@ class myYHClientTrader(YHClientTrader):
         pos_dict[self.get_acc_id()] = self.position
         return pos_dict
     
+    def get_my_position(self):
+        #单账户
+        print('111')
+        pos_dict = {}
+        my_pos = {}
+        for stock in self.position:
+            stock_code = stock['证券代码']
+            pos_dict[stock_code] = stock
+        my_pos[acc_id] = pos_dict 
+        return my_pos
+    
+    def get_my_all_position(self):
+        #多账户
+        print('222')
+        #print(self.position)
+        my_pos = self.get_all_position()
+        for acc_id in list(my_pos.keys()):
+            pos_dict = {}
+            for stock in my_pos[acc_id]:
+                stock_code = stock['证券代码']
+                pos_dict[stock_code] = stock
+            my_pos[acc_id] = pos_dict
+        return my_pos
+                
+            
+    
+    def is_holding_stock(self,acc_id,stock):
+        if self.is_right_acc(acc_id):
+            pass
+        else:
+            self.change_acc()
+        this_acc_positon = self.position
+        print('this_acc_positon=',this_acc_positon)
+        for pos in this_acc_positon:
+            code = pos['证券代码']
+            if stock==code:
+                return True
+        return False
+    
     def _order_stock(self,stock_code, price, amount,direct='S'):
-        if direct=='S':
+        if direct=='S' and self.enable_trade:
             return self.sell(stock_code, price, amount)
-        elif direct=='B':
+        elif direct=='B' and self.enable_trade:
             return self.buy(stock_code, price, amount)
         else:
-            pass
+            return False
+    
+    
     
     def get_absolute_order_price(self,stock_code,direct='S'):
         last_close = 10
         return
     
-    def order_acc_stock(self,stock_code, price, amount,acc_id=LI[0],direct='S',is_absolute_order=False,limit_price=None):
-        if is_absolute_order and limit_price:
+    def order_acc_stock(self,stock_code, price, amount,acc_id=LI[0],direct='S',
+                        is_absolute_order=False,limit_price=None):
+        """
+        For single account
+        """
+        if is_absolute_order and limit_price: #跌停价卖，涨停价买
                 price = limit_price
         if self.is_right_acc(acc_id):
             pass
         else:
             self.change_acc()
-        return _order_stock(stock_code, price, amount,direct)
+        return self._order_stock(stock_code, price, amount,direct)
+    
+    def get_available_money(self):
+        available_money = 0
+        return available_money
+    
+    def exchange_stocks(self,acc_id,position, replaced_stock,replaced_stock_price, target_stock,
+                         target_stock_price,sell_then_buy=True,exchange_rate=1.0,absolute_order=False):
+        
+        if self.is_holding_stock(acc_id, replaced_stock):
+            pass
+        else:
+            return False
+        available_money = self.get_available_money()
+        sleep_seconds = 1
+        replaced_stock_amount = int((position[acc_id][replaced_stock]['可用余额'] * exchange_rate//100) * 100)
+        target_stock_amount = int((replaced_stock_amount*replaced_stock_price/target_stock_price//100)*100)
+        if sell_then_buy and replaced_stock_amount>100 and target_stock_amount>100:#先卖后买
+            sell_replace_stock = self.order_acc_stock(replaced_stock, replaced_stock_price, 
+                    replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order, limit_price=None)
+            time.sleep(sleep_seconds)
+            if sell_replace_stock:
+                buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
+                    target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order, limit_price=None)
+                return buy_target_stock
+            else:
+                return False
+        elif not sell_then_buy and replaced_stock_amount>100 and target_stock_amount>100: #先买后卖
+            if available_money>target_stock_amount*target_stock_price:
+                buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
+                    target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order, limit_price=None)
+                time.sleep(sleep_seconds)
+                if buy_target_stock:
+                    sell_replace_stock = self.order_acc_stock(replaced_stock, replaced_stock_price, 
+                    replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order, limit_price=None)
+                    return replaced_stock
+            else:
+                return False
+        else:
+            return False
     
     def get_stock_exit_datas(self,position):
         return
@@ -209,9 +295,11 @@ class myYHClientTrader(YHClientTrader):
     
     def order_acc_stocks(self,stock_order_datas,direct='S'):
         """
+        For multi-account
+        
         stock_order_datas = {'12345':[
         [stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price],],
-        '12346':[[stock_code, price, amount],]}
+        '12346':[[stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price],]}
         """
         def get_stock_order_price(stock):
             #stock=[stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price]
@@ -224,56 +312,119 @@ class myYHClientTrader(YHClientTrader):
                 price = stock[6]
             else:
                 pass
-            return price
+            return price,direction
+        order_num = 0
+        if self.enable_trade:
+            pass
+        else:
+            return order_num
         acc_ids = list(stock_order_datas.keys())
         valid_acc_ids = list(set(LI).intersection(set(acc_ids)))
-        order_num = 0
         if len(valid_acc_ids)==1:
             if self.is_right_acc(valid_acc_ids[0]):
                 pass
             else:
                 self.change_acc()
             for stock in stock_order_datas[valid_acc_ids[0]]:
-                price = get_stock_order_price(stock)
+                price,direct = get_stock_order_price(stock)
                 self._order_stock(stock[0], price, stock[2],direct)
                 order_num = order_num + 1
         elif len(valid_acc_ids)==2:
             this_acc_id = self.get_acc_id()
             for stock in stock_order_datas[this_acc_id]:
-                price = get_stock_order_price(stock)
+                price,direct = get_stock_order_price(stock)
                 self._order_stock(stock[0], price, stock[2],direct)
                 order_num = order_num + 1
             valid_acc_ids.pop(valid_acc_ids.index(this_acc_id))
             second_acc_id = valid_acc_ids[0]
             self.change_acc()
             for stock1 in stock_order_datas[second_acc_id]:
-                price = get_stock_order_price(stock)
+                price,direct = get_stock_order_price(stock)
                 self._order_stock(stock1[0], price, stock1[2],direct)
                 order_num = order_num + 1
         else:
             order_num = -1
         return order_num
     
-class Position():
+class Orderdatas():
     def __init__(self,position_datas= {},potential_buy_stocks=[]):
         self.pos = position_datas
-        self.order_datas = []
+        self.order_datas = {}
         self.potentials = potential_buy_stocks
+        self.exit_enable = False
+        self.buy_enable = False
     """
     all position: {'38736': [{'可用余额': 50, '买入冻结': 0, '当前持仓': 50, '证券名称': '四维图新', '股份余额': 50, '交易市场': '深Ａ', '参考市价': 19.74, '参考成本价': -42.32, '盈亏比例(%)': 0.0, '证券代码': 2405, '卖出冻结': 0, '参考盈亏': 3103.02, '参考市值': 987.0, '股东代码': '0148358729'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 600, '证券名称': '岭南园林', '股份余额': 600, '交易市场': '深Ａ', '参考市价': 28.41, '参考成本价': 28.34, '盈亏比例(%)': 0.247, '证券代码': 2717, '卖出冻结': 0, '参考盈亏': 42.0, '参考市值': 17046.0, '股东代码': '0148358729'}, {'可用余额': 1600, '买入冻结': 0, '当前持仓': 1600, '证券名称': '朗源股份', '股份余额': 1600, '交易市场': '深Ａ', '参考市价': 8.26, '参考成本价': 8.402999999999999, '盈亏比例(%)': -1.703, '证券代码': 300175, '卖出冻结': 0, '参考盈亏': -229.0, '参考市值': 13216.0, '股东代码': '0148358729'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 3000, '证券名称': '健康元', '股份余额': 3000, '交易市场': '沪Ａ', '参考市价': 9.18, '参考成本价': 10.869000000000002, '盈亏比例(%)': -15.54, '证券代码': 600380, '卖出冻结': 0, '参考盈亏': -5067.16, '参考市值': 27540.0, '股东代码': 'A355519785'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 400, '证券名称': '恒生电子', '股份余额': 400, '交易市场': '沪Ａ', '参考市价': 45.57, '参考成本价': 62.231, '盈亏比例(%)': -26.772, '证券代码': 600570, '卖出冻结': 0, '参考盈亏': -6664.26, '参考市值': 18228.0, '股东代码': 'A355519785'}, {'可用余额': 600, '买入冻结': 0, '当前持仓': 1700, '证券名称': '邦宝益智', '股份余额': 1700, '交易市场': '沪Ａ', '参考市价': 21.59, '参考成本价': 31.996, '盈亏比例(%)': -32.524, '证券代码': 603398, '卖出冻结': 0, '参考盈亏': -17691.01, '参考市值': 36703.0, '股东代码': 'A355519785'}],
      '36005': [{'可用余额': 0, '买入冻结': 0, '当前持仓': 900, '证券名称': '京山轻机', '股份余额': 900, '交易市场': '深Ａ', '参考市价': 13.28, '参考成本价': 16.24, '盈亏比例(%)': -18.227, '证券代码': 821, '卖出冻结': 0, '参考盈亏': -2664.0, '参考市值': 11952.0, '股东代码': '0130010635'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 1100, '证券名称': '中科新材', '股份余额': 1100, '交易市场': '深Ａ', '参考市价': 16.94, '参考成本价': 18.64, '盈亏比例(%)': -9.12, '证券代码': 2290, '卖出冻结': 0, '参考盈亏': -1870.0, '参考市值': 18634.0, '股东代码': '0130010635'}, {'可用余额': 200, '买入冻结': 0, '当前持仓': 200, '证券名称': '八菱科技', '股份余额': 200, '交易市场': '深Ａ', '参考市价': 28.19, '参考成本价': 29.125, '盈亏比例(%)': -3.21, '证券代码': 2592, '卖出冻结': 0, '参考盈亏': -187.0, '参考市值': 5638.0, '股东代码': '0130010635'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 400, '证券名称': '索菱股份', '股份余额': 400, '交易市场': '深Ａ', '参考市价': 33.18, '参考成本价': 33.2, '盈亏比例(%)': -0.06, '证券代码': 2766, '卖出冻结': 0, '参考盈亏': -8.0, '参考市值': 13272.0, '股东代码': '0130010635'}, {'可用余额': 1300, '买入冻结': 0, '当前持仓': 1300, '证券名称': '朗玛信息', '股份余额': 1300, '交易市场': '深Ａ', '参考市价': 27.75, '参考成本价': 27.838, '盈亏比例(%)': -0.318, '证券代码': 300288, '卖出冻结': 0, '参考盈亏': -115.0, '参考市值': 36075.0, '股东代码': '0130010635'}, {'可用余额': 300, '买入冻结': 0, '当前持仓': 300, '证券名称': '天和防务', '股份余额': 300, '交易市场': '深Ａ', '参考市价': 25.29, '参考成本价': 26.789, '盈亏比例(%)': -5.596, '证券代码': 300397, '卖出冻结': 0, '参考盈亏': -449.73, '参考市值': 7587.0, '股��代码': '0130010635'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 1900, '证券名称': '暴风集团', '股份余额': 1900, '交易市场': '深Ａ', '参考市价': 24.16, '参考成本价': 23.926, '盈亏比例(%)': 0.976, '证券代码': 300431, '卖出冻结': 0, '参考盈亏': 443.69, '参考市值': 45904.0, '股东代码': '0130010635'}, {'可用余额': 43, '买入冻结': 0, '当前持仓': 43, '证券名称': '美康生物', '股份余额': 43, '交易市场': '深Ａ', '参考市价': 21.73, '参考成本价': 17.24, '盈亏比例(%)': 26.046, '证券代码': 300439, '卖出冻结': 0, '参考盈亏': 193.08, '参考市值': 934.39, '股东代码': '0130010635'}, {'可用余额': 1200, '买入冻结': 0, '当前持仓': 1200, '证券名称': '乐心医疗', '股份余额': 1200, '交易市场': '深Ａ', '参考市价': 28.6, '参考成本价': 28.346, '盈亏比例(%)': 0.898, '证券代码': 300562, '卖出冻结': 0, '参考盈亏': 305.3, '参考市值': 34320.0, '股东代码': '0130010635'}, {'可用余额': 0, '买入冻结': 0, '当前持仓': 2400, '证券名称': '浙江龙盛', '股份余额': 2400, '交易市场': '沪Ａ', '参考市价': 9.56, '参考成本价': 9.654, '盈亏比例(%)': -0.977, '证券代码': 600352, '卖出冻结': 0, '参考盈亏': -226.46, '参考市值': 22944.0, '股东代码': 'A732980330'}, {'可用余额': 60, '买入冻结': 0, '当前持仓': 1460, '证券名称': '南京银行', '股份余额': 1460, '交易市场': '沪Ａ', '参考市价': 11.2, '参考成本价': 9.486, '盈亏比例(%)': 18.067, '证券代码': 601009, '卖出冻结': 0, '参考盈亏': 2502.28, '参考市值': 16352.0, '股东代码': 'A732980330'}]}    
     """
-    def update_position(self):
+    
+    def set_exit(self,is_exit):
+        self.exit_enable = exit
+        
+    def set_buy(self,is_buy):
+        self.buy_enable = is_buy
+        
+    
+    def update_position(self,position_datas):
+        self.pos = position_datas
         return    
     
-    def update_potential_datas(self):
+    def update_potential_stocks(self,potential_buy_stocks):
+        self.potentials = potential_buy_stocks
         return    
+    
+    def update_order_datas(self,order_datas):
+        """
+        stock_order_datas = {'12345':[
+        [stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price],],
+        '12346':[[stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price],]}
+        """
+        if self.order_datas:
+            existing_acc_ids = list(self.order_datas.keys())
+            these_acc_ids = list(order_datas.keys())
+            for acc_id in these_acc_ids:
+                if acc_id in existing_acc_ids:
+                    self.order_datas[acc_id] = self.order_datas[acc_id] + order_datas[acc_id]
+                else:
+                    self.order_datas[acc_id] = order_datas[acc_id]
+        else:
+            self.order_datas = exit_datas
+        return
+    
+    def delete_order_datas(self,delete_orders):
+        if self.order_datas:
+            existing_acc_ids = list(self.order_datas.keys())
+            these_acc_ids = list(delete_orders.keys())
+            for acc_id in these_acc_ids:
+                if acc_id in existing_acc_ids:
+                    self.order_datas[acc_id] = list(set(self.order_datas[acc_id]).difference(set(order_datas[acc_id])))
+                else:
+                    pass
+        else:
+            pass
+        return
     
     def get_stock_exit_datas(self,position):
+        exit_datas = {}
+        if self.exit_enable:
+            pass
+        else:
+            return exit_datas
+        #to get exit datas
+        if exit_datas:
+            self.update_order_datas(order_datas=exit_datas)
         return
     
     def get_stock_buy_datas(self,position,avaiable_money):
-        return
+        buy_datas = {}
+        if self.exit_enable:
+            pass
+        else:
+            return buy_datas
+        #To get but datas
+        if buy_datas:
+            self.update_order_datas(order_datas=buy_datas)
+        return buy_datas
     
     def position_change(self,acc_id):
         return
@@ -281,6 +432,19 @@ class Position():
     def position_optimize(self):
         return
     
+class Order():
+    def __init__(self):
+        self.acc = '36005'
+        self.stock = '300588'
+        self.price = 0.0
+        self.amount = 100
+        self.direct = 'S'
+        self.status = 0   #0-100, 100 will order all
+        
+
+class Orderdata():
+    def __init__(self):
+        self.orderdatas = {}        
            
 def use(broker, debug=True, **kwargs):
     """用于生成特定的券商对象
