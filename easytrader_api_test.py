@@ -30,7 +30,7 @@ print('time1: ', datetime.datetime.now())
 #account_id=user.account_config['inputaccount']
 #print('account_id=',account_id)
 print('time2: ', datetime.datetime.now())
-user.myposition()
+user.get_my_position()
 #print(user.balance)
 print('time3: ', datetime.datetime.now())
 print(user.position)

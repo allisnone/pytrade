@@ -190,7 +190,7 @@ class myYHClientTrader(YHClientTrader):
         for stock in self.position:
             stock_code = stock['证券代码']
             pos_dict[stock_code] = stock
-        my_pos[acc_id] = pos_dict 
+        my_pos[self.get_acc_id()] = pos_dict 
         return my_pos
     
     def get_my_all_position(self):
