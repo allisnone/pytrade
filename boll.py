@@ -9,7 +9,18 @@ def filter_stock():
     
     return
 
+def across(last_close,this_close,across_baseline,type='across_up'):
+    is_across = False
+    if type=='across_up':
+        is_across = this_close>=across_baseline and across_baseline>=last_close
+    elif type=='across_down':
+         is_across = this_close<=across_baseline and across_baseline<=last_close
+    else:
+        pass
+    return is_across
+
 def get_days_of_strong_zone():
+    #表征运行的区间，强势区间为正
     days_of_strong_zone = 0
     days_of_last_up_across_middle = 0
     days_of_last_down_across_middle = 0
@@ -58,6 +69,4 @@ def boll_trade():
         else:
             pass
         
-    
-    
     return
