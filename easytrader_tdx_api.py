@@ -221,13 +221,18 @@ class myYHClientTrader(YHClientTrader):
                 tanchu_hwnd = child_hwnd
                 break
         """
-        tanchu_hwnd0 = win32gui.FindWindow(0, '消息标题:关于对证件有效期缺失的个人账户采取限制措施的公告')  # 交易窗口
+        #tanchu_hwnd0 = win32gui.FindWindow(0, '消息标题:关于对证件有效期缺失的个人账户采取限制措施的公告')  # 交易窗口
+        title = '消息标题'
+        tanchu_hwnd0 = get_exist_hwnd(hwnd=0,wantedtext=title,exact_text=False)
+        print('tanchu_hwnd0=',tanchu_hwnd0)
+        #closePopupWindows(tanchu_hwnd0, wantedText=None, wantedClass=None)
         time.sleep(0.5)
-        tanchu_hwnd = get_exist_hwnd(hwnd=tanchu_hwnd0, wantedtext='关闭',wantedclass='#32770')
-        print('tanchu_hwnd=',tanchu_hwnd)
-        time.sleep(0.5)
-        if tanchu_hwnd>0:
+        #tanchu_hwnd = get_exist_hwnd(hwnd=tanchu_hwnd0, wantedtext='关闭',wantedclass='#32770')
+        #print('tanchu_hwnd=',tanchu_hwnd)
+        #time.sleep(0.5)
+        if tanchu_hwnd0>0:
             click(tanchu_hwnd)
+            win32gui.SendMessage(input_hwnd, win32con.CLOSE, None, None)
             time.sleep(0.2)
             #rect = win32gui.GetWindowRect(tanchu_hwnd)
             #self._mouse_click(rect[0] + 5, rect[1]+5)
