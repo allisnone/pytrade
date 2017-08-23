@@ -231,8 +231,8 @@ class myYHClientTrader(YHClientTrader):
         #print('tanchu_hwnd=',tanchu_hwnd)
         #time.sleep(0.5)
         if tanchu_hwnd0>0:
-            click(tanchu_hwnd)
-            win32gui.SendMessage(input_hwnd, win32con.CLOSE, None, None)
+            click(tanchu_hwnd0)
+            win32gui.SendMessage(tanchu_hwnd0, win32con.WM_CLOSE, None, None)
             time.sleep(0.2)
             #rect = win32gui.GetWindowRect(tanchu_hwnd)
             #self._mouse_click(rect[0] + 5, rect[1]+5)
