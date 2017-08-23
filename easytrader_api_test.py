@@ -15,6 +15,12 @@ account_dict={
 user.prepare(user='331600036005', password='821853')
 
 #print(user.get_add_acc_handles())
+user.update_acc_id()
+user.is_enable_trade()
+print('current_acc_id=',user.acc_id)
+print('enable_trade0=',user.enable_trade)
+user.is_enable_trade()
+print('enable_trade=',user.enable_trade)
 print('is 36005: ', user.is_right_acc(acc_id='36005'))
 print('36005 positon:\n')
 print(user.position)
@@ -29,6 +35,13 @@ json_file='yh.json'
 print('time1: ', datetime.datetime.now())
 #account_id=user.account_config['inputaccount']
 #print('account_id=',account_id)
+replaced_stock = '000560'
+replaced_stock_price = 9.80
+target_stock = '002346'
+target_stock_price = 27.45
+
+user.exchange_stocks('36005',all_pos, replaced_stock,replaced_stock_price, target_stock,
+                         target_stock_price,sell_then_buy=True,exchange_rate=0.5,absolute_order=False)
 print('time2: ', datetime.datetime.now())
 user.get_my_position()
 #print(user.balance)

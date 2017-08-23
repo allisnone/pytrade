@@ -1,6 +1,12 @@
 # -*- coding:utf-8 -*-
 import easytrader,time,datetime
 
+from winguiauto import (dumpWindow, dumpWindows, getWindowText,getParentWindow,activeWindow,
+                        getWindowStyle,getListViewInfo, setEditText, clickWindow,getDictViewInfo,
+                        click, closePopupWindows, findTopWindow,findSubWindow,
+                        select_combobox,getEditText,get_combobox_id,get_valid_combobo_ids,
+                        maxFocusWindow, minWindow, getTableData, sendKeyEvent)
+
 # coding=utf-8
 #import logging
 #from .log import log
@@ -21,9 +27,16 @@ import win32gui,win32con,win32api,struct
 from winguiauto import (dumpWindow, dumpWindows,clickButton)
 from easytrader_config0 import (HD,VA,LI)
 
+
+def int_code_to_stock_symbol(code):
+    """
+    code, int type
+    """
+    return '0'*(6-len(str(code)))+str(code)
+
 def get_exist_hwnd(hwnd,wantedtest=''):
     windows = dumpWindows(hwnd)
-    print('windows=',windows)
+    print('exist_windows=',windows)
     wanted_hwnd = -1
     for window in windows:
         child_hwnd, window_text, window_class = window
@@ -37,11 +50,21 @@ def get_exist_hwnd(hwnd,wantedtest=''):
         
 class myYHClientTrader(YHClientTrader):
     enable_trade = False
+    acc_id = '36005'
     
+    """
+    
+    def __init__(self):
+        self.Title = '网上股票交易系统5.0'
+        self.acc_id = self.update_acc_id()
+    """  
     def is_enable_trade(self,is_trade=True):
         self.enable_trade = is_trade
-        return
-    
+        
+    def set_title(self,title='网上股票交易系统5.0'):
+        self.Title = title
+        
+        
     def prepare(self, config_path=None, user=None, password=None, exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
         """
         登陆银河客户端
@@ -155,32 +178,40 @@ class myYHClientTrader(YHClientTrader):
                 pass
         return acc_id
     
+    def update_acc_id(self):
+        self.acc_id = self.get_acc_id()
+    
     def change_acc(self):
         trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
         #is_acc = self.is_acc_36005()
-        acc_id = self.get_acc_id()
+        #acc_id = self.update_acc_id()
         #acc_dict = {'36005':'331600036005','38736':'331600038736'}
-        changed = False
-        if trade_main_hwnd and acc_id:
+        #changed = False
+        pre_acc_id = self.acc_id
+        if trade_main_hwnd and self.acc_id:
             self.logout()
-            if acc_id==LI[0]:
-                changed = True
+            if pre_acc_id==LI[0]:
+                #changed = True
                 print('Will change to ACC: ',LI[1])
                 self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'])  
-            elif acc_id==LI[1]:
-                changed = True
+                #self.acc_id = LI[1]
+            elif pre_acc_id==LI[1]:
+                #changed = True
                 print('Will change to ACC: ',LI[0])
-                self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'])  
+                self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'])
+                #self.acc_id = LI[0]  
             else:
                 pass
-        return changed
+        self.update_acc_id()
+        return pre_acc_id!=self.acc_id
     
     def get_all_position(self):
         pos_dict = dict()
-        pos_dict[self.get_acc_id()] = self.position
+        pos_dict[self.get_acc_id()] = self.get_my_position()
         self.change_acc()
-        pos_dict[self.get_acc_id()] = self.position
+        pos_dict[self.get_acc_id()] = self.get_my_position()
         return pos_dict
+    
     
     def get_my_position(self):
         #单账户
@@ -188,28 +219,32 @@ class myYHClientTrader(YHClientTrader):
         pos_dict = {}
         my_pos = {}
         for stock in self.position:
-            stock_code = stock['证券代码']
+            stock_code = int_code_to_stock_symbol(stock['证券代码'])
+            stock['证券代码'] = stock_code
             pos_dict[stock_code] = stock
-        my_pos[self.get_acc_id()] = pos_dict 
-        return my_pos
+        #my_pos[self.get_acc_id()] = pos_dict 
+        return pos_dict
     
     def get_my_all_position(self):
         #多账户
         print('222')
         #print(self.position)
         my_pos = self.get_all_position()
+        pos = {}
         for acc_id in list(my_pos.keys()):
             pos_dict = {}
             for stock in my_pos[acc_id]:
-                stock_code = stock['证券代码']
+                stock_code = int_code_to_stock_symbol(stock['证券代码'])
+                stock['证券代码'] = stock_code
                 pos_dict[stock_code] = stock
-            my_pos[acc_id] = pos_dict
-        return my_pos
+            print('pos_dict=',pos_dict)
+            pos[acc_id] = pos_dict
+        return pos
                 
             
     
     def is_holding_stock(self,acc_id,stock):
-        if self.is_right_acc(acc_id):
+        if self.acc_id==acc_id:
             pass
         else:
             self.change_acc()
@@ -217,17 +252,22 @@ class myYHClientTrader(YHClientTrader):
         print('this_acc_positon=',this_acc_positon)
         for pos in this_acc_positon:
             code = pos['证券代码']
-            if stock==code:
+            symbol = int_code_to_stock_symbol(code)
+            if stock==symbol:
                 return True
         return False
     
     def _order_stock(self,stock_code, price, amount,direct='S'):
+        is_send_order = False
         if direct=='S' and self.enable_trade:
-            return self.sell(stock_code, price, amount)
+            is_send_order = self.sell(stock_code, price, amount)
         elif direct=='B' and self.enable_trade:
-            return self.buy(stock_code, price, amount)
+            is_send_order = self.buy(stock_code, price, amount)
         else:
-            return False
+            pass
+        time.sleep(10)
+        closePopupWindows(self.trade_main_hwnd)
+        return is_send_order
     
     
     
@@ -242,7 +282,7 @@ class myYHClientTrader(YHClientTrader):
         """
         if is_absolute_order and limit_price: #跌停价卖，涨停价买
                 price = limit_price
-        if self.is_right_acc(acc_id):
+        if acc_id and acc_id==self.acc_id:
             pass
         else:
             self.change_acc()
@@ -258,22 +298,27 @@ class myYHClientTrader(YHClientTrader):
         if self.is_holding_stock(acc_id, replaced_stock):
             pass
         else:
+            print('There is not stock %s in this account %s ' % (replaced_stock,acc_id))
             return False
         available_money = self.get_available_money()
         sleep_seconds = 1
+        print(position[acc_id][replaced_stock]['可用余额'])
         replaced_stock_amount = int((position[acc_id][replaced_stock]['可用余额'] * exchange_rate//100) * 100)
         target_stock_amount = int((replaced_stock_amount*replaced_stock_price/target_stock_price//100)*100)
         if sell_then_buy and replaced_stock_amount>100 and target_stock_amount>100:#先卖后买
+            print('Plan to sell %s %s, and then buy %s %s' % (replaced_stock_amount,replaced_stock,target_stock_amount,target_stock))
             sell_replace_stock = self.order_acc_stock(replaced_stock, replaced_stock_price, 
                     replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order, limit_price=None)
             time.sleep(sleep_seconds)
             if sell_replace_stock:
                 buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
                     target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order, limit_price=None)
+                print('Completed exchange order: sell then buy')
                 return buy_target_stock
             else:
                 return False
         elif not sell_then_buy and replaced_stock_amount>100 and target_stock_amount>100: #先买后卖
+            print('Plan to buy %s %s, and then sell %s %s' % (target_stock_amount,target_stock,replaced_stock_amount,replaced_stock))
             if available_money>target_stock_amount*target_stock_price:
                 buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
                     target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order, limit_price=None)
@@ -281,10 +326,12 @@ class myYHClientTrader(YHClientTrader):
                 if buy_target_stock:
                     sell_replace_stock = self.order_acc_stock(replaced_stock, replaced_stock_price, 
                     replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order, limit_price=None)
+                    print('Completed exchange order: sell then buy')
                     return replaced_stock
             else:
                 return False
         else:
+            print('Try to exchange stock, but failed ')
             return False
     
     def get_stock_exit_datas(self,position):
