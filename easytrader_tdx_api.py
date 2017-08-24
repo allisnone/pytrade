@@ -57,11 +57,23 @@ def get_exist_hwnd(hwnd,wantedtext='',wantedclass='',exact_text=True):
     wanted_hwnd = -1
     for window in windows:
         child_hwnd, window_text, window_class = window
-        cond = window_text==wantedtext
-        if not exact_text:#包含即可
+        cond = True
+        if wantedtext:
+            cond = window_text==wantedtext
+            if not exact_text:#包含即可
+                cond = wantedtext in window_text
+            if wantedclass:
+                cond = cond and (window_class==wantedclass)
+            else:
+                pass
+        else:
+            if wantedclass:
+                cond = window_class==wantedclass
+            else:
+                return -2
+        if not exact_text and wantedtext:#包含即可
             cond = wantedtext in window_text
-        if wantedclass:
-            cond = cond and (window_class==wantedclass)
+        
         if cond:
             wanted_hwnd = child_hwnd
             break
@@ -74,6 +86,8 @@ def get_exist_hwnd(hwnd,wantedtext='',wantedclass='',exact_text=True):
 class myYHClientTrader(YHClientTrader):
     enable_trade = False
     acc_id = '36005'
+    yh_tdx_hwnd = 0 
+    trade_hwnd = 0
     
     
     """
@@ -245,7 +259,7 @@ class myYHClientTrader(YHClientTrader):
     def _click_trade_only(self):
         input_hwnd = win32gui.GetDlgItem(self.login_hwnd, 0x016E)
         rect = win32gui.GetWindowRect(input_hwnd)
-        self._mouse_click(rect[0] + 5, rect[1]+5)
+        self._mouse_click(rect[0] + 20, rect[1]+10)
     
     def _input_login_verify_code(self, code):
         input_hwnd = win32gui.GetDlgItem(self.login_hwnd, 0x00ED)# 0x56b9)
@@ -335,16 +349,31 @@ class myYHClientTrader(YHClientTrader):
     def _has_main_window(self):
         title = '中国银河证券海王星V2'
         #trade_hwnd0 = win32gui.FindWindow(None, title)
-        trade_hwnd = get_exist_hwnd(hwnd=0,wantedtext=title,exact_text=False)
+        yh_tdx_hwnd = get_exist_hwnd(hwnd=0,wantedtext=title,exact_text=False)
         #trade_hwnd = win32gui.FindWindow(None, title)
-        print('trade_hwnd=',trade_hwnd)
+        print('yh_tdx_hwnd=',yh_tdx_hwnd)
         #LOGIN_WINDOW_LEN = 38
         #TRADE_WINDOW_LEN = 7
         #TRADE_WINDOW_LEN1 = -5
-        if trade_hwnd>0:
-            windows = dumpWindow(trade_hwnd)
+        if yh_tdx_hwnd>0:
+            windows = dumpWindow(yh_tdx_hwnd)
             print('window_len=',len(windows))
+            self.yh_tdx_hwnd = yh_tdx_hwnd
             return (len(windows)== TRADE_WINDOW_LEN)# or (len(windows)==TRADE_WINDOW_LEN1)
+        else:
+            return False
+        
+    def _has_yh_trade_window(self):
+        if self.yh_tdx_hwnd>0:
+            windows = dumpWindow(self.yh_tdx_hwnd)
+            print('_has_trade_windows=', windows)
+            yh_tdx_hwnd = get_exist_hwnd(hwnd=self.yh_tdx_hwnd,wantedtext=None,wantedclass='Afx:5bc0000:3:10003:900010:10027',exact_text=True)
+            print('yh_trade_window=',yh_tdx_hwnd)
+            if yh_tdx_hwnd>0:
+                self.yh_tdx_hwnd = yh_tdx_hwnd
+                return True 
+            else:
+                return False
         else:
             return False
     

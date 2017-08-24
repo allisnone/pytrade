@@ -17,6 +17,8 @@ account_dict={
 
 user.prepare(user='331600036005', password='821853',exe_path='C:/中国银河证券海王星/TdxW.exe')
 
+user._has_yh_trade_window()
+
 #print(user.get_add_acc_handles())
 user.update_acc_id()
 user.is_enable_trade()
