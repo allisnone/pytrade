@@ -42,7 +42,7 @@ from easytrader.yh_clienttrader import YHClientTrader
 
 import win32gui,win32con,win32api,struct
 from winguiauto import (dumpWindow, dumpWindows,clickButton)
-from easytrader_config0 import (HD,VA,LI,LOGIN_WINDOW_LEN,TRADE_WINDOW_LEN)
+from easytrader_config0 import (HD,VA,LI,LOGIN_WINDOW_LEN,TRADE_WINDOW_LEN,YH_TRADE_CLASS)
 
 
 def int_code_to_stock_symbol(code):
@@ -367,7 +367,11 @@ class myYHClientTrader(YHClientTrader):
         if self.yh_tdx_hwnd>0:
             windows = dumpWindow(self.yh_tdx_hwnd)
             print('_has_trade_windows=', windows)
-            yh_tdx_hwnd = get_exist_hwnd(hwnd=self.yh_tdx_hwnd,wantedtext=None,wantedclass='Afx:5bc0000:3:10003:900010:10027',exact_text=True)
+            #yh_tdx_hwnd = get_exist_hwnd(hwnd=self.yh_tdx_hwnd,wantedtext=None,wantedclass=YH_TRADE_CLASS,exact_text=True)
+            self.__top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
+            windows = dumpWindows(self.__top_hwnd)
+            print('windows=',windows)
+            yh_tdx_hwnd = findTopWindow(wantedClass=YH_TRADE_CLASS)
             print('yh_trade_window=',yh_tdx_hwnd)
             if yh_tdx_hwnd>0:
                 self.yh_tdx_hwnd = yh_tdx_hwnd
