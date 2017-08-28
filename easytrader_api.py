@@ -27,6 +27,11 @@ import win32gui,win32con,win32api,struct
 from winguiauto import (dumpWindow, dumpWindows,clickButton)
 from easytrader_config0 import (HD,VA,LI)
 
+import tempfile
+import traceback
+from PIL import ImageGrab
+from easytrader import helpers
+from easytrader.log import log
 
 def int_code_to_stock_symbol(code):
     """
@@ -88,6 +93,188 @@ class myYHClientTrader(YHClientTrader):
                 return True
         return False
             
+    
+    def _get_handles(self):
+        trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
+        operate_frame_hwnd = win32gui.GetDlgItem(trade_main_hwnd, 59648)  # 操作窗口框架
+        operate_frame_afx_hwnd = win32gui.GetDlgItem(operate_frame_hwnd, 59648)  # 操作窗口框架
+        hexin_hwnd = win32gui.GetDlgItem(operate_frame_afx_hwnd, 129)
+        scroll_hwnd = win32gui.GetDlgItem(hexin_hwnd, 200)  # 左部折叠菜单控件
+        tree_view_hwnd = win32gui.GetDlgItem(scroll_hwnd, 129)  # 左部折叠菜单控件
+        self.tree_view_hwnd = tree_view_hwnd
+        
+        #多账号切换
+        menu_frame_hwnd = win32gui.GetDlgItem(trade_main_hwnd, 59392)  # 上方菜单窗口框架
+        print('menu_frame_hwnd=',menu_frame_hwnd)
+        add_account_hwnd = win32gui.GetDlgItem(menu_frame_hwnd, 0)  # 增加账户窗口框架
+        print('add_account_hwnd=',add_account_hwnd)
+        self.add_account_btn_hwnd = win32gui.GetDlgItem(add_account_hwnd, 1691)  # 增加账户按钮
+        self.account_switch_frame_hwnd = win32gui.GetDlgItem(operate_frame_afx_hwnd, 1002)  # 切换账户窗口框架
+        
+
+        # 获取委托窗口所有控件句柄
+        win32api.PostMessage(tree_view_hwnd, win32con.WM_KEYDOWN, win32con.VK_F1, 0)
+        time.sleep(0.5)
+
+        # 买入相关
+        entrust_window_hwnd = win32gui.GetDlgItem(operate_frame_hwnd, 59649)  # 委托窗口框架
+        self.buy_stock_code_hwnd = win32gui.GetDlgItem(entrust_window_hwnd, 1032)  # 买入代码输入框
+        self.buy_price_hwnd = win32gui.GetDlgItem(entrust_window_hwnd, 1033)  # 买入价格输入框
+        self.buy_amount_hwnd = win32gui.GetDlgItem(entrust_window_hwnd, 1034)  # 买入数量输入框
+        self.buy_btn_hwnd = win32gui.GetDlgItem(entrust_window_hwnd, 1006)  # 买入确认按钮
+        self.refresh_entrust_hwnd = win32gui.GetDlgItem(entrust_window_hwnd, 32790)  # 刷新持仓按钮
+        entrust_frame_hwnd = win32gui.GetDlgItem(entrust_window_hwnd, 1047)  # 持仓显示框架
+        entrust_sub_frame_hwnd = win32gui.GetDlgItem(entrust_frame_hwnd, 200)  # 持仓显示框架
+        self.position_list_hwnd = win32gui.GetDlgItem(entrust_sub_frame_hwnd, 1047)  # 持仓列表
+        win32api.PostMessage(tree_view_hwnd, win32con.WM_KEYDOWN, win32con.VK_F2, 0)
+        time.sleep(0.5)
+
+        # 卖出相关
+        sell_entrust_frame_hwnd = win32gui.GetDlgItem(operate_frame_hwnd, 59649)  # 委托窗口框架
+        self.sell_stock_code_hwnd = win32gui.GetDlgItem(sell_entrust_frame_hwnd, 1032)  # 卖出代码输入框
+        self.sell_price_hwnd = win32gui.GetDlgItem(sell_entrust_frame_hwnd, 1033)  # 卖出价格输入框
+        self.sell_amount_hwnd = win32gui.GetDlgItem(sell_entrust_frame_hwnd, 1034)  # 卖出数量输入框
+        self.sell_btn_hwnd = win32gui.GetDlgItem(sell_entrust_frame_hwnd, 1006)  # 卖出确认按钮
+
+        # 撤单窗口
+        win32api.PostMessage(tree_view_hwnd, win32con.WM_KEYDOWN, win32con.VK_F3, 0)
+        time.sleep(0.5)
+        cancel_entrust_window_hwnd = win32gui.GetDlgItem(operate_frame_hwnd, 59649)  # 撤单窗口框架
+        self.cancel_stock_code_hwnd = win32gui.GetDlgItem(cancel_entrust_window_hwnd, 3348)  # 卖出代码输入框
+        self.cancel_query_hwnd = win32gui.GetDlgItem(cancel_entrust_window_hwnd, 3349)  # 查询代码按钮
+        self.cancel_buy_hwnd = win32gui.GetDlgItem(cancel_entrust_window_hwnd, 30002)  # 撤买
+        self.cancel_sell_hwnd = win32gui.GetDlgItem(cancel_entrust_window_hwnd, 30003)  # 撤卖
+
+        chexin_hwnd = win32gui.GetDlgItem(cancel_entrust_window_hwnd, 1047)
+        chexin_sub_hwnd = win32gui.GetDlgItem(chexin_hwnd, 200)
+        self.entrust_list_hwnd = win32gui.GetDlgItem(chexin_sub_hwnd, 1047)  # 委托列表
+        
+        #持仓资金信息窗口
+        win32api.PostMessage(tree_view_hwnd, win32con.WM_KEYDOWN, win32con.VK_F4, 0)
+        time.sleep(0.5)
+        
+        fund_window_hwnd = win32gui.GetDlgItem(operate_frame_hwnd, 59649)  # 查询窗口框架
+        fund_sub_window_hwnd = win32gui.GetDlgItem(fund_window_hwnd, 1308)  # 资金窗口框架
+        fund_hexin_sub_hwnd = win32gui.GetDlgItem(fund_sub_window_hwnd, 200)
+        self.fund_list_hwnd = win32gui.GetDlgItem(fund_hexin_sub_hwnd, 1308)  # 资金列表
+        
+    
+    
+    @property
+    def fund(self):
+        return self.get_fund()
+
+    def get_fund(self):
+        win32gui.SendMessage(self.refresh_entrust_hwnd, win32con.BM_CLICK, None, None)  # 刷新持仓
+        #win32api.PostMessage(self.tree_view_hwnd, win32con.WM_KEYDOWN, win32con.VK_F4, 0)
+        time.sleep(1)
+        self._set_foreground_window(self.fund_list_hwnd)
+        time.sleep(1)
+        data = self._read_clipboard()
+        return self.project_copy_data(data)
+    
+    def _add_account(self,user,password):
+        time.sleep(0.1)
+        print('self.add_account_btn_hwnd=',self.add_account_btn_hwnd)
+        win32gui.SendMessage(self.add_account_btn_hwnd, win32con.BM_CLICK, None, None)  # 撤买
+        time.sleep(3)
+        account_login_hwnd = win32gui.FindWindow(0, '用户登录')  # 交易窗口
+        print('account_login_hwnd=',account_login_hwnd)
+        account_hwnd = win32gui.GetDlgItem(account_login_hwnd, 1011)  # 资金窗口框架
+        
+        account_input_hwnd = win32gui.GetDlgItem(account_hwnd, 1001)  # 资金窗口框架
+        
+        passwd_input_hwnd = win32gui.GetDlgItem(account_login_hwnd, 1012)  # 资金窗口框架
+        
+        verify_code_input_hwnd = win32gui.GetDlgItem(account_login_hwnd, 1003)  # 资金窗口框架
+        verify_code_hwnd = win32gui.GetDlgItem(account_login_hwnd, 1499)  # 资金窗口框架
+        
+        login_btn_hwnd = win32gui.GetDlgItem(account_login_hwnd, 1006)  # 资金窗口框架
+        
+        time.sleep(0.5)
+        win32gui.SendMessage(account_input_hwnd, win32con.WM_SETTEXT, None, user)
+        
+        time.sleep(0.5)
+        win32gui.SendMessage(passwd_input_hwnd, win32con.WM_SETTEXT, None, password)
+        
+        
+        def get_verify_code(account_login_hwnd,verify_code_hwnd):
+            self._set_foreground_window(account_login_hwnd)
+            time.sleep(1)
+            rect = win32gui.GetWindowRect(verify_code_hwnd)
+            
+            rect_new = (rect[0],rect[1],rect[2]+30,rect[3])
+            verify_code_image = ImageGrab.grab(rect_new)
+            image_path = tempfile.mktemp() + '.jpg'
+            verify_code_image.save(image_path)
+            print('image_path=',image_path)
+            result = helpers.recognize_verify_code(image_path, 'yh_client')
+            time.sleep(0.2)
+            return result
+   
+        for _ in range(10):
+            verify_code = get_verify_code(account_login_hwnd,verify_code_hwnd)
+            print('verify_codev=',verify_code)
+            time.sleep(0.5)
+            win32gui.SendMessage(verify_code_input_hwnd, win32con.WM_SETTEXT, None, verify_code)
+            time.sleep(0.5)
+            win32gui.SendMessage(login_btn_hwnd, win32con.BM_CLICK, None, None)
+            time.sleep(3)
+            
+            try:
+                rect = win32gui.GetWindowRect(self.account_switch_frame_hwnd)#(left, top, right, bottom)
+                print('rect=',rect)
+                y = abs(int((rect[3]-rect[1]) * 0.15))
+                x = abs(int((rect[2]-rect[0]) * 0.5))
+                rect_new1 = (rect[0],rect[1]+y,rect[2],rect[3])
+                print('rect_new1=',rect_new1)
+                print('x=',x)
+                print('y=',y)
+                y=60
+                verify_code_image = ImageGrab.grab(rect_new1)
+                image_path = tempfile.mktemp() + '.jpg'
+                verify_code_image.save(image_path)
+                print('image_path1=',image_path)
+                self._mouse_click(rect[0]+5,rect[1]+y)
+                time.sleep(10)
+                win32gui.SetForegroundWindow(self.tree_view_hwnd)
+                time.sleep(0.5)
+                win32api.PostMessage(self.tree_view_hwnd, win32con.WM_KEYDOWN, win32con.VK_F4, 0)
+                time.sleep(10)
+                self._get_handles()
+               
+                
+            except:
+                print('try againg...')
+                pass   
+            
+            if len(self.fund)==1:
+                print(self.fund)
+                pass
+            else:
+                continue 
+            account_login_id = self.fund[0]['资金帐户']
+            print('account_login_id=',account_login_id, str(account_login_id)==user)    
+            if str(account_login_id)==user:
+                log.info('客户端登陆成功')
+                break
+            
+            win32gui.SetForegroundWindow(account_login_hwnd)
+            time.sleep(0.5)
+            win32gui.SendMessage(verify_code_hwnd, win32con.BM_CLICK, None, None)
+            time.sleep(0.5)
+
+        for _ in range(60):
+            if self._has_main_window():
+                self._get_handles()
+                break
+            time.sleep(1)
+        else:
+            raise Exception('启动交易客户端失败')
+        log.info('客户端登陆成功')
+        
+        
+        
     
     def close_window(self,hwnd):#, extra):
         if hwnd and win32gui.IsWindowVisible(hwnd):
@@ -265,8 +452,9 @@ class myYHClientTrader(YHClientTrader):
             is_send_order = self.buy(stock_code, price, amount)
         else:
             pass
-        time.sleep(10)
-        closePopupWindows(self.trade_main_hwnd)
+        time.sleep(1)
+        #print('self.trade_main_hw='.self.trade_main_hw)
+        #closePopupWindows(self.trade_main_hwnd)
         return is_send_order
     
     

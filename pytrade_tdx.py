@@ -265,6 +265,7 @@ class OperationTdx:
             if self.debug: print(self.__menu_hwnds)
             self.__buy_sell_hwnds = p_hwnd_children
             EXPECT_LEN = 68
+            print(len(self.__buy_sell_hwnds))
             if len(self.__buy_sell_hwnds) != EXPECT_LEN:
                 sm.send_mail(sub='无法获得通达信对买对卖界面的窗口句柄',content='子句柄数量为 %s，不等于期望数量：%s.也许软件亿升级。' %(len(self.__buy_sell_hwnds),EXPECT_LEN))
                 tkinter.messagebox.showerror('错误', '无法获得通达信对买对卖界面的窗口句柄')

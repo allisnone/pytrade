@@ -25,6 +25,16 @@ print('is 36005: ', user.is_right_acc(acc_id='36005'))
 print('36005 positon:\n')
 print(user.position)
 #user.change_acc()
+fund_list = user.fund
+print('fund=',fund_list,len(fund_list)==1)
+#fund= [{'总市值': 165955.81, '可用金额': 902.38, '货币单位': '人民币', '资金帐户': 331600036005, '总资产': 166858.18, '资金余额': 902.37}]
+print('可用余额=',fund_list[0]['可用金额'])
+print('总市值=',fund_list[0]['总市值'])
+
+user._add_account(user='331600038736', password='821853')
+
+
+"""
 all_pos = user.get_all_position()
 print('all position:', all_pos)
 print('is 36005: ', user.is_right_acc(acc_id='36005'))
@@ -54,6 +64,9 @@ print('end: ', datetime.datetime.now())
 #user.logout()
 
 print('end: ', datetime.datetime.now())
+
+
+"""
 
 """
 print(user.balance[0])
