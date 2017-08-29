@@ -213,6 +213,13 @@ class myYHClientTrader(YHClientTrader):
         
         time.sleep(5)
         #win32gui.SendMessage(tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
+        if tdx_menu_system_hwnd:
+            try:
+                self._set_foreground_window(tdx_menu_system_hwnd)
+            except:
+                pass
+        else:
+            return
         #"""
         rect = win32gui.GetWindowRect(tdx_menu_system_hwnd)
         print('rect=',rect)
@@ -229,8 +236,13 @@ class myYHClientTrader(YHClientTrader):
         
         download_x = rect[0] + 5
         download_y = rect[3] + 230
-        self._mouse_click(download_x, download_y)
-        time.sleep(10)
+        #self._mouse_click(download_x, download_y)
+        #time.sleep(5)
+        
+        export_data_x = rect[0] + 5
+        export_data_y = rect[3] + 60
+        self._mouse_click(export_data_x, export_data_y)
+        time.sleep(5)
         return    
     
     def _data_download(self):
@@ -278,6 +290,8 @@ class myYHClientTrader(YHClientTrader):
     
     def close_tdx(self):
         return
+    
+    
     def _set_trade_mode0(self):
         input_hwnd = win32gui.GetDlgItem(self.login_hwnd, 0x016E)#0x4f4d)
         win32gui.SendMessage(input_hwnd, win32con.BM_CLICK, None, None)
