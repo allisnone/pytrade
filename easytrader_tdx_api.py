@@ -51,28 +51,28 @@ def int_code_to_stock_symbol(code):
     """
     return '0'*(6-len(str(code)))+str(code)
 
-def get_exist_hwnd(hwnd,wantedtext='',wantedclass='',exact_text=True):
+def get_exist_hwnd(hwnd,wantedText='',wantedClass='',exact_text=True):
     windows = dumpWindows(hwnd)
     print('exist_windows=',windows)
     wanted_hwnd = -1
     for window in windows:
         child_hwnd, window_text, window_class = window
         cond = True
-        if wantedtext:
-            cond = window_text==wantedtext
+        if wantedText:
+            cond = window_text==wantedText
             if not exact_text:#包含即可
-                cond = wantedtext in window_text
-            if wantedclass:
-                cond = cond and (window_class==wantedclass)
+                cond = wantedText in window_text
+            if wantedClass:
+                cond = cond and (window_class==wantedClass)
             else:
                 pass
         else:
-            if wantedclass:
-                cond = window_class==wantedclass
+            if wantedClass:
+                cond = window_class==wantedClass
             else:
                 return -2
-        if not exact_text and wantedtext:#包含即可
-            cond = wantedtext in window_text
+        if not exact_text and wantedText:#包含即可
+            cond = wantedText in window_text
         
         if cond:
             wanted_hwnd = child_hwnd
@@ -88,6 +88,7 @@ class myYHClientTrader(YHClientTrader):
     acc_id = '36005'
     yh_tdx_hwnd = 0 
     trade_hwnd = 0
+    type = 'trade_only'
     
     
     """
@@ -148,6 +149,9 @@ class myYHClientTrader(YHClientTrader):
         # 登陆
         self._set_trade_mode()
         time.sleep(2)
+        if self.type=='quote_only':
+            time.sleep(10)
+            return
         self._set_login_name(user)
         self._set_login_password(password)
         """
@@ -175,9 +179,112 @@ class myYHClientTrader(YHClientTrader):
             raise Exception('启动交易客户端失败')
         log.info('客户端登陆成功')
         
+    def _get_history_handle(self):
+        #trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
+        self.trade_main_hwnd = get_exist_hwnd(0,wantedClass='TdxW_MainFrame_Class')#,exact_text=False) #wantedText=self.Title
+        print('trade_main_hwnd=',self.trade_main_hwnd)
+        if self.trade_main_hwnd:
+            try:
+                self._set_foreground_window(self.trade_main_hwnd)
+            except:
+                pass
+        else:
+            return
+        tdx_menu_hwnd = win32gui.GetDlgItem(self.trade_main_hwnd, 0xE805)  # 操作窗口框架
+        tdx_menu_system_hwnd = win32gui.GetDlgItem(tdx_menu_hwnd, 0x03E8)  # 操作窗口框架
+        print('tdx_menu_system_hwnd=',tdx_menu_system_hwnd)
+        #win32gui.SendMessage(tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
+        popup_hwnd = win32gui.FindWindow('#32770','银河证券')  # 交易窗口
+        if popup_hwnd:
+            pass
+        else:
+            popup_hwnd = win32gui.FindWindow('#32770','中国银河证券股份有限公司')  # 交易窗口
+        print('popup_hwnd=',popup_hwnd)
+        if popup_hwnd:
+            click_noany_more_hwnd = win32gui.GetDlgItem(popup_hwnd, 0x077A)  # 操作窗口框架
+            close_pop_btn_hwnd = win32gui.GetDlgItem(popup_hwnd, 0x0002)  # 操作窗口框架
+            win32gui.SendMessage(click_noany_more_hwnd, win32con.BM_CLICK, None, None)
+            time.sleep(1)
+            win32gui.SendMessage(close_pop_btn_hwnd, win32con.BM_CLICK, None, None)
+        popup_jishi_hwnd = win32gui.FindWindow(0,'即时播报')  # 交易窗口
+        print('popup_jishi_hwnd=',popup_jishi_hwnd)
+        if popup_jishi_hwnd:
+            win32gui.SendMessage(popup_jishi_hwnd, win32con.WM_CLOSE, None, None)
+        
+        time.sleep(5)
+        #win32gui.SendMessage(tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
+        #"""
+        rect = win32gui.GetWindowRect(tdx_menu_system_hwnd)
+        print('rect=',rect)
+        self._mouse_click(rect[0] + 5, rect[1]+5)
+        #"""
+        time.sleep(5)
+        
+        rect_new = (rect[0],rect[3],rect[2]+100,rect[3]+240)
+        verify_code_image = ImageGrab.grab(rect_new)
+        image_path = tempfile.mktemp() + '.jpg'
+        verify_code_image.save(image_path)
+        print('image_path=',image_path)
+        time.sleep(5)
+        
+        download_x = rect[0] + 5
+        download_y = rect[3] + 230
+        self._mouse_click(download_x, download_y)
+        time.sleep(10)
+        return    
+    
+    def _data_download(self):
+        if self.trade_main_hwnd:
+            try:
+                self._set_foreground_window(self.trade_main_hwnd)
+            except:
+                pass
+        else:
+            return
+        #download_main_hwnd = get_exist_hwnd(0,wantedClass='#32770',exact_text=True, wantedText='盘后数据下载')
+        #print('download_main_hwnd=',download_main_hwnd)
+        download_main_hwnd = findTopWindow(wantedText='盘后数据下载',wantedClass='#32770')
+        print('download_main_hwnd=',download_main_hwnd)
+        if download_main_hwnd:
+            try:
+                self._set_foreground_window(download_main_hwnd)
+            except:
+                pass
+        else:
+            return
+        select_day_k_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0590)  # 操作窗口框架
+        start_download_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0001)  # 操作窗口框架
+        close_download_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0002)  # 操作窗口框架
+        print('close_download_hwnd=',close_download_hwnd)
+        win32gui.SendMessage(select_day_k_hwnd, win32con.BM_CLICK, None, None)
+        time.sleep(1)
+        win32gui.SendMessage(start_download_hwnd, win32con.BM_CLICK, None, None)
+        time.sleep(1)
+        
+        time.sleep(20*60)
+        win32gui.SendMessage(close_download_hwnd, win32con.BM_CLICK, None, None)
+        
+    def _export_history_data(self):
+        if self.trade_main_hwnd:
+            try:
+                self._set_foreground_window(self.trade_main_hwnd)
+                time.sleep(1)
+                win32gui.SendMessage(self.trade_main_hwnd, win32con.BM_CLOSE, None, None)
+            except:
+                pass
+        else:
+            return
+        return    
+    
+    def close_tdx(self):
+        return
     def _set_trade_mode0(self):
         input_hwnd = win32gui.GetDlgItem(self.login_hwnd, 0x016E)#0x4f4d)
         win32gui.SendMessage(input_hwnd, win32con.BM_CLICK, None, None)
+    
+    def set_type(self,type='trade_only'):
+        self.type = type
+    
     
     def _set_trade_mode(self):
         self._click_trade_only()
@@ -237,11 +344,11 @@ class myYHClientTrader(YHClientTrader):
         """
         #tanchu_hwnd0 = win32gui.FindWindow(0, '消息标题:关于对证件有效期缺失的个人账户采取限制措施的公告')  # 交易窗口
         title = '消息标题'
-        tanchu_hwnd0 = get_exist_hwnd(hwnd=0,wantedtext=title,exact_text=False)
+        tanchu_hwnd0 = get_exist_hwnd(hwnd=0,wantedText=title,exact_text=False)
         print('tanchu_hwnd0=',tanchu_hwnd0)
         #closePopupWindows(tanchu_hwnd0, wantedText=None, wantedClass=None)
         time.sleep(0.5)
-        #tanchu_hwnd = get_exist_hwnd(hwnd=tanchu_hwnd0, wantedtext='关闭',wantedclass='#32770')
+        #tanchu_hwnd = get_exist_hwnd(hwnd=tanchu_hwnd0, wantedText='关闭',wantedClass='#32770')
         #print('tanchu_hwnd=',tanchu_hwnd)
         #time.sleep(0.5)
         if tanchu_hwnd0>0:
@@ -257,9 +364,25 @@ class myYHClientTrader(YHClientTrader):
         self._mouse_click(rect[0] + 5, rect[1] -2)
     
     def _click_trade_only(self):
-        input_hwnd = win32gui.GetDlgItem(self.login_hwnd, 0x016E)
+        #input_hwnd = win32gui.GetDlgItem(self.login_hwnd, 0x016E)
+        trade_hwnd_id = 0x016C
+        #rect = win32gui.GetWindowRect(input_hwnd)
+        if self.type=='trade_only':
+            trade_hwnd_id = 0x016E
+        elif self.type=='quote_only':
+            trade_hwnd_id = 0x016D
+        elif self.type=='trade_and_quote':
+            pass
+        else:
+            pass
+        try:
+            self._set_foreground_window(self.login_hwnd)
+        except:
+            pass
+        input_hwnd = win32gui.GetDlgItem(self.login_hwnd, trade_hwnd_id)
         rect = win32gui.GetWindowRect(input_hwnd)
         self._mouse_click(rect[0] + 20, rect[1]+10)
+            
     
     def _input_login_verify_code(self, code):
         input_hwnd = win32gui.GetDlgItem(self.login_hwnd, 0x00ED)# 0x56b9)
@@ -349,7 +472,7 @@ class myYHClientTrader(YHClientTrader):
     def _has_main_window(self):
         title = '中国银河证券海王星V2'
         #trade_hwnd0 = win32gui.FindWindow(None, title)
-        yh_tdx_hwnd = get_exist_hwnd(hwnd=0,wantedtext=title,exact_text=False)
+        yh_tdx_hwnd = get_exist_hwnd(hwnd=0,wantedText=title,exact_text=False)
         #trade_hwnd = win32gui.FindWindow(None, title)
         print('yh_tdx_hwnd=',yh_tdx_hwnd)
         #LOGIN_WINDOW_LEN = 38
@@ -367,7 +490,7 @@ class myYHClientTrader(YHClientTrader):
         if self.yh_tdx_hwnd>0:
             windows = dumpWindow(self.yh_tdx_hwnd)
             print('_has_trade_windows=', windows)
-            #yh_tdx_hwnd = get_exist_hwnd(hwnd=self.yh_tdx_hwnd,wantedtext=None,wantedclass=YH_TRADE_CLASS,exact_text=True)
+            #yh_tdx_hwnd = get_exist_hwnd(hwnd=self.yh_tdx_hwnd,wantedText=None,wantedClass=YH_TRADE_CLASS,exact_text=True)
             self.__top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
             windows = dumpWindows(self.__top_hwnd)
             print('windows=',windows)
@@ -450,14 +573,14 @@ class myYHClientTrader(YHClientTrader):
         return 
     
     def is_right_acc(self,acc_id):
-        wantedtext = VA[LI[0]]['A1']
+        wantedText = VA[LI[0]]['A1']
         if acc_id==LI[0]:
             pass
         elif acc_id==LI[1]:
-            wantedtext = VA[LI[1]]['A1']
+            wantedText = VA[LI[1]]['A1']
         else:
             return False
-        hnwd = get_exist_hwnd(self.trade_main_hwnd, wantedtext)
+        hnwd = get_exist_hwnd(self.trade_main_hwnd, wantedText)
         return hnwd>0
     
     def get_acc_id(self):
