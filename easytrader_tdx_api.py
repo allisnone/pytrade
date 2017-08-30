@@ -179,7 +179,7 @@ class myYHClientTrader(YHClientTrader):
             raise Exception('启动交易客户端失败')
         log.info('客户端登陆成功')
         
-    def _get_history_handle(self):
+    def _get_tdx_system_menu(self):
         #trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
         self.trade_main_hwnd = get_exist_hwnd(0,wantedClass='TdxW_MainFrame_Class')#,exact_text=False) #wantedText=self.Title
         print('trade_main_hwnd=',self.trade_main_hwnd)
@@ -191,8 +191,8 @@ class myYHClientTrader(YHClientTrader):
         else:
             return
         tdx_menu_hwnd = win32gui.GetDlgItem(self.trade_main_hwnd, 0xE805)  # 操作窗口框架
-        tdx_menu_system_hwnd = win32gui.GetDlgItem(tdx_menu_hwnd, 0x03E8)  # 操作窗口框架
-        print('tdx_menu_system_hwnd=',tdx_menu_system_hwnd)
+        self.tdx_menu_system_hwnd = win32gui.GetDlgItem(tdx_menu_hwnd, 0x03E8)  # 操作窗口框架
+        print('tdx_menu_system_hwnd=',self.tdx_menu_system_hwnd)
         #win32gui.SendMessage(tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
         popup_hwnd = win32gui.FindWindow('#32770','银河证券')  # 交易窗口
         if popup_hwnd:
@@ -212,33 +212,56 @@ class myYHClientTrader(YHClientTrader):
             win32gui.SendMessage(popup_jishi_hwnd, win32con.WM_CLOSE, None, None)
         
         time.sleep(5)
-        #win32gui.SendMessage(tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
-        if tdx_menu_system_hwnd:
+        #win32gui.SendMessage(self.tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
+    
+    def _click_download_data(self):
+        if self.tdx_menu_system_hwnd:
             try:
-                self._set_foreground_window(tdx_menu_system_hwnd)
+                self._set_foreground_window(self.tdx_menu_system_hwnd)
             except:
                 pass
         else:
             return
         #"""
-        rect = win32gui.GetWindowRect(tdx_menu_system_hwnd)
+        rect = win32gui.GetWindowRect(self.tdx_menu_system_hwnd)
         print('rect=',rect)
         self._mouse_click(rect[0] + 5, rect[1]+5)
         #"""
-        time.sleep(5)
+        time.sleep(1)
         
         rect_new = (rect[0],rect[3],rect[2]+100,rect[3]+240)
         verify_code_image = ImageGrab.grab(rect_new)
         image_path = tempfile.mktemp() + '.jpg'
         verify_code_image.save(image_path)
         print('image_path=',image_path)
-        time.sleep(5)
+        time.sleep(1)
         
         download_x = rect[0] + 5
         download_y = rect[3] + 230
-        #self._mouse_click(download_x, download_y)
-        #time.sleep(5)
+        self._mouse_click(download_x, download_y)
+        time.sleep(1)
         
+    def _click_export_data(self):
+        if self.tdx_menu_system_hwnd:
+            try:
+                self._set_foreground_window(self.tdx_menu_system_hwnd)
+            except:
+                pass
+        else:
+            return
+        #"""
+        rect = win32gui.GetWindowRect(self.tdx_menu_system_hwnd)
+        print('rect=',rect)
+        self._mouse_click(rect[0] + 5, rect[1]+5)
+        #"""
+        time.sleep(1)
+        
+        rect_new = (rect[0],rect[3],rect[2]+100,rect[3]+240)
+        verify_code_image = ImageGrab.grab(rect_new)
+        image_path = tempfile.mktemp() + '.jpg'
+        verify_code_image.save(image_path)
+        print('image_path=',image_path)
+        time.sleep(1)
         export_data_x = rect[0] + 5
         export_data_y = rect[3] + 60
         self._mouse_click(export_data_x, export_data_y)
@@ -255,7 +278,7 @@ class myYHClientTrader(YHClientTrader):
             return
         #download_main_hwnd = get_exist_hwnd(0,wantedClass='#32770',exact_text=True, wantedText='盘后数据下载')
         #print('download_main_hwnd=',download_main_hwnd)
-        download_main_hwnd = findTopWindow(wantedText='盘后数据下载',wantedClass='#32770')
+        download_main_hwnd = findTopWindow(wantedText='盘后数据下载',wantedClass='#32770') # 盘后数据下载窗口框架
         print('download_main_hwnd=',download_main_hwnd)
         if download_main_hwnd:
             try:
@@ -264,30 +287,151 @@ class myYHClientTrader(YHClientTrader):
                 pass
         else:
             return
-        select_day_k_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0590)  # 操作窗口框架
-        start_download_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0001)  # 操作窗口框架
-        close_download_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0002)  # 操作窗口框架
+        select_day_k_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0590)  # 勾选下载日线
+        start_download_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0001)  # 开始下载按钮
+        close_download_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0002)  # 关闭下载窗口
         print('close_download_hwnd=',close_download_hwnd)
         win32gui.SendMessage(select_day_k_hwnd, win32con.BM_CLICK, None, None)
         time.sleep(1)
         win32gui.SendMessage(start_download_hwnd, win32con.BM_CLICK, None, None)
         time.sleep(1)
         
-        time.sleep(20*60)
+        find_text = '下载完毕'  #0x0C8
+        complete_download_hwnd =0
+        while complete_download_hwnd<=0:
+            time.sleep(10)
+            complete_download_hwnd = get_exist_hwnd(download_main_hwnd,exact_text=False, wantedText='下载完毕')
+            print('complete_download_hwnd=',complete_download_hwnd)
+        time.sleep(1)
         win32gui.SendMessage(close_download_hwnd, win32con.BM_CLICK, None, None)
+        time.sleep(1)
+        return
+    
+    def download_tdx_data(self):
+        self._click_download_data()
+        self._data_download()
+        return
         
     def _export_history_data(self):
+        def select_advance_export_stock():
+            advance_export_data_hwnd = findTopWindow(wantedText='高级导出',wantedClass='#32770') #数据导出窗口框架
+            print('advance_export_data_hwnd=',advance_export_data_hwnd)
+            if advance_export_data_hwnd:
+                try:
+                    self._set_foreground_window(advance_export_data_hwnd)
+                except:
+                    pass
+                
+                add_stcok_btn_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0019)  # 添加品种按钮
+                remove_stcok_btn_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0023)  # 移出加品种按钮
+                start_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0001)  # 开始导出按钮
+                close_advance_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0002)  # 关闭按钮
+                
+                win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
+                time.sleep(1)
+                
+                select_stock_hwnd = findTopWindow(wantedText='选择品种',wantedClass='#32770') #选择品种窗口框架
+                print('select_stock_hwnd=',select_stock_hwnd)
+                if select_stock_hwnd:
+                    try:
+                        self._set_foreground_window(advance_export_data_hwnd)
+                        
+                    except:
+                        pass
+                    
+                    menu_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x4C5)  # 分类框架
+                    
+                    select_all_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x0580)  # 全选按钮
+                    confirm_select_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x0001)  # 确认导出按钮
+                    cancel_select_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x0002)  # 取消按钮
+                    listview_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x4C3)  # 品种列表框架
+                    if listview_hwnd:
+                        try:
+                            self._set_foreground_window(listview_hwnd)
+                            time.sleep(0.2)
+                        except:
+                            pass
+                    else:
+                        return
+                    #"""
+                    rect = win32gui.GetWindowRect(listview_hwnd)
+                    print('listview_hwnd_rect=',rect)
+                    #self._mouse_click(rect[0] + 5, rect[1]+5)
+                    #"""
+                        
+                    rect_new = (rect[0],rect[1],rect[2],rect[0]+60)
+                    verify_code_image = ImageGrab.grab(rect_new)
+                    image_path = tempfile.mktemp() + '.jpg'
+                    verify_code_image.save(image_path)
+                    print('listview_image_path=',image_path)
+                    time.sleep(1)
+                    export_data_x = rect[0] + 5
+                    export_data_y = rect[3] + 60
+                    self._mouse_click(export_data_x, export_data_y)
+                    time.sleep(5)
+                    
+                    win32gui.SendMessage(select_all_hwnd, win32con.BM_CLICK, None, None)
+                    time.sleep(5)
+                    
+                    win32gui.SendMessage(confirm_select_hwnd, win32con.BM_CLICK, None, None)
+                    time.sleep(5)
+                    
+                win32gui.SendMessage(start_export_hwnd, win32con.BM_CLICK, None, None)
+                time.sleep(10)
+                completed_export_data_hwnd = 0
+                while completed_export_data_hwnd<=0:
+                    completed_export_data_hwnd = findTopWindow(wantedText='TdxW',wantedClass='#32770') #数据导出完成窗口框架
+                    confirm_completed_export_hwnd = win32gui.GetDlgItem(completed_export_data_hwnd, 0x0002)  # 确定按钮
+                    print('completed_export_data_hwnd=',completed_export_data_hwnd)
+                
+                    if completed_export_data_hwnd:
+                        win32gui.SendMessage(confirm_completed_export_hwnd, win32con.BM_CLICK, None, None)
+                        time.sleep(1)
+                    time.sleep(20)
+            else:
+                return
+                
+            return
+        
         if self.trade_main_hwnd:
             try:
                 self._set_foreground_window(self.trade_main_hwnd)
                 time.sleep(1)
-                win32gui.SendMessage(self.trade_main_hwnd, win32con.BM_CLOSE, None, None)
+                #win32gui.SendMessage(self.trade_main_hwnd, win32con.BM_CLOSE, None, None)
             except:
                 pass
         else:
             return
-        return    
-    
+        
+        export_data_hwnd = findTopWindow(wantedText='数据导出',wantedClass='#32770') #数据导出窗口框架
+        print('export_data_hwnd=',export_data_hwnd)
+        if export_data_hwnd:
+            try:
+                self._set_foreground_window(export_data_hwnd)
+            except:
+                pass
+        else:
+            return
+        advance_btn_hwnd = win32gui.GetDlgItem(export_data_hwnd, 0x0121)  # 高级导出按钮
+        start_export_hwnd = win32gui.GetDlgItem(export_data_hwnd, 0x0001)  # 导出按钮
+        cancel_export_hwnd = win32gui.GetDlgItem(export_data_hwnd, 0x0002)  # 取消按钮
+        print('cancel_export_hwnd=',cancel_export_hwnd)
+        win32gui.SendMessage(advance_btn_hwnd, win32con.BM_CLICK, None, None)
+        time.sleep(5)
+        select_advance_export_stock()
+        
+        win32gui.SendMessage(start_export_hwnd, win32con.BM_CLICK, None, None)
+        time.sleep(1)
+        
+        time.sleep(1)
+        win32gui.SendMessage(cancel_export_hwnd, win32con.BM_CLICK, None, None)
+        
+        return 
+       
+    def export_tdx_data(self):
+        self._click_export_data()
+        self._export_history_data()
+        
     def close_tdx(self):
         return
     
