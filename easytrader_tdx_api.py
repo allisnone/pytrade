@@ -217,7 +217,33 @@ class myYHClientTrader(YHClientTrader):
         time.sleep(5)
         #win32gui.SendMessage(self.tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
     
+    def _click_rect(self,hwnd,x_offset=0,y_offset=0,x_0='left',y_0='top'):
+        if hwnd:
+            try:
+                self._set_foreground_window(hwnd)
+            except:
+                pass
+        else:
+            return
+        rect = win32gui.GetWindowRect(hwnd)  #(left,top,right,bottom)
+        if x_0=='left':
+            x = rect[0]
+        elif x_0=='right':
+            x = rect[2]
+        else:
+            return
+        if y_0=='top':
+            y = rect[1]
+        elif y_0=='bottom':
+            y = rect[3]
+        else:
+            return
+        self._mouse_click(x + x_offset, y+y_offset)
+        time.sleep(0.5)
+        return
+    
     def _click_download_data(self):
+        """
         if self.tdx_menu_system_hwnd:
             try:
                 self._set_foreground_window(self.tdx_menu_system_hwnd)
@@ -225,13 +251,16 @@ class myYHClientTrader(YHClientTrader):
                 pass
         else:
             return
-        #"""
+        
         rect = win32gui.GetWindowRect(self.tdx_menu_system_hwnd)
         print('rect=',rect)
         self._mouse_click(rect[0] + 5, rect[1]+5)
-        #"""
+        """
+        self._click_rect(self.tdx_menu_system_hwnd,x_offset=5,y_offset=5,x_0='left',y_0='top')
         time.sleep(1)
+        self._click_rect(self.tdx_menu_system_hwnd,x_offset=5,y_offset=230,x_0='left',y_0='bottom')
         
+        """
         rect_new = (rect[0],rect[3],rect[2]+100,rect[3]+240)
         verify_code_image = ImageGrab.grab(rect_new)
         image_path = tempfile.mktemp() + '.jpg'
@@ -243,8 +272,10 @@ class myYHClientTrader(YHClientTrader):
         download_y = rect[3] + 230
         self._mouse_click(download_x, download_y)
         time.sleep(1)
+        """
         
     def _click_export_data(self):
+        """
         print('self.tdx_menu_system_hwnd=',self.tdx_menu_system_hwnd)
         if self.tdx_menu_system_hwnd:
             try:
@@ -253,11 +284,11 @@ class myYHClientTrader(YHClientTrader):
                 pass
         else:
             return
-        #"""
+        
         rect = win32gui.GetWindowRect(self.tdx_menu_system_hwnd)
         print('rect=',rect)
         self._mouse_click(rect[0] + 5, rect[1]+5)
-        #"""
+        
         time.sleep(1)
         
         rect_new = (rect[0],rect[3],rect[2]+100,rect[3]+240)
@@ -270,6 +301,10 @@ class myYHClientTrader(YHClientTrader):
         export_data_y = rect[3] + 60
         self._mouse_click(export_data_x, export_data_y)
         time.sleep(5)
+        """
+        self._click_rect(self.tdx_menu_system_hwnd,x_offset=5,y_offset=5,x_0='left',y_0='top')
+        time.sleep(1)
+        self._click_rect(self.tdx_menu_system_hwnd,x_offset=5,y_offset=60,x_0='left',y_0='bottom')
         return    
     
     def _data_download(self):
@@ -384,6 +419,7 @@ class myYHClientTrader(YHClientTrader):
         confirm_select_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x0001)  # 确认导出按钮
         cancel_select_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x0002)  # 取消按钮
         listview_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x4C3)  # 品种列表框架
+        """
         if listview_hwnd:
             try:
                 self._set_foreground_window(listview_hwnd)
@@ -393,11 +429,11 @@ class myYHClientTrader(YHClientTrader):
         else:
             print('Can not find listview_hwnd')
             return
-        #"""
+        
         rect = win32gui.GetWindowRect(listview_hwnd)
         print('listview_hwnd_rect=',rect)
         #self._mouse_click(rect[0] + 5, rect[1]+5)
-        #"""
+        
                         
         rect_new = (rect[0],rect[1],rect[2],rect[1]+60)
         verify_code_image = ImageGrab.grab(rect_new)
@@ -409,6 +445,8 @@ class myYHClientTrader(YHClientTrader):
         export_data_y = rect[1] + 30
         self._mouse_click(export_data_x, export_data_y)
         time.sleep(2)
+        """
+        self._click_rect(listview_hwnd,x_offset=5,y_offset=30,x_0='left',y_0='top')
                     
         win32gui.SendMessage(select_all_hwnd, win32con.BM_CLICK, None, None)
         #click(select_all_hwnd)
