@@ -468,10 +468,9 @@ class myYHClientTrader(YHClientTrader):
         #win32gui.SendMessage(cancel_export_hwnd, win32con.BM_CLICK, None, None) 
         #click(cancel_export_hwnd)
         #time.sleep(2)
-        if advance_export_data_hwnd and close_advance_export_hwnd:
-            self._set_foreground_window(advance_export_data_hwnd)
-            time.sleep(0.5)
-            click(close_advance_export_hwnd)
+        self._set_foreground_window(advance_export_data_hwnd)
+        time.sleep(0.5)
+        click(close_advance_export_hwnd)
             #win32gui.SendMessage(close_advance_export_hwnd, win32con.BM_CLICK, None, None) 
         self._confirm_tdx_dialog(wantedText='TdxW',control_id='0x0002')
             
@@ -491,7 +490,10 @@ class myYHClientTrader(YHClientTrader):
         export_data_hwnd = self._export_history_data()
         if export_data_hwnd:
             advance_export_data_hwnd,close_advance_export_hwnd = self._select_advance_export_stock()
-            self._close_export_hwnd(export_data_hwnd,advance_export_data_hwnd,close_advance_export_hwnd)
+            if advance_export_data_hwnd and close_advance_export_hwnd:
+                self._close_export_hwnd(export_data_hwnd,advance_export_data_hwnd,close_advance_export_hwnd)
+            else:
+                pass
         else:
             pass
         self.close_tdx()
