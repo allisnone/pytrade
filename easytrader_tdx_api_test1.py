@@ -3,6 +3,8 @@
 # coding=utf-8
 from easytrader_tdx_api import use
 import datetime
+import sys   
+sys.setrecursionlimit(1000000)
 
 print('start: ', datetime.datetime.now())
 #user = easytrader.use('yh')
