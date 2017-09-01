@@ -415,6 +415,7 @@ class myYHClientTrader(YHClientTrader):
         #win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
         click(add_stcok_btn_hwnd)
         time.sleep(2)
+        print('点击添加品种')
                 
         select_stock_hwnd = findTopWindow(wantedText='选择品种',wantedClass='#32770') #选择品种窗口框架
         print('select_stock_hwnd=',select_stock_hwnd)
@@ -483,13 +484,18 @@ class myYHClientTrader(YHClientTrader):
         
         #win32gui.SendMessage(select_all_hwnd, win32con.BM_CLICK, None, None)
         click(select_all_hwnd)
-        time.sleep(2)
+        time.sleep(3)
+        print('选择沪深A品种-全选')
                     
         #win32gui.SendMessage(confirm_select_hwnd, win32con.BM_CLICK, None, None)
         click(confirm_select_hwnd)
-        time.sleep(2)
+        time.sleep(3)
+        print('选择沪深A品种-确认')
         
-        self._click_rect(menu_hwnd,x_offset=320,y_offset=5,x_0='left',y_0='top',foreground=False)
+        click(add_stcok_btn_hwnd)
+        time.sleep(2)
+        print('点击添加品种')
+        self._click_rect(menu_hwnd,x_offset=320,y_offset=5,x_0='left',y_0='top',foreground=True)
         print('选择指数板块')
         time.sleep(2)   
         
@@ -499,11 +505,13 @@ class myYHClientTrader(YHClientTrader):
                            
         #win32gui.SendMessage(select_all_hwnd, win32con.BM_CLICK, None, None)
         click(select_all_hwnd)
-        time.sleep(2)
+        time.sleep(3)
+        print('选择沪深精选指数品种-全选')
                     
         #win32gui.SendMessage(confirm_select_hwnd, win32con.BM_CLICK, None, None)
         click(confirm_select_hwnd)
         time.sleep(2)
+        print('选择沪深精选指数品种-确认')
                     
         #win32gui.SendMessage(start_export_hwnd, win32con.BM_CLICK, None, None)
         click(start_export_hwnd)
