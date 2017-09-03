@@ -394,16 +394,16 @@ def clickButton(hwnd):
     _sendNotifyMessage(hwnd, win32con.BN_CLICKED)
 
 
-def click(hwnd):
+def click(hwnd,interval=0.2):
     """
     模拟鼠标左键单击
     :param hwnd: 要单击的控件、窗体句柄
     :return:
     """
     win32gui.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, None, None)
-    time.sleep(0.2)
+    time.sleep(interval)
     win32gui.PostMessage(hwnd, win32con.WM_LBUTTONUP, None, None)
-    time.sleep(0.2)
+    time.sleep(interval)
 
 
 def clickWindow(hwnd, offset):
