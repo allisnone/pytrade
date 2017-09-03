@@ -426,6 +426,7 @@ class myYHClientTrader(YHClientTrader):
         if add_stcok_btn_hwnd<=0:
             if self.debug_enable: print('找不到 添加品种 句柄')
             return -1
+        print('add_stcok_btn_hwnd=',add_stcok_btn_hwnd)
         click(add_stcok_btn_hwnd)
         #win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
         time.sleep(3)
