@@ -55,7 +55,7 @@ def int_code_to_stock_symbol(code):
 
 def get_exist_hwnd(hwnd,wantedText='',wantedClass='',exact_text=True):
     windows = dumpWindows(hwnd)
-    print('exist_windows=',windows)
+    #print('exist_windows=',windows)
     wanted_hwnd = -1
     for window in windows:
         child_hwnd, window_text, window_class = window
