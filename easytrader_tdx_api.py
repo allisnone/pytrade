@@ -422,7 +422,7 @@ class myYHClientTrader(YHClientTrader):
         time.sleep(5)
         return export_data_hwnd
     
-    def _select_needed_stocks(self,add_stcok_btn_hwnd,select_type='沪深A'):
+    def _select_needed_stocks(self,add_stcok_btn_hwnd,select_type='沪深A',timeout=10):
         if add_stcok_btn_hwnd<=0:
             if self.debug_enable: print('找不到 添加品种 句柄')
             return -1
@@ -430,8 +430,16 @@ class myYHClientTrader(YHClientTrader):
         time.sleep(3)
         if self.debug_enable: print('点击添加品种')
         
-        select_stock_hwnd = findTopWindow(wantedText='选择品种',wantedClass='#32770') #选择品种窗口框架
-        if self.debug_enable: print('select_stock_hwnd=',select_stock_hwnd)
+        select_stock_hwnd = 0
+        #if self.debug_enable: print('select_stock_hwnd=',select_stock_hwnd)
+        count = 0 
+        while select_stock_hwnd<=0:
+            select_stock_hwnd = findTopWindow(wantedText='选择品种',wantedClass='#32770') #选择品种窗口框架
+            if self.debug_enable: print('select_stock_hwnd=',select_stock_hwnd)
+            time.sleep(5)
+            count = count + 1
+            if count>10:
+                break
         if select_stock_hwnd:
             try:
                 self._set_foreground_window(select_stock_hwnd)       
