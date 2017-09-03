@@ -55,7 +55,7 @@ def int_code_to_stock_symbol(code):
 
 def get_exist_hwnd(hwnd,wantedText='',wantedClass='',exact_text=True):
     windows = dumpWindows(hwnd)
-    print('exist_windows=',windows)
+    #print('exist_windows=',windows)
     wanted_hwnd = -1
     for window in windows:
         child_hwnd, window_text, window_class = window
@@ -100,6 +100,8 @@ class myYHClientTrader(YHClientTrader):
     yh_tdx_hwnd = 0 
     trade_hwnd = 0
     type = 'trade_only'
+    debug_enable = False
+    trade_main_hwnd = 0
     
     
     """
@@ -114,7 +116,9 @@ class myYHClientTrader(YHClientTrader):
     def set_title(self,title='网上股票交易系统5.0'):
         self.Title = title
         
-        
+    def enable_debug_mode(self,enable=True):
+        self.debug_enable = enable
+            
     def prepare(self, config_path=None, user=None, password=None, exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
         """
         登陆银河客户端
@@ -136,8 +140,8 @@ class myYHClientTrader(YHClientTrader):
     def login(self, user, password, exe_path):
         #self.trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
         #print('trade_main_hwnd=',self.trade_main_hwnd)
-        print('has_main_window=',self._has_main_window())
-        print('_has_login_window=',self._has_login_window())
+        #print('has_main_window=',self._has_main_window())
+        #print('_has_login_window=',self._has_login_window())
         if self._has_main_window():
             self._get_handles()
             log.info('检测到交易客户端已启动，连接完毕')
@@ -148,7 +152,7 @@ class myYHClientTrader(YHClientTrader):
             subprocess.Popen(exe_path)
         # 检测登陆窗口
         for _ in range(30):
-            print('_has_login_window1=',self._has_login_window())
+            #print('_has_login_window1=',self._has_login_window())
             if self._has_login_window():
                 break
             time.sleep(1)
@@ -191,40 +195,62 @@ class myYHClientTrader(YHClientTrader):
             raise Exception('启动交易客户端失败')
         log.info('客户端登陆成功')
         
-    def _get_tdx_system_menu(self):
+    def _get_tdx_system_menu(self,timeout_count=20,interval=10):
         #trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
-        self.trade_main_hwnd = get_exist_hwnd(0,wantedClass='TdxW_MainFrame_Class')#,exact_text=False) #wantedText=self.Title
+        count = 0
+        while self.trade_main_hwnd<=0:
+            time.sleep(10)
+            count = count + 1
+            if count>5:
+                if self.debug_enable: print('超时：找不到通达信主窗口')
+                log.info('超时%s秒：找不到通达信主窗口'%(timeout_count*interval))
+                break
+            else:
+                pass
+            self.trade_main_hwnd = get_exist_hwnd(0,wantedClass='TdxW_MainFrame_Class')#,exact_text=False) #wantedText=self.Title
+            
         #self.trade_main_hwnd = myfindTopWindow(wantedText=None, wantedClass='TdxW_MainFrame_Class',repeat=10,sleep=6)
-        print('self.trade_main_hwnd=',self.trade_main_hwnd)
+        
         if self.trade_main_hwnd:
             try:
                 self._set_foreground_window(self.trade_main_hwnd)
             except:
                 pass
         else:
+            #log.info('未找到tdx主窗口')
             return
+        log.info('找到通达信主窗口')
+        #print('self.trade_main_hwnd=',self.trade_main_hwnd)
         tdx_menu_hwnd = win32gui.GetDlgItem(self.trade_main_hwnd, 0xE805)  # 操作窗口框架
         self.tdx_menu_system_hwnd = win32gui.GetDlgItem(tdx_menu_hwnd, 0x03E8)  # 操作窗口框架
-        print('tdx_menu_system_hwnd=',self.tdx_menu_system_hwnd)
+        #print('tdx_menu_system_hwnd=',self.tdx_menu_system_hwnd)
         #win32gui.SendMessage(tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
         popup_hwnd = win32gui.FindWindow('#32770','银河证券')  # 交易窗口
         if popup_hwnd:
             pass
         else:
             popup_hwnd = win32gui.FindWindow('#32770','中国银河证券股份有限公司')  # 交易窗口
-        print('popup_hwnd=',popup_hwnd)
+        
         if popup_hwnd:
+            #print('popup_hwnd=',popup_hwnd)
             click_noany_more_hwnd = win32gui.GetDlgItem(popup_hwnd, 0x077A)  # 操作窗口框架
             close_pop_btn_hwnd = win32gui.GetDlgItem(popup_hwnd, 0x0002)  # 操作窗口框架
             win32gui.SendMessage(click_noany_more_hwnd, win32con.BM_CLICK, None, None)
             time.sleep(1)
             win32gui.SendMessage(close_pop_btn_hwnd, win32con.BM_CLICK, None, None)
+            time.sleep(0.5)
+            if self.debug_enable: print('关闭行情登录弹出窗口')
         popup_jishi_hwnd = win32gui.FindWindow(0,'即时播报')  # 交易窗口
-        print('popup_jishi_hwnd=',popup_jishi_hwnd)
+        #print('popup_jishi_hwnd=',popup_jishi_hwnd)
         if popup_jishi_hwnd:
             win32gui.SendMessage(popup_jishi_hwnd, win32con.WM_CLOSE, None, None)
+            if self.debug_enable: print('关闭即时播报弹出窗口')
+            time.sleep(2)
+        else:
+            if self.debug_enable: print('没有即时播报弹出窗口')
+            pass
         
-        time.sleep(5)
+        
         #win32gui.SendMessage(self.tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
     
     def _click_rect(self,hwnd,x_offset=0,y_offset=0,x_0='left',y_0='top',foreground=True):
@@ -270,7 +296,7 @@ class myYHClientTrader(YHClientTrader):
         self._click_rect(self.tdx_menu_system_hwnd,x_offset=5,y_offset=5,x_0='left',y_0='top')
         time.sleep(1)
         self._click_rect(self.tdx_menu_system_hwnd,x_offset=5,y_offset=230,x_0='left',y_0='bottom',foreground=False)
-        
+        if self.debug_enable: print('点击数据下载')
         """
         rect_new = (rect[0],rect[3],rect[2]+100,rect[3]+240)
         verify_code_image = ImageGrab.grab(rect_new)
@@ -331,7 +357,7 @@ class myYHClientTrader(YHClientTrader):
         #download_main_hwnd = get_exist_hwnd(0,wantedClass='#32770',exact_text=True, wantedText='盘后数据下载')
         #print('download_main_hwnd=',download_main_hwnd)
         download_main_hwnd = findTopWindow(wantedText='盘后数据下载',wantedClass='#32770') # 盘后数据下载窗口框架
-        print('download_main_hwnd=',download_main_hwnd)
+        #print('download_main_hwnd=',download_main_hwnd)
         if download_main_hwnd:
             try:
                 self._set_foreground_window(download_main_hwnd)
@@ -342,20 +368,26 @@ class myYHClientTrader(YHClientTrader):
         select_day_k_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0590)  # 勾选下载日线
         start_download_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0001)  # 开始下载按钮
         close_download_hwnd = win32gui.GetDlgItem(download_main_hwnd, 0x0002)  # 关闭下载窗口
-        print('close_download_hwnd=',close_download_hwnd)
+        #print('close_download_hwnd=',close_download_hwnd)
         win32gui.SendMessage(select_day_k_hwnd, win32con.BM_CLICK, None, None)
         time.sleep(1)
+        if self.debug_enable: print('勾选日线数据下载')
         win32gui.SendMessage(start_download_hwnd, win32con.BM_CLICK, None, None)
         time.sleep(1)
+        if self.debug_enable: print('点击确认开始数据下载')
         
         find_text = '下载完毕'  #0x0C8
         complete_download_hwnd =0
         while complete_download_hwnd<=0:
             time.sleep(10)
+            if self.debug_enable: print('数据下载中...')
             complete_download_hwnd = get_exist_hwnd(download_main_hwnd,exact_text=False, wantedText='下载完毕')
-            print('complete_download_hwnd=',complete_download_hwnd)
+            #print('complete_download_hwnd=',complete_download_hwnd)
+            if complete_download_hwnd>0:
+                if self.debug_enable: print('数据下载完成')
         time.sleep(1)
         win32gui.SendMessage(close_download_hwnd, win32con.BM_CLICK, None, None)
+        if self.debug_enable: print('关闭数据下载')
         time.sleep(1)
         return
     
@@ -366,7 +398,7 @@ class myYHClientTrader(YHClientTrader):
     
     def _export_history_data(self):
         export_data_hwnd = findTopWindow(wantedText='数据导出',wantedClass='#32770') #数据导出窗口框架
-        print('export_data_hwnd=',export_data_hwnd)
+        #print('export_data_hwnd=',export_data_hwnd)
         if export_data_hwnd:
             try:
                 pass
@@ -375,61 +407,41 @@ class myYHClientTrader(YHClientTrader):
             except:
                 pass
         else:
-            print('找不到数据导出句柄')
+            if self.debug_enable: print('找不到数据导出句柄')
             return
         advance_btn_hwnd = win32gui.GetDlgItem(export_data_hwnd, 0x0121)  # 高级导出按钮
         
-        print('advance_btn_hwnd=',advance_btn_hwnd)
+        #print('advance_btn_hwnd=',advance_btn_hwnd)
         time.sleep(5)
-        print('click advance_btn_hwnd0=',advance_btn_hwnd)
+        #print('click advance_btn_hwnd0=',advance_btn_hwnd)
         #win32gui.SendMessage(advance_btn_hwnd, win32con.BM_CLICK, None, None)
         #clickButton(advance_btn_hwnd)
         click(advance_btn_hwnd)
-        print('点击高级导出')
+        if self.debug_enable: print('点击高级导出')
         #print('click advance_btn_hwnd1=',advance_btn_hwnd)
         time.sleep(5)
-        print('click advance_btn_hwnd1=',advance_btn_hwnd)
-        
-        
         return export_data_hwnd
     
-    def _select_advance_export_stock(self):
-        print('_select_advance_export_stock:')
-        advance_export_data_hwnd = findTopWindow(wantedText='高级导出',wantedClass='#32770') #数据导出窗口框架
-        #advance_export_data_hwnd = myfindTopWindow(wantedText='高级导出',wantedClass='#32770',repeat=5,sleep=10) #数据导出窗口框架
-        print('advance_export_data_hwnd=',advance_export_data_hwnd)
-        if advance_export_data_hwnd:
-            try:
-                self._set_foreground_window(advance_export_data_hwnd)
-            except:
-                
-                pass
-        else:
-            print('找不到数据高级导出句柄')
-            return advance_export_data_hwnd,-1
-        add_stcok_btn_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0019)  # 添加品种按钮
-        remove_stcok_btn_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0023)  # 移出加品种按钮
-        start_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0001)  # 开始导出按钮
-        close_advance_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0002)  # 关闭按钮
-        print('add_stcok_btn_hwnd=',add_stcok_btn_hwnd)
-        #win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
+    def _select_needed_stocks(self,add_stcok_btn_hwnd,select_type='沪深A'):
+        if add_stcok_btn_hwnd<=0:
+            if self.debug_enable: print('找不到 添加品种 句柄')
+            return -1
         click(add_stcok_btn_hwnd)
         time.sleep(2)
-        print('点击添加品种')
-                
+        if self.debug_enable: print('点击添加品种')
+        
         select_stock_hwnd = findTopWindow(wantedText='选择品种',wantedClass='#32770') #选择品种窗口框架
-        print('select_stock_hwnd=',select_stock_hwnd)
+        if self.debug_enable: print('select_stock_hwnd=',select_stock_hwnd)
         if select_stock_hwnd:
             try:
                 self._set_foreground_window(select_stock_hwnd)       
             except:
                 pass
         else:
-            print('Can not find select_stock_hwnd')
-            return advance_export_data_hwnd,-2
-                    
+            if self.debug_enable: print('找不到 选择品种 句柄')
+            return 0
         menu_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x4C5)  # 分类框架
-                    
+        #print('menu_hwnd=',menu_hwnd)            
         select_all_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x0580)  # 全选按钮
         confirm_select_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x0001)  # 确认导出按钮
         cancel_select_hwnd = win32gui.GetDlgItem(select_stock_hwnd, 0x0002)  # 取消按钮
@@ -477,91 +489,104 @@ class myYHClientTrader(YHClientTrader):
         time.sleep(10)
         self._click_rect(listview_hwnd,x_offset=10,y_offset=70,x_0='left',y_0='top',foreground=False)
         time.sleep(10) 
-        """         
-        self._click_rect(listview_hwnd,x_offset=15,y_offset=112,x_0='left',y_0='top',foreground=True)
-        print('选择沪深A品种')
-        time.sleep(2) 
-        
+        """
+        if select_type=='沪深A':
+            #默认分类，不操作
+            #直接选择沪深A品种
+            self._click_rect(listview_hwnd,x_offset=15,y_offset=112,x_0='left',y_0='top',foreground=True)
+            if self.debug_enable: print('选择%s品种'%select_type)
+            time.sleep(2) 
+            
+        elif select_type=='精选指数':
+            self._click_rect(menu_hwnd,x_offset=320,y_offset=5,x_0='left',y_0='top',foreground=True)
+            if self.debug_enable: print('选择指数板块')
+            time.sleep(2)
+            self._click_rect(listview_hwnd,x_offset=15,y_offset=178,x_0='left',y_0='top',foreground=True)
+            if self.debug_enable: print('选择%s品种'%select_type)
+            time.sleep(2) 
+            
+        elif select_type=='自定义板块':
+            pass
+        else:
+            pass
         #win32gui.SendMessage(select_all_hwnd, win32con.BM_CLICK, None, None)
         click(select_all_hwnd)
         time.sleep(3)
-        print('选择沪深A品种-全选')
+        if self.debug_enable: print('选择%s-全选'%select_type)
                     
         #win32gui.SendMessage(confirm_select_hwnd, win32con.BM_CLICK, None, None)
         click(confirm_select_hwnd)
         time.sleep(3)
-        print('选择沪深A品种-确认')
+        if self.debug_enable: print('选择%s-确认'%select_type)
+        return select_stock_hwnd
         
-        click(add_stcok_btn_hwnd)
-        time.sleep(2)
-        print('点击添加品种')
-        self._click_rect(menu_hwnd,x_offset=320,y_offset=5,x_0='left',y_0='top',foreground=True)
-        print('选择指数板块')
-        time.sleep(2)   
-        
-        self._click_rect(listview_hwnd,x_offset=15,y_offset=178,x_0='left',y_0='top',foreground=False)
-        print('选择沪深精选指数品种')
-        time.sleep(2)   
-                           
-        #win32gui.SendMessage(select_all_hwnd, win32con.BM_CLICK, None, None)
-        click(select_all_hwnd)
-        time.sleep(3)
-        print('选择沪深精选指数品种-全选')
-                    
-        #win32gui.SendMessage(confirm_select_hwnd, win32con.BM_CLICK, None, None)
-        click(confirm_select_hwnd)
-        time.sleep(2)
-        print('选择沪深精选指数品种-确认')
-                    
+    def _select_advance_export_stock(self):
+        if self.debug_enable: print('_select_advance_export_stock:')
+        advance_export_data_hwnd = findTopWindow(wantedText='高级导出',wantedClass='#32770') #数据导出窗口框架
+        #advance_export_data_hwnd = myfindTopWindow(wantedText='高级导出',wantedClass='#32770',repeat=5,sleep=10) #数据导出窗口框架
+        #print('advance_export_data_hwnd=',advance_export_data_hwnd)
+        if advance_export_data_hwnd:
+            try:
+                self._set_foreground_window(advance_export_data_hwnd)
+            except:  
+                pass
+        else:
+            if self.debug_enable: print('找不到数据高级导出句柄')
+            return advance_export_data_hwnd,-1
+        add_stcok_btn_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0019)  # 添加品种按钮
+        remove_stcok_btn_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0023)  # 移出加品种按钮
+        start_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0001)  # 开始导出按钮
+        close_advance_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0002)  # 关闭按钮
+        #win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
+        select_stock_hwnd = self._select_needed_stocks(add_stcok_btn_hwnd,select_type='沪深A')
+        time.sleep(0.2)
+        select_stock_hwnd = self._select_needed_stocks(add_stcok_btn_hwnd,select_type='精选指数')
+        time.sleep(0.2)
+        if select_stock_hwnd<=0 and close_advance_export_hwnd>0:
+            click(close_advance_export_hwnd)
+            time.sleep(0.5)
+            return advance_export_data_hwnd,-2
         #win32gui.SendMessage(start_export_hwnd, win32con.BM_CLICK, None, None)
         click(start_export_hwnd)
         time.sleep(1)
         completed_export_data_hwnd = 0
-        self._confirm_tdx_dialog(wantedText='TdxW',control_id=0x0002)
-        """
-        if True:
-            completed_export_data_hwnd = findTopWindow(wantedText='TdxW',wantedClass='#32770') #数据导出完成窗口框架
-            print('completed_export_data_hwnd=',completed_export_data_hwnd)
-            if completed_export_data_hwnd:
-                confirm_completed_export_hwnd = win32gui.GetDlgItem(completed_export_data_hwnd, 0x0002)  # 确定按钮
-                
-                #win32gui.SendMessage(confirm_completed_export_hwnd, win32con.BM_CLICK, None, None)
-                click(confirm_completed_export_hwnd)
-                time.sleep(1)
-            
-            else:
-                pass
-            time.sleep(5)
-        """
+        confirm_tdx_dialog_hwnd = self._confirm_tdx_dialog(wantedText='TdxW',control_id=0x0002)
+        if self.debug_enable: print('确认导出数据')
         return  advance_export_data_hwnd,close_advance_export_hwnd
+    
+    def _is_completed_export(self):
+        confirm_tdx_dialog_hwnd = findTopWindow(wantedText='TdxW',wantedClass='#32770') #数据导出完成窗口框架
+        if confirm_tdx_dialog_hwnd:
+            completed_export_hwnd = get_exist_hwnd(confirm_tdx_dialog_hwnd,wantedText='共导出成功',exact_text=False)
+            if completed_export_hwnd>0:
+                control_id=0x0002
+                confirm_tdx_dialog_btn_hwnd = win32gui.GetDlgItem(confirm_tdx_dialog_hwnd, control_id )  # 确定按钮
+                #win32gui.SendMessage(confirm_completed_export_hwnd, win32con.BM_CLICK, None, None)
+                click(confirm_tdx_dialog_btn_hwnd)
+                time.sleep(1)
+                if self.debug_enable: print('确认完成数据导出')
+            return completed_export_hwnd>0
+        return False
     
     def _close_export_hwnd(self,export_data_hwnd,advance_export_data_hwnd,close_advance_export_hwnd):
         #self._set_foreground_window(export_data_hwnd)
-        print('_close_export_hwnd')
         click(export_data_hwnd)
         if not export_data_hwnd:
-            print('export_data_hwnd=',export_data_hwndv)
+            #print('export_data_hwnd=',export_data_hwndv)
             return 
         start_export_hwnd = win32gui.GetDlgItem(export_data_hwnd, 0x0001)  # 导出按钮
         cancel_export_hwnd = win32gui.GetDlgItem(export_data_hwnd, 0x0002)  # 取消按钮
-        print('cancel_export_hwnd=',cancel_export_hwnd)
         #win32gui.SendMessage(start_export_hwnd, win32con.BM_CLICK, None, None)
         click(start_export_hwnd)
-        print('开始导出')
-        time.sleep(10)
-        
-        self._confirm_tdx_dialog(wantedText='TdxW',control_id=0x0002) #确认开始导出
-        print('完成数据导出')
-        """
-        completed_export_data_hwnd = findTopWindow(wantedText='TdxW',wantedClass='#32770') #数据导出完成窗口框架
-        print('completed_export_data_hwnd=',completed_export_data_hwnd)
-        if completed_export_data_hwnd:
-            confirm_completed_export_hwnd = win32gui.GetDlgItem(completed_export_data_hwnd, 0x0002)  # 确定按钮
-                
-            #win32gui.SendMessage(confirm_completed_export_hwnd, win32con.BM_CLICK, None, None)
-            click(confirm_completed_export_hwnd)
-            time.sleep(1)
-        """
+        if self.debug_enable: print('开始导出')
+        time.sleep(5)
+        while not self._is_completed_export():
+            if self.debug_enable: print('正在导出数据...')
+            time.sleep(10)
+            #confirm_tdx_dialog_hwnd = self._confirm_tdx_dialog(wantedText='TdxW',control_id=0x0002)
+            
+        #self._confirm_tdx_dialog(wantedText='TdxW',control_id=0x0002) #确认开始导出
+        #print('完成数据导出')
         time.sleep(2)
         #win32gui.SendMessage(cancel_export_hwnd, win32con.BM_CLICK, None, None) 
         #click(cancel_export_hwnd)
@@ -569,21 +594,25 @@ class myYHClientTrader(YHClientTrader):
         self._set_foreground_window(advance_export_data_hwnd)
         time.sleep(0.5)
         click(close_advance_export_hwnd)
-        print('关闭导出数据')
-            #win32gui.SendMessage(close_advance_export_hwnd, win32con.BM_CLICK, None, None) 
+        if self.debug_enable: print('关闭导出数据')
+        time.sleep(2)
         self._confirm_tdx_dialog(wantedText='TdxW',control_id=0x0002) #导出成功是否打开文件
-        print('导出成功,确认不打开文件')
+        if self.debug_enable: print('导出成功,确认不打开文件')
+        return 
             
     def _confirm_tdx_dialog(self,wantedText='TdxW',control_id=0x0002):
         confirm_tdx_dialog_hwnd = findTopWindow(wantedText=wantedText,wantedClass='#32770') #数据导出完成窗口框架
-        print('confirm_tdx_dialog_hwnd=',confirm_tdx_dialog_hwnd)
         if confirm_tdx_dialog_hwnd:
             confirm_tdx_dialog_btn_hwnd = win32gui.GetDlgItem(confirm_tdx_dialog_hwnd, control_id)  # 确定按钮
                 
             #win32gui.SendMessage(confirm_completed_export_hwnd, win32con.BM_CLICK, None, None)
             click(confirm_tdx_dialog_btn_hwnd)
             time.sleep(1)
-        return
+            if self.debug_enable: print('点击对话框中确认或者取消按钮：主框架标题：%s，控件ID：%s' % (wantedText,control_id))
+            return confirm_tdx_dialog_btn_hwnd
+        else:
+            pass
+        return 0
           
     def export_tdx_data(self):
         self._click_export_data()
@@ -593,11 +622,12 @@ class myYHClientTrader(YHClientTrader):
             if advance_export_data_hwnd and close_advance_export_hwnd:
                 self._close_export_hwnd(export_data_hwnd,advance_export_data_hwnd,close_advance_export_hwnd)
             else:
+                if self.debug_enable: print('找不到高级导出数据窗口句柄')
                 pass
         else:
+            if self.debug_enable: print('找不到导出数据窗口句柄')
             pass
         self.close_tdx()
-        print('完成通达信历史数据下载') 
         
         
     def close_tdx(self):
@@ -605,24 +635,39 @@ class myYHClientTrader(YHClientTrader):
             try:
                 self._set_foreground_window(self.trade_main_hwnd)
             except:
-                print('不能置顶通达信主程序')
-            print('即将关闭通达信主程序...')
+                if self.debug_enable: print('不能置顶通达信主程序')
+            if self.debug_enable: print('即将关闭通达信主程序...')
             #win32gui.SendMessage(self.trade_main_hwnd, win32con.WM_CLOSE, None, None)
             tdx_menu_hwnd = win32gui.GetDlgItem(self.trade_main_hwnd, 0xE805)
             close_tdx_btn_hwnd = win32gui.GetDlgItem(tdx_menu_hwnd, 0x2581)
             click(close_tdx_btn_hwnd)
-            time.sleep(1)
+            time.sleep(3)
             #print('即将关闭通达信主程序1...')
-            self._confirm_tdx_dialog(wantedText='退出确认',control_id=0x03C1) #确认退出主程序
-            print('确认退出')
-            time.sleep(1)
-            self._confirm_tdx_dialog(wantedText='提示',control_id=0x0001) #关闭前是否下载日线
-            print('确认下载当天日线')
-            print('关闭通达信主程序')
+            confirm_tdx_exit_hwnd = self._confirm_tdx_dialog(wantedText='退出确认',control_id=0x03C1) #确认退出主程序
+            if confirm_tdx_exit_hwnd>0:
+                if self.debug_enable: print('确认退出')
+                pass
+            time.sleep(3)
+            confirm_tdx_exit2_hwnd = self._confirm_tdx_dialog(wantedText='提示',control_id=0x0001) #关闭前是否下载日线
+            if confirm_tdx_exit2_hwnd>0: 
+                if self.debug_enable: print('关闭 确认下载当天日线')
+            if self.debug_enable: print('关闭通达信主程序')
         else:
-            print('没有打开通达信主程序')
+            if self.debug_enable: print('没有打开通达信主程序')
         return
     
+    def update_tdx_k_data(self):
+        self._get_tdx_system_menu()
+        print('开始数据下载时间：',datetime.datetime.now())
+        log.info('开始数据下载时间：%s' %datetime.datetime.now())
+        self.download_tdx_data()
+        time.sleep(1)
+        print('结束数据下载，并开始导出时间：',datetime.datetime.now())
+        log.info('结束数据下载，并开始导出时间：%s'%datetime.datetime.now())
+        self.export_tdx_data()
+        print('结束数据导出时间：',datetime.datetime.now())
+        log.info('结束数据导出时间：%s' % datetime.datetime.now())
+        return
     
     def _set_trade_mode0(self):
         input_hwnd = win32gui.GetDlgItem(self.login_hwnd, 0x016E)#0x4f4d)
@@ -715,11 +760,14 @@ class myYHClientTrader(YHClientTrader):
         #rect = win32gui.GetWindowRect(input_hwnd)
         if self.type=='trade_only':
             trade_hwnd_id = 0x016E
+            print('选择独立交易')
         elif self.type=='quote_only':
             trade_hwnd_id = 0x016D
+            print('选择独立行情')
         elif self.type=='trade_and_quote':
-            pass
+            print('选择行情+交易')
         else:
+            print('选择行情+交易')
             pass
         try:
             self._set_foreground_window(self.login_hwnd)
@@ -794,7 +842,15 @@ class myYHClientTrader(YHClientTrader):
             if self.login_hwnd != 0:
                 return True
         """
+        log.info('登录通达信窗口标题：%s' % self.Title)
         self.login_hwnd = win32gui.FindWindow(None, self.Title)
+        """
+        login_hwnd_title ='中国银河证券海王星V'
+        self.login_hwnd = get_exist_hwnd(hwnd=0,wantedText=login_hwnd_title,wantedClass='#32770',exact_text=False)
+        print('self.login_hwnd=',self.login_hwnd)
+        """
+        if self.login_hwnd<=0:
+            log.info('请检查通达信登录程序是否打开或者标题是否正确（如有升级）!!')
         return self.login_hwnd!=0
             
     def _has_main_window0(self):

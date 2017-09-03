@@ -20,9 +20,8 @@ account_dict={
 user.set_type(type='quote_only')
 print(user.type)
 user.prepare(user='331600036005', password='821853',exe_path='C:/中国银河证券海王星/TdxW.exe')
-user._get_tdx_system_menu()
-#user.download_tdx_data()
-user.export_tdx_data()
+user.enable_debug_mode()
+user.update_tdx_k_data()
 
 """
 user._has_yh_trade_window()
