@@ -621,7 +621,7 @@ class myYHClientTrader(YHClientTrader):
         #win32gui.SendMessage(cancel_export_hwnd, win32con.BM_CLICK, None, None) 
         #click(cancel_export_hwnd)
         #time.sleep(2)
-        self._set_foreground_window(advance_export_data_hwnd)
+        #self._set_foreground_window(advance_export_data_hwnd)
         time.sleep(0.5)
         click(close_advance_export_hwnd)
         if self.debug_enable: print('关闭导出数据')
