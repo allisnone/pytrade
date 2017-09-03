@@ -4,6 +4,7 @@
 from easytrader_tdx_api import use
 import datetime
 import sys   
+import pdSql_common as pds
 sys.setrecursionlimit(1000000)
 
 print('start: ', datetime.datetime.now())
@@ -22,6 +23,56 @@ print(user.type)
 user.prepare(user='331600036005', password='821853',exe_path='C:/中国银河证券海王星/TdxW.exe')
 user.enable_debug_mode()
 user.update_tdx_k_data()
+
+all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
+        #all_codes = ['999999', '000016', '399007', '399008', '399006', '000300', '399005', '399001',
+        #             '399004','399106','000009','000010','000903','000905']
+        #all_codes=['300162']
+count = 0
+all_count = len(all_codes)
+pc0=0
+now_time =datetime.datetime.now()
+now_time_str = now_time.strftime('%Y/%m/%d %X')
+print('now_time = ',now_time_str)
+d_format='%Y/%m/%d'
+last_date_str = pds.tt.get_last_trade_date(date_format=d_format)
+latest_date_str = pds.tt.get_latest_trade_date(date_format='%Y/%m/%d')
+next_date_str = pds.tt.get_next_trade_date(date_format='%Y/%m/%d')
+print('last_date = ',last_date_str)
+print('latest_date_str=',latest_date_str)
+print('next_date_str=',next_date_str)
+latest_count = 0
+for code in all_codes:
+    df = pds.get_yh_raw_hist_df(code,latest_count=None)
+    count = count + 1
+    pc = round(round(count,2)/all_count,2)* 100
+    if pc>pc0:
+        print('count=',count)
+        print('完成数据更新百分之%s' % pc)
+        pc0 = pc
+    if len(df)>=1:
+        last_code_trade_date = df.tail(1).iloc[0].date
+        if last_code_trade_date==latest_date_str:
+            latest_count = latest_count + 1
+        
+latest_update_rate =round(round(latest_count,2)/all_count,2)
+print('latest_update_rate=',latest_update_rate)
+
+if latest_update_rate>0.5:
+    print('update_latest update datetime to sql')
+    
+def is_latest_update_stock(df,latest_date_str):
+    latest_date_str = pds.tt.get_latest_trade_date(date_format='%Y/%m/%d')
+    next_date_str = pds.tt.get_next_trade_date(date_format='%Y/%m/%d')
+    print('last_date = ',last_date_str)
+    print('latest_date_str=',latest_date_str)
+    print('next_date_str=',next_date_str)
+    
+    code = '000001'
+    df = pds.get_yh_raw_hist_df(code,latest_count=None)
+    print(df)
+    last_code_trade_date = df.tail(1).iloc[0].date
+    print('last_code_trade_date=',last_code_trade_date)#,type(last_code_trade_date))
 
 """
 user._has_yh_trade_window()
