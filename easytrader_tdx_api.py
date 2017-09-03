@@ -687,6 +687,7 @@ class myYHClientTrader(YHClientTrader):
         return
     
     def update_tdx_k_data(self):
+        
         self._get_tdx_system_menu()
         print('开始数据下载时间：',datetime.datetime.now())
         log.info('开始数据下载时间：%s' %datetime.datetime.now())

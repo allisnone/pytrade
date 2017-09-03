@@ -5,61 +5,79 @@ from easytrader_tdx_api import use
 import datetime
 import sys   
 import pdSql_common as pds
+from pdSql import StockSQL
 sys.setrecursionlimit(1000000)
 
-print('start: ', datetime.datetime.now())
-#user = easytrader.use('yh')
-user = use('yh_client')
-#title='通达信网上交易V6'
-title = '中国银河证券海王星V2.59'
-user.set_title(title)
-account_dict={
-    "inputaccount": "331600036005",
-    "trdpwd": "F71281A2D62C4b3a8268C6453E9C42212CCC5BA9AB89CAFF4E97CC31AE0E4C48"
-}
-
-user.set_type(type='quote_only')
-print(user.type)
-user.prepare(user='331600036005', password='821853',exe_path='C:/中国银河证券海王星/TdxW.exe')
-user.enable_debug_mode()
-user.update_tdx_k_data()
-
-all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
-        #all_codes = ['999999', '000016', '399007', '399008', '399006', '000300', '399005', '399001',
-        #             '399004','399106','000009','000010','000903','000905']
-        #all_codes=['300162']
-count = 0
-all_count = len(all_codes)
-pc0=0
-now_time =datetime.datetime.now()
-now_time_str = now_time.strftime('%Y/%m/%d %X')
-print('now_time = ',now_time_str)
-d_format='%Y/%m/%d'
-last_date_str = pds.tt.get_last_trade_date(date_format=d_format)
-latest_date_str = pds.tt.get_latest_trade_date(date_format='%Y/%m/%d')
-next_date_str = pds.tt.get_next_trade_date(date_format='%Y/%m/%d')
-print('last_date = ',last_date_str)
-print('latest_date_str=',latest_date_str)
-print('next_date_str=',next_date_str)
-latest_count = 0
-for code in all_codes:
-    df = pds.get_yh_raw_hist_df(code,latest_count=None)
-    count = count + 1
-    pc = round(round(count,2)/all_count,2)* 100
-    if pc>pc0:
-        print('count=',count)
-        print('完成数据更新百分之%s' % pc)
-        pc0 = pc
-    if len(df)>=1:
-        last_code_trade_date = df.tail(1).iloc[0].date
-        if last_code_trade_date==latest_date_str:
-            latest_count = latest_count + 1
-        
-latest_update_rate =round(round(latest_count,2)/all_count,2)
-print('latest_update_rate=',latest_update_rate)
-
-if latest_update_rate>0.5:
-    print('update_latest update datetime to sql')
+def update_histdatas():
+    print('start: ', datetime.datetime.now())
+    #user = easytrader.use('yh')
+    stock_sql = StockSQL()
+    is_tdx_uptodate,is_pos_uptodate = stock_sql.is_histdata_uptodate()
+    is_tdx_uptodate=False
+    if is_tdx_uptodate:
+        return
+    user = use('yh_client')
+    #title='通达信网上交易V6'
+    title = '中国银河证券海王星V2.59'
+    user.set_title(title)
+    account_dict={
+        "inputaccount": "331600036005",
+        "trdpwd": "F71281A2D62C4b3a8268C6453E9C42212CCC5BA9AB89CAFF4E97CC31AE0E4C48"
+    }
+    
+    user.set_type(type='quote_only')
+    user.enable_debug_mode()
+    user.prepare(user='331600036005', password='821853',exe_path='C:/中国银河证券海王星/TdxW.exe')
+    user.update_tdx_k_data()
+    
+    all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
+            #all_codes = ['999999', '000016', '399007', '399008', '399006', '000300', '399005', '399001',
+            #             '399004','399106','000009','000010','000903','000905']
+            #all_codes=['300162']
+    count = 0
+    all_count = len(all_codes)
+    pc0=0
+    now_time =datetime.datetime.now()
+    now_time_str = now_time.strftime('%Y/%m/%d %X')
+    print('now_time = ',now_time_str)
+    d_format='%Y/%m/%d'
+    last_date_str = pds.tt.get_last_trade_date(date_format=d_format)
+    latest_date_str = pds.tt.get_latest_trade_date(date_format='%Y/%m/%d')
+    next_date_str = pds.tt.get_next_trade_date(date_format='%Y/%m/%d')
+    print('last_date = ',last_date_str)
+    print('latest_date_str=',latest_date_str)
+    print('next_date_str=',next_date_str)
+    latest_count = 0
+    for code in all_codes:
+        df = pds.get_yh_raw_hist_df(code,latest_count=None)
+        count = count + 1
+        pc = round(round(count,2)/all_count,2)* 100
+        if pc>pc0:
+            print('count=',count)
+            print('完成数据更新百分之%s' % pc)
+            pc0 = pc
+        if len(df)>=1:
+            last_code_trade_date = df.tail(1).iloc[0].date
+            if last_code_trade_date==latest_date_str:
+                latest_count = latest_count + 1
+            
+    latest_update_rate =round(round(latest_count,2)/all_count,2)
+    print('latest_update_rate=',latest_update_rate)
+    
+    if latest_update_rate>0.5:
+        now_time =datetime.datetime.now()
+        now_time_str = now_time.strftime('%Y/%m/%d %X')
+        print('now_time = ',now_time_str)
+        print('update_latest update datetime to sql')
+        #stock_sql.update_data(table='systime',fields='tdx_update_time',values=now_time_str,condition='id=0')
+        stock_sql.write_tdx_histdata_update_time(now_time_str)
+        #stock_sql.write_position_update_time(now_time_str)
+        systime_dict = stock_sql.get_systime()
+        print(systime_dict)
+        is_tdx_uptodate,is_pos_uptodate = stock_sql.is_histdata_uptodate()
+    print('is_tdx_uptodate=',is_tdx_uptodate)
+    print('is_pos_uptodate=',is_pos_uptodate)
+    
     
 def is_latest_update_stock(df,latest_date_str):
     latest_date_str = pds.tt.get_latest_trade_date(date_format='%Y/%m/%d')
@@ -73,6 +91,7 @@ def is_latest_update_stock(df,latest_date_str):
     print(df)
     last_code_trade_date = df.tail(1).iloc[0].date
     print('last_code_trade_date=',last_code_trade_date)#,type(last_code_trade_date))
+update_histdatas()
 
 """
 user._has_yh_trade_window()

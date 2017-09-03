@@ -154,6 +154,64 @@ class StockSQL(object):
         update_sql=form_sql(table_name=table,oper_type='update',update_field=fields,update_value=values,where_condition=condition)
         sql.execute(update_sql,self.engine)
         
+    def write_tdx_histdata_update_time(self,now_time_str='',time_format='%Y/%m/%d %X'):
+        """
+        :param now_time_str: string type
+        :return: 
+        """
+        if not now_time_str:
+            now_time =datetime.datetime.now()
+            now_time_str = now_time.strftime(time_format)
+        self.update_data(table='systime',fields='tdx_update_time',values=now_time_str,condition='id=0')
+        return
+    
+    def write_position_update_time(self,now_time_str='',time_format='%Y/%m/%d %X'):
+        """
+        :param now_time_str: string type
+        :return: 
+        """
+        if not now_time_str:
+            now_time =datetime.datetime.now()
+            now_time_str = now_time.strftime(time_format)
+        self.update_data(table='systime',fields='pos_update_time',values=now_time_str,condition='id=0')
+        return
+    
+    def get_systime(self):
+        """
+        :return: dict type
+        """
+        #{'id': 0, 'start_sell_time': 600, 'pos_update_time': '2017/09/03 22:13:19', 
+        #'start_buy_time': 840, 'tdx_update_time': '2017/09/03 22:13:19'}
+        systime_df = self.query_data(table='systime')
+        return systime_df.iloc[0].to_dict()
+    
+    def is_histdata_uptodate(self):
+        latest_date_str = tt.get_latest_trade_date(date_format='%Y/%m/%d')
+        last_date_str = tt.get_last_trade_date(date_format='%Y/%m/%d')
+        print('last_date = ',last_date_str)
+        print('latest_date_str=',latest_date_str)
+        latest_datetime_str = latest_date_str + ' 15:00'
+        systime_dict = self.get_systime()
+        tdx_update_time_str = systime_dict['tdx_update_time']
+        pos_update_time_str = systime_dict['pos_update_time']
+        is_tdx_uptodate = tdx_update_time_str[:10]>=latest_date_str
+        is_pos_uptodate = pos_update_time_str[:10]>=latest_date_str
+        #deltatime=datetime.datetime.now()-starttime
+        #print('update duration=',deltatime.days*24*3600+deltatime.seconds)
+        this_day = datetime.datetime.now()
+        if (this_day.hour>=0 and this_day.hour<9) or (this_day.hour==9 and this_day.minute<15):
+            is_tdx_uptodate = tdx_update_time_str[:10]>latest_date_str
+            is_pos_uptodate = pos_update_time_str[:10]>latest_date_str
+        elif this_day.hour>=16:
+            is_tdx_uptodate = tdx_update_time_str[:10]>=latest_date_str
+            is_pos_uptodate = pos_update_time_str[:10]>=latest_date_str
+            
+        else:
+            is_tdx_uptodate = tdx_update_time_str[:10]>=last_date_str
+            is_pos_uptodate = pos_update_time_str[:10]>=last_date_str
+            
+        return is_tdx_uptodate,is_pos_uptodate
+        
     def delete_data(self,table_name,condition=None):
         """
         :param table_name: string type, db_name.table_name
