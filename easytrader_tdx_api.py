@@ -427,7 +427,7 @@ class myYHClientTrader(YHClientTrader):
             if self.debug_enable: print('找不到 添加品种 句柄')
             return -1
         click(add_stcok_btn_hwnd)
-        time.sleep(2)
+        time.sleep(3)
         if self.debug_enable: print('点击添加品种')
         
         select_stock_hwnd = findTopWindow(wantedText='选择品种',wantedClass='#32770') #选择品种窗口框架
@@ -539,12 +539,12 @@ class myYHClientTrader(YHClientTrader):
         close_advance_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0002)  # 关闭按钮
         #win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
         select_stock_hwnd = self._select_needed_stocks(add_stcok_btn_hwnd,select_type='沪深A')
-        time.sleep(0.2)
+        time.sleep(2)
         select_stock_hwnd = self._select_needed_stocks(add_stcok_btn_hwnd,select_type='精选指数')
-        time.sleep(0.2)
+        time.sleep(2)
         if select_stock_hwnd<=0 and close_advance_export_hwnd>0:
             click(close_advance_export_hwnd)
-            time.sleep(0.5)
+            time.sleep(1)
             return advance_export_data_hwnd,-2
         #win32gui.SendMessage(start_export_hwnd, win32con.BM_CLICK, None, None)
         click(start_export_hwnd)
