@@ -55,7 +55,7 @@ def int_code_to_stock_symbol(code):
 
 def get_exist_hwnd(hwnd,wantedText='',wantedClass='',exact_text=True):
     windows = dumpWindows(hwnd)
-    #print('exist_windows=',windows)
+    print('exist_windows=',windows)
     wanted_hwnd = -1
     for window in windows:
         child_hwnd, window_text, window_class = window
@@ -423,28 +423,22 @@ class myYHClientTrader(YHClientTrader):
         return export_data_hwnd
     
     def _select_needed_stocks(self,add_stcok_btn_hwnd,select_type='沪深A',timeout=10):
-        if add_stcok_btn_hwnd<=0:
-            if self.debug_enable: print('找不到 添加品种 句柄')
-            return -1
-        print('add_stcok_btn_hwnd=',add_stcok_btn_hwnd)
-        time.sleep(1)
-        click(add_stcok_btn_hwnd,0.5)
-        #win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
-        time.sleep(1)
-        if self.debug_enable: print('点击添加品种')
-        
+    
         select_stock_hwnd = 0
         #if self.debug_enable: print('select_stock_hwnd=',select_stock_hwnd)
         count = 0 
         while select_stock_hwnd<=0:
             select_stock_hwnd = findTopWindow(wantedText='选择品种',wantedClass='#32770') #选择品种窗口框架
             if self.debug_enable: print('select_stock_hwnd=',select_stock_hwnd)
+            select_stock_hwnd1 = get_exist_hwnd(0, wantedText='选择品种', wantedClass='#32770', exact_text=True)
+            if self.debug_enable: print('select_stock_hwnd1=',select_stock_hwnd1)
             time.sleep(5)
             count = count + 1
-            if count>10:
+            if count>timeout:
                 break
-        if select_stock_hwnd:
+        if select_stock_hwnd>0:
             try:
+                if self.debug_enable: print('foreground,select_stock_hwnd')
                 self._set_foreground_window(select_stock_hwnd)       
             except:
                 pass
@@ -504,7 +498,7 @@ class myYHClientTrader(YHClientTrader):
         if select_type=='沪深A':
             #默认分类，不操作
             #直接选择沪深A品种
-            self._click_rect(listview_hwnd,x_offset=15,y_offset=112,x_0='left',y_0='top',foreground=True)
+            self._click_rect(listview_hwnd,x_offset=15,y_offset=112,x_0='left',y_0='top',foreground=False)
             if self.debug_enable: print('选择%s品种'%select_type)
             time.sleep(2) 
             
@@ -512,7 +506,7 @@ class myYHClientTrader(YHClientTrader):
             self._click_rect(menu_hwnd,x_offset=320,y_offset=5,x_0='left',y_0='top',foreground=True)
             if self.debug_enable: print('选择指数板块')
             time.sleep(2)
-            self._click_rect(listview_hwnd,x_offset=15,y_offset=178,x_0='left',y_0='top',foreground=True)
+            self._click_rect(listview_hwnd,x_offset=15,y_offset=178,x_0='left',y_0='top',foreground=False)
             if self.debug_enable: print('选择%s品种'%select_type)
             time.sleep(2) 
             
@@ -536,9 +530,11 @@ class myYHClientTrader(YHClientTrader):
         advance_export_data_hwnd = findTopWindow(wantedText='高级导出',wantedClass='#32770') #数据导出窗口框架
         #advance_export_data_hwnd = myfindTopWindow(wantedText='高级导出',wantedClass='#32770',repeat=5,sleep=10) #数据导出窗口框架
         #print('advance_export_data_hwnd=',advance_export_data_hwnd)
-        if advance_export_data_hwnd:
+        if advance_export_data_hwnd>0:
             try:
-                self._set_foreground_window(advance_export_data_hwnd)
+                if self.debug_enable: print('foreground,advance_export_data_hwnd')
+                pass
+                #self._set_foreground_window(advance_export_data_hwnd)
             except:  
                 pass
         else:
@@ -549,8 +545,31 @@ class myYHClientTrader(YHClientTrader):
         start_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0001)  # 开始导出按钮
         close_advance_export_hwnd = win32gui.GetDlgItem(advance_export_data_hwnd, 0x0002)  # 关闭按钮
         #win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
+        if add_stcok_btn_hwnd<=0:
+            if self.debug_enable: print('找不到 添加品种 句柄')
+            return advance_export_data_hwnd,-1
+        print('add_stcok_btn_hwnd=',add_stcok_btn_hwnd)
+        time.sleep(1)
+        try:
+            pass
+            #self._set_foreground_window(advance_export_data_hwnd)
+        except:
+            pass
+        #clickButton(add_stcok_btn_hwnd)
+        click(add_stcok_btn_hwnd,0.2)
+        #win32gui.SendMessage(add_stcok_btn_hwnd, win32con.BM_CLICK, None, None)
+        time.sleep(1)
+        if self.debug_enable: print('点击添加品种')
         select_stock_hwnd = self._select_needed_stocks(add_stcok_btn_hwnd,select_type='沪深A')
         time.sleep(2)
+        try:
+            pass
+            #self._set_foreground_window(add_stcok_btn_hwnd)
+        except:
+            pass
+        click(add_stcok_btn_hwnd,0.2)
+        time.sleep(1)
+        if self.debug_enable: print('点击添加品种')
         select_stock_hwnd = self._select_needed_stocks(add_stcok_btn_hwnd,select_type='精选指数')
         time.sleep(2)
         if select_stock_hwnd<=0 and close_advance_export_hwnd>0:
