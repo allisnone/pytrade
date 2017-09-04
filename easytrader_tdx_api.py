@@ -195,6 +195,13 @@ class myYHClientTrader(YHClientTrader):
             raise Exception('启动交易客户端失败')
         log.info('客户端登陆成功')
         
+    @staticmethod
+    def _mouse_click(x, y):
+        nx = int(x*65536/win32api.GetSystemMetrics(0))
+        ny = int(y*65536/win32api.GetSystemMetrics(1))
+        win32api.mouse_event(win32con.MOUSEEVENTF_ABSOLUTE|win32con.MOUSEEVENTF_MOVE,nx,ny)
+        time.sleep(0.2)
+            
     def _get_tdx_system_menu(self,timeout_count=20,interval=10):
         #trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
         count = 0
