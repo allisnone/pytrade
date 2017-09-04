@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import easytrader,time,datetime,os
+import ctypes
 import os
 import subprocess
 import tempfile
