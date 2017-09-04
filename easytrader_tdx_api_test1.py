@@ -3,19 +3,57 @@
 # coding=utf-8
 from easytrader_tdx_api import use
 import datetime
-import sys   
+import sys,time   
 import pdSql_common as pds
 from pdSql import StockSQL
 sys.setrecursionlimit(1000000)
 
-def update_histdatas():
+
+def period_update_histdatas(interval_minutes=30,update_now=False):
+    is_tdx_uptodate=False
+    while True:
+        stock_sql = StockSQL()
+        is_tdx_uptodate,is_pos_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+        
+        update_hour = systime_dict['hist_update_hour']
+        if update_now:#立即更新
+            update_histdatas(stock_sql)
+            update_now = False
+        else:
+            if is_tdx_uptodate:
+                print('通达信历史数据已经是最新了')
+                time.sleep(interval_minutes*60)
+                continue
+            else:
+                if update_hour==datetime.datetime.now().hour:
+                    update_histdatas(stock_sql)
+                else:
+                    print('将在%s点更新历史数据'%update_hour)
+                    time.sleep(interval_minutes*60)
+                    continue
+        #stock_sql.close()
+        
+        time.sleep(interval_minutes*60)
+
+def update_histdatas(stock_sql):
     print('start: ', datetime.datetime.now())
+    """
     #user = easytrader.use('yh')
     stock_sql = StockSQL()
-    is_tdx_uptodate,is_pos_uptodate = stock_sql.is_histdata_uptodate()
+    is_tdx_uptodate,is_pos_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
     is_tdx_uptodate=False
-    if is_tdx_uptodate:
-        return
+    update_hour = systime_dict['hist_update_hour']
+    if update_now:#立即更新
+        pass
+    else:
+        if is_tdx_uptodate:
+            print('通达信历史数据已经是最新了')
+            return
+        else:
+            if update_hour==datetime.datetime.now().hour:
+                pass
+    """
+            
     user = use('yh_client')
     #title='通达信网上交易V6'
     title = '中国银河证券海王星V2.59'
@@ -91,8 +129,8 @@ def is_latest_update_stock(df,latest_date_str):
     print(df)
     last_code_trade_date = df.tail(1).iloc[0].date
     print('last_code_trade_date=',last_code_trade_date)#,type(last_code_trade_date))
-update_histdatas()
-
+#update_histdatas()
+period_update_histdatas(interval_minutes=30,update_now=False)
 """
 user._has_yh_trade_window()
 

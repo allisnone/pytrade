@@ -210,7 +210,7 @@ class StockSQL(object):
             is_tdx_uptodate = tdx_update_time_str[:10]>=last_date_str
             is_pos_uptodate = pos_update_time_str[:10]>=last_date_str
             
-        return is_tdx_uptodate,is_pos_uptodate
+        return is_tdx_uptodate,is_pos_uptodate,systime_dict
         
     def delete_data(self,table_name,condition=None):
         """
