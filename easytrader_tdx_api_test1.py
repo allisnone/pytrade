@@ -111,7 +111,7 @@ def update_histdatas(stock_sql):
         #stock_sql.write_position_update_time(now_time_str)
         systime_dict = stock_sql.get_systime()
         print(systime_dict)
-        is_tdx_uptodate,is_pos_uptodate = stock_sql.is_histdata_uptodate()
+        is_tdx_uptodate,is_pos_uptodate,systime = stock_sql.is_histdata_uptodate()
     print('is_tdx_uptodate=',is_tdx_uptodate)
     print('is_pos_uptodate=',is_pos_uptodate)
     
