@@ -130,7 +130,12 @@ def is_latest_update_stock(df,latest_date_str):
     last_code_trade_date = df.tail(1).iloc[0].date
     print('last_code_trade_date=',last_code_trade_date)#,type(last_code_trade_date))
 #update_histdatas()
-period_update_histdatas(interval_minutes=30,update_now=False)
+if __name__ == '__main__':
+    update = False
+    if len(sys.argv)>=2:
+        if '-now' in sys.argv:
+            update = True
+    period_update_histdatas(interval_minutes=30,update_now=update)
 """
 user._has_yh_trade_window()
 
