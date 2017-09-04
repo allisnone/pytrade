@@ -202,7 +202,7 @@ class myYHClientTrader(YHClientTrader):
         ny = int(y*65536/win32api.GetSystemMetrics(1))
         win32api.mouse_event(win32con.MOUSEEVENTF_ABSOLUTE|win32con.MOUSEEVENTF_MOVE,nx,ny)
         """
-        
+        print('fasdfasf')
         ctypes.windll.user32.SetCursorPos(x,y)
         ctypes.windll.user32.mouse_event(2,0,0,0,0)
         ctypes.windll.user32.mouse_event(4,0,0,0,0)
