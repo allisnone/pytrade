@@ -52,8 +52,7 @@ def update_histdatas(stock_sql):
         else:
             if update_hour==datetime.datetime.now().hour:
                 pass
-    """
-            
+    """       
     user = use('yh_client')
     #title='通达信网上交易V6'
     title = '中国银河证券海王星V2.59'
