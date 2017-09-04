@@ -204,9 +204,19 @@ class myYHClientTrader(YHClientTrader):
         win32api.mouse_event(win32con.MOUSEEVENTF_ABSOLUTE|win32con.MOUSEEVENTF_MOVE,nx,ny)
         """
         print('fasdfasf')
+        """
         ctypes.windll.user32.SetCursorPos(x,y)
         ctypes.windll.user32.mouse_event(2,0,0,0,0)
         ctypes.windll.user32.mouse_event(4,0,0,0,0)
+        """
+        
+        pos=(x,y)
+        handle= win32gui.WindowFromPoint(pos)
+        client_pos =win32gui.ScreenToClient(handle,pos)
+        tmp=win32api.MAKELONG(client_pos[0],client_pos[1])
+        win32gui.SendMessage(handle, win32con.WM_ACTIVATE,win32con.WA_ACTIVE,0)
+        win32gui.SendMessage(handle, win32con.WM_LBUTTONDOWN,win32con.MK_LBUTTON,tmp)
+        win32gui.SendMessage(handle, win32con.WM_LBUTTONUP,win32con.MK_LBUTTON,tmp)
         time.sleep(0.2)
             
     def _get_tdx_system_menu(self,timeout_count=20,interval=10):
