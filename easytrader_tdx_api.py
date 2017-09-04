@@ -197,13 +197,13 @@ class myYHClientTrader(YHClientTrader):
         log.info('客户端登陆成功')
         
     @staticmethod
-    def _mouse_click(x, y):
+    def _mouse_click1(x, y):
         """
         nx = int(x*65536/win32api.GetSystemMetrics(0))
         ny = int(y*65536/win32api.GetSystemMetrics(1))
         win32api.mouse_event(win32con.MOUSEEVENTF_ABSOLUTE|win32con.MOUSEEVENTF_MOVE,nx,ny)
         """
-        print('fasdfasf')
+        
         """
         ctypes.windll.user32.SetCursorPos(x,y)
         ctypes.windll.user32.mouse_event(2,0,0,0,0)
@@ -211,15 +211,18 @@ class myYHClientTrader(YHClientTrader):
         """
         
         pos=(x,y)
+        print('pos=',pos)
+        time.sleep(5)
         handle= win32gui.WindowFromPoint(pos)
         client_pos =win32gui.ScreenToClient(handle,pos)
         tmp=win32api.MAKELONG(client_pos[0],client_pos[1])
         win32gui.SendMessage(handle, win32con.WM_ACTIVATE,win32con.WA_ACTIVE,0)
-        time.sleep(0.1)
+        #time.sleep(0.2)
         win32gui.SendMessage(handle, win32con.WM_LBUTTONDOWN,win32con.MK_LBUTTON,tmp)
-        time.sleep(0.1)
+        #time.sleep(0.2)
         win32gui.SendMessage(handle, win32con.WM_LBUTTONUP,win32con.MK_LBUTTON,tmp)
-        time.sleep(0.2)
+        time.sleep(2)
+        
             
     def _get_tdx_system_menu(self,timeout_count=20,interval=10):
         #trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口

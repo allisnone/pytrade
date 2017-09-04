@@ -9,7 +9,7 @@ from pdSql import StockSQL
 sys.setrecursionlimit(1000000)
 
 
-def period_update_histdatas(interval_minutes=30,update_now=False):
+def period_update_histdatas(interval_minutes=30,update_now=False,one_time_only=False):
     is_tdx_uptodate=False
     while True:
         stock_sql = StockSQL()
@@ -18,6 +18,8 @@ def period_update_histdatas(interval_minutes=30,update_now=False):
         update_hour = systime_dict['hist_update_hour']
         if update_now:#立即更新
             update_histdatas(stock_sql)
+            if one_time_only:
+                break
             update_now = False
         else:
             if is_tdx_uptodate:
@@ -52,7 +54,8 @@ def update_histdatas(stock_sql):
         else:
             if update_hour==datetime.datetime.now().hour:
                 pass
-    """       
+    """  
+    is_tdx_uptodate,is_pos_uptodate = False,False 
     user = use('yh_client')
     #title='通达信网上交易V6'
     title = '中国银河证券海王星V2.59'
@@ -134,7 +137,7 @@ if __name__ == '__main__':
     if len(sys.argv)>=2:
         if '-now' in sys.argv:
             update = True
-    period_update_histdatas(interval_minutes=30,update_now=update)
+    period_update_histdatas(interval_minutes=30,update_now=True,one_time_only=True)
 """
 user._has_yh_trade_window()
 

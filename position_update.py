@@ -5,26 +5,7 @@ import pdSql_common as pds
 from pdSql import StockSQL
 import sys
 import datetime
-#update_type = ''
-update_type = 'index'
-#update_type = 'position'
-#update_type = 'stock'
-update_type = 'yh'
-#update_type = 'aa'
-now_time =datetime.datetime.now()
-now_time_str = now_time.strftime('%Y/%m/%d %X')
-d_format='%Y/%m/%d'
-last_date_str = pds.tt.get_last_trade_date(date_format=d_format)
-print('now_time = ',now_time_str)
-print('last_date = ',last_date_str)
 
-if len(sys.argv)>=2:
-    if sys.argv[1] and isinstance(sys.argv[1], str):
-        update_type = sys.argv[1]  #start date string   
-#update_type = 'index'
-#update_type = 'position'
-#update_type = 'aa'
-update_k_data(update_type)
 
 def update_k_data(update_type='yh'):
     stock_sql = StockSQL()
@@ -101,6 +82,28 @@ def update_k_data(update_type='yh'):
             
     else:
         pass
+
+#update_type = ''
+update_type = 'index'
+#update_type = 'position'
+#update_type = 'stock'
+update_type = 'yh'
+#update_type = 'aa'
+now_time =datetime.datetime.now()
+now_time_str = now_time.strftime('%Y/%m/%d %X')
+d_format='%Y/%m/%d'
+last_date_str = pds.tt.get_last_trade_date(date_format=d_format)
+print('now_time = ',now_time_str)
+print('last_date = ',last_date_str)
+
+if len(sys.argv)>=2:
+    if sys.argv[1] and isinstance(sys.argv[1], str):
+        update_type = sys.argv[1]  #start date string   
+#update_type = 'index'
+#update_type = 'position'
+#update_type = 'aa'
+update_k_data(update_type)
+
 """
 update_data = stock_sql.get_table_update_time()
 print('last_position_update_time=',update_data['hold'])
