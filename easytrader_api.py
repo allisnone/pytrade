@@ -165,10 +165,10 @@ class myYHClientTrader(YHClientTrader):
         return self.get_fund()
 
     def get_fund(self):
-        win32gui.SendMessage(self.refresh_entrust_hwnd, win32con.BM_CLICK, None, None)  # 刷新持仓
+        #win32gui.SendMessage(self.refresh_entrust_hwnd, win32con.BM_CLICK, None, None)  # 刷新持仓
         #win32api.PostMessage(self.tree_view_hwnd, win32con.WM_KEYDOWN, win32con.VK_F4, 0)
         time.sleep(1)
-        self._set_foreground_window(self.fund_list_hwnd)
+        #self._set_foreground_window(self.fund_list_hwnd)
         time.sleep(1)
         data = self._read_clipboard()
         return self.project_copy_data(data)

@@ -253,6 +253,8 @@ class myYHClientTrader(YHClientTrader):
         tdx_menu_hwnd = win32gui.GetDlgItem(self.trade_main_hwnd, 0xE805)  # 操作窗口框架
         self.tdx_menu_system_hwnd = win32gui.GetDlgItem(tdx_menu_hwnd, 0x03E8)  # 操作窗口框架
         #print('tdx_menu_system_hwnd=',self.tdx_menu_system_hwnd)
+        
+        
         #win32gui.SendMessage(tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
         popup_hwnd = win32gui.FindWindow('#32770','银河证券')  # 交易窗口
         if popup_hwnd:
@@ -279,8 +281,19 @@ class myYHClientTrader(YHClientTrader):
             if self.debug_enable: print('没有即时播报弹出窗口')
             pass
         
+        """
+        win32gui.SendMessage(self.tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
+        hMenu = win32gui.GetMenu(self.tdx_menu_system_hwnd) 
+        print('hMenu=',hMenu)
+        cmd_ID = 2
         
-        #win32gui.SendMessage(self.tdx_menu_system_hwnd, win32con.BM_CLICK, None, None)
+        nPos = 2
+        sub_hMenu = win32gui.GetSubMenu(hMenu, 0) 
+        print('sub_hMenu=',sub_hMenu)
+        open_id = win32gui.GetMenuItemID(sub_hMenu, nPos) 
+        print('open_id=',open_id)
+        win32gui.PostMessage(sub_hMenu, win32con.WM_COMMAND, open_id, 0)
+        """
     
     def _click_rect(self,hwnd,x_offset=0,y_offset=0,x_0='left',y_0='top',foreground=True):
         if hwnd:

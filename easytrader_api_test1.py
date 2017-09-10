@@ -1,19 +1,21 @@
 # -*- coding:utf-8 -*-
 
 # coding=utf-8
-from easytrader_api import use
-import datetime
+#from easytrader import use
+import easytrader
+import datetime,time
 
 print('start: ', datetime.datetime.now())
 #user = easytrader.use('yh')
-user = use('yh_client')
+#user = use('yh_client')
+user = easytrader.use('yh_client')
 account_dict={
     "inputaccount": "331600036005",
     "trdpwd": "F71281A2D62C4b3a8268C6453E9C42212CCC5BA9AB89CAFF4E97CC31AE0E4C48"
 }
-user.set_title(title='网上股票交易系统5.0')
+#user.set_title(title='网上股票交易系统5.0')
 user.prepare(user='331600036005', password='821853')
-
+"""
 #print(user.get_add_acc_handles())
 user.update_acc_id()
 user.is_enable_trade()
@@ -22,12 +24,20 @@ print('enable_trade0=',user.enable_trade)
 user.is_enable_trade()
 print('enable_trade=',user.enable_trade)
 print('is 36005: ', user.is_right_acc(acc_id='36005'))
+"""
 print('36005 positon:\n')
+
 print(user.position)
+#user.auto_ipo()
+#user.buy('162411', price=0.55, amount=100)
+#user.sell('162411', price=0.55, amount=100)
+
+print(user.balance)
 #user.change_acc()
-fund_list = user.fund
+#fund_list = user.fund
+time.sleep(1)
 #fund_list = user.balance
-print('fund=',fund_list,len(fund_list)==1)
+#print('fund=',fund_list,len(fund_list)==1)
 #fund= [{'总市值': 165955.81, '可用金额': 902.38, '货币单位': '人民币', '资金帐户': 331600036005, '总资产': 166858.18, '资金余额': 902.37}]
 print('可用余额=',fund_list[0]['可用金额'])
 print('总市值=',fund_list[0]['总市值'])
