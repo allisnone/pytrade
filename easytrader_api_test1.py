@@ -32,11 +32,12 @@ print(user.position)
 #user.buy('162411', price=0.55, amount=100)
 #user.sell('162411', price=0.55, amount=100)
 
-print(user.balance)
+#print(user.balance)
 #user.change_acc()
 #fund_list = user.fund
 time.sleep(1)
-#fund_list = user.balance
+#user.auto_ipo()
+fund_list = user.balance
 #print('fund=',fund_list,len(fund_list)==1)
 #fund= [{'总市值': 165955.81, '可用金额': 902.38, '货币单位': '人民币', '资金帐户': 331600036005, '总资产': 166858.18, '资金余额': 902.37}]
 print('可用余额=',fund_list[0]['可用金额'])
