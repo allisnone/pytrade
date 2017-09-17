@@ -11,9 +11,19 @@ import win32con
 #import tushare as ts
 #import pdSql
 import sendEmail as sm
+from pytrade_tdx import OperationThs
+from easytrader.yh_clienttrader import YHClientTrader
+
+def trader(trade_api='shuangzixing',bebug=True):
+    if trade_api=='haiwangxing':
+        return  OperationTdx()
+    elif trade_api=='shuangzixing':
+        return OperationSZX()
+    else:
+        print('No %s API. Please input right trade API' % trade_api)
 
 
-class PytradeAPI:
+class OperationSZX(YHClientTrader):
     """
     """
     def __init__(self,debug=False):
@@ -24,14 +34,15 @@ class PytradeAPI:
         self.debug=debug
             
     def init_hwnd(self):
+        self.login()
 
         return
     
-    def exit(self):
+    #def exit(self):
         """
         退出交易api
         """
-        return
+        #return
     
     def _new_stock_order(self):
         """
@@ -72,7 +83,10 @@ class PytradeAPI:
         :param code: 股票代码，字符串
         :param quantity: 数量， 字符串
         """
-        return
+        if limit:
+            actual_price=limit[0]  #涨停价
+        return self.buy(security=code, price=actual_price, amount=quantity)
+        
             
     def _get_valid_buy_quantity(self,available_fund,actual_price,expect_quantity=None,patial=None):
         """
@@ -114,8 +128,11 @@ class PytradeAPI:
         :param code: 股票代码， 字符串
         :param quantity: 数量， 字符串
         """
+        if limit:
+            actual_price=limit[1]  #跌停价
+        return self.sell(security=code, price=actual_price, amount=quantity)
 
-    return
+    
 
     def _get_valid_sell_quantity(self,code,expect_quantity=None,patial=None):
         """
