@@ -19,7 +19,8 @@ account_dict={
 }
 #user.set_title(title='网上股票交易系统5.0')
 #user.prepare(user='331600036005', password='821853')
-user.init_hwnd(user='331600036005', password='821853',exe_path='C:\中国银河证券双子星3.2\Binarystar.exe')
+exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'
+user.prepare(user='331600036005', password='821853',exe_path=exe_path)
 """
 #print(user.get_add_acc_handles())
 user.update_acc_id()
@@ -36,15 +37,19 @@ print(user.position)
 #user.auto_ipo()
 #user.buy('162411', price=0.55, amount=100)
 #user.sell('162411', price=0.55, amount=100)
-
-#print(user.balance)
-#user.change_acc()
+user.update_acc_id()
+fund_list = user.balance
+print('acc_id=',user.acc_id)
+print('可用余额=',fund_list[0]['可用金额'])
+print('总市值=',fund_list[0]['总市值'])
+user.change_acc(acc_id='36005',exe_path=exe_path)
 #fund_list = user.fund
 time.sleep(1)
 #user.auto_ipo()
 fund_list = user.balance
 #print('fund=',fund_list,len(fund_list)==1)
 #fund= [{'总市值': 165955.81, '可用金额': 902.38, '货币单位': '人民币', '资金帐户': 331600036005, '总资产': 166858.18, '资金余额': 902.37}]
+print('acc_id=',user.acc_id)
 print('可用余额=',fund_list[0]['可用金额'])
 print('总市值=',fund_list[0]['总市值'])
 
@@ -52,9 +57,11 @@ print('总市值=',fund_list[0]['总市值'])
 limit=[15.40,12.60]
 
 #user.order(code='300383', direction='S', quantity=300,actual_price=14.6,limit_price=None,post_confirm=True)
-user.order(code='600401', direction='B', quantity=300,actual_price=1.58,limit_price=None,post_confirm=True)
-user.auto_ipo()
-user.exit()
+#user.order(code='600401', direction='B', quantity=300,actual_price=1.58,limit_price=None,post_confirm=True)
+#user.auto_ipo()
+#user.exit()
+
+
 """
 all_pos = user.get_all_position()
 print('all position:', all_pos)

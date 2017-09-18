@@ -1,8 +1,15 @@
 # -*- encoding: utf8 -*-
-
+import functools
+import io
+import os
+import re
+import tempfile
+import time
+"""
 import tkinter.messagebox
 from tkinter import *
 from tkinter.ttk import *
+"""
 import datetime
 import threading
 import pickle
@@ -15,6 +22,16 @@ from pytrade_tdx import OperationThs
 from easytrader.yh_clienttrader import YHClientTrader
 from easytrader.config import client
 from tradeTime import *
+from easytrader_config0 import (HD,VA,LI)
+
+import pywinauto
+import pywinauto.clipboard
+
+from easytrader import exceptions
+#from . import helpers
+#from .clienttrader import ClientTrader
+from easytrader.log import log
+import pandas as pd
 
 def trader(trade_api='shuangzixing',bebug=True):
     if trade_api=='haiwangxing':
@@ -38,16 +55,17 @@ class OperationSZX(YHClientTrader):
 
     def enable_debug(self,debug=True):
         self.debug=debug
-            
+    """        
     def init_hwnd(self,user='331600036005', password='821853',exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
         self.prepare(user=user, password=password,exe_path=exe_path)
 
         return
+    """
     
     #def exit(self):
-        """
+    """
         退出交易api
-        """
+    """
         #return
     
     def _new_stock_order(self):
@@ -186,7 +204,7 @@ class OperationSZX(YHClientTrader):
             return entrust_no_dict
         pre_position = {}
         if post_confirm:
-            pre_position = self.getPositionDict()
+            pre_position = self.get_position_dict()
         if quantity<=0:#invalid quantity
             if self.debug: print('Please input valid quantity!')
             return
@@ -204,7 +222,7 @@ class OperationSZX(YHClientTrader):
     
     def post_trade_confirm(self,code,plan_trade_num,pre_position,interval=60):
         time.sleep(interval)
-        post_position = self.getPositionDict()
+        post_position = self.get_position_dict()
         pos_chg = self.getPostionChange(pre_position,post_position)
         if self.debug: print('pos_chg=',pos_chg)
         self.trade_confirm(code, plan_trade_num, pos_chg)
@@ -252,14 +270,8 @@ class OperationSZX(YHClientTrader):
         """获取持仓股票信息
         return list
         """
-        return []
+        return self.position
     
-    def getPositionDict(self):
-        """获取持仓股票信息
-        return dict
-        """
-        
-        return {}
         
     def isRightAcc(self,acc='36005',pos_list=list()):
         """确认是否正确账号
@@ -286,7 +298,7 @@ class OperationSZX(YHClientTrader):
             available_money = self.getAvailableFund()
         else:
             current_acc_id,current_box_id = self.get_acc_combobox_id()
-            position_dict = self.getPositionDict() 
+            position_dict = self.get_position_dict() 
             exchange_id = self.change_account(current_acc_id, current_box_id, position_dict)
             pos_list = self.getPosition()
             if self.isRightAcc(acc, pos_list):
@@ -301,7 +313,7 @@ class OperationSZX(YHClientTrader):
     
     def get_position_dict(self):
         #单账户
-        print('111')
+        #print('111')
         pos_dict = {}
         my_pos = {}
         for stock in self.position:
@@ -403,6 +415,113 @@ class OperationSZX(YHClientTrader):
         if cur_len > pre_len:
             return int(cur_position[-1][1])
         
+    def is_right_acc(self,acc_id):
+        #this_acc_id,combobox_id = self.get_acc_combobox_id()
+        """
+        wantedtext = VA[LI[0]]['A1']
+        if acc_id==LI[0]:
+            pass
+        elif acc_id==LI[1]:
+            wantedtext = VA[LI[1]]['A1']
+        else:
+            return False
+        hnwd = get_exist_hwnd(self.trade_main_hwnd, wantedtext)
+        """
+        return self.acc_id==acc_id
+    
+    def get_acc_id(self):
+        """
+        valid_acc_ids = LI
+        acc_id = 0
+        for acc_id in valid_acc_ids:
+            if self.is_right_acc(acc_id):
+                return acc_id
+            else:
+                pass
+        this_acc_id,combobox_id = self.get_acc_combobox_id()
+        """
+        return self.acc_id
+    
+    def update_acc_id(self):
+        this_acc_id,combobox_id = self.get_acc_combobox_id()
+        self.acc_id = this_acc_id
+        
+    
+    def change_acc(self,acc_id='',exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
+        #trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
+        #is_acc = self.is_acc_36005()
+        #acc_id = self.update_acc_id()
+        #acc_dict = {'36005':'331600036005','38736':'331600038736'}
+        #changed = False
+        pre_acc_id = self.acc_id
+        changed_acc = False
+        if acc_id:#指定切换的acc_id
+            #self.logout()
+            if self.is_right_acc(acc_id):
+                print('正确的acc_id=%s，无需切换'%acc_id)
+                pass
+            else:
+                if acc_id==LI[0]:
+                    #changed = True
+                    self.exit()
+                    print('Will change to ACC: ',acc_id)
+                    #self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'],exe_path=exe_path)  
+                    self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'], exe_path=exe_path)
+                    #self.acc_id = LI[1]
+                    changed_acc = True
+                elif acc_id==LI[1]:
+                    #changed = True
+                    self.exit()
+                    print('Will change to ACC: ',acc_id)
+                    #self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'],exe_path=exe_path)
+                    self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'], exe_path=exe_path)
+                    #self.acc_id = LI[0]  
+                    changed_acc = True
+                else:
+                    print('给定无效acc_id')
+        else:
+            if pre_acc_id==LI[0]:
+                #changed = True
+                self.exit()
+                print('Will change to ACC: ',LI[1])
+                #self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'],exe_path=exe_path)  
+                self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'], exe_path=exe_path)
+                #self.acc_id = LI[1]
+                changed_acc = True
+            elif pre_acc_id==LI[1]:
+                #changed = True
+                self.exit()
+                print('Will change to ACC: ',LI[0])
+                #self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'],exe_path=exe_path)
+                self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'], exe_path=exe_path)
+                #self.acc_id = LI[0]  
+                changed_acc = True
+            else:
+                print('未预定acc_id')  
+        if changed_acc:
+            self.update_acc_id()
+        return changed_acc
+    
+    def get_all_position(self):
+        pos_dict = dict()
+        pos_dict[self.get_acc_id()] = self.get_my_position()
+        self.change_acc()
+        pos_dict[self.get_acc_id()] = self.get_my_position()
+        return pos_dict
+    
+    
+    def get_my_position(self):
+        #单账户
+        #print('111')
+        pos_dict = {}
+        my_pos = {}
+        for stock in self.position:
+            stock_code = int_code_to_stock_symbol(stock['证券代码'])
+            stock['证券代码'] = stock_code
+            pos_dict[stock_code] = stock
+        #my_pos[self.get_acc_id()] = pos_dict 
+        return pos_dict
+        
     def get_acc_combobox_id(self,position_dict={},acc_combobox_map = {'36005':0,'38736':1}):
         """
         双帐号切换: 获取当前账号的id，和combobox_id
@@ -411,7 +530,7 @@ class OperationSZX(YHClientTrader):
         acc_id = ''
         combobox_id = 0
         if not position_dict:
-            position_dict = self.getPositionDict()
+            position_dict = self.get_position_dict()
         else:
             pass
         if position_dict:
@@ -476,7 +595,7 @@ class OperationSZX(YHClientTrader):
         monitor_stocks： 所有持仓股票代码，实时监测用途
         """
         avl_sell_datas = {}
-        position = self.getPositionDict()
+        position = self.get_position_dict()
         current_acc_id,current_box_id = self.get_acc_combobox_id(position_dict=position)
         print('first_acc=%s' % current_acc_id)
         current_avl_sell = []
@@ -487,7 +606,7 @@ class OperationSZX(YHClientTrader):
                 current_avl_sell.append(code)
         avl_sell_datas[current_acc_id] = current_avl_sell
         exchange_id = self.change_account(current_acc_id, current_box_id, position)
-        second_acc_position = self.getPositionDict()
+        second_acc_position = self.get_position_dict()
         second_acc_id,second_box_id = self.get_acc_combobox_id(position_dict=second_acc_position)
         print('second_acc=%s' % second_acc_id)
         second_avl_sell = []
@@ -553,6 +672,43 @@ class OperationSZX(YHClientTrader):
         buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
         return
     
+    #@functools.lru_cache()
+    def _get_left_menus_handle(self):
+        while True:
+            try:
+                handle = self._app.top_window().window(
+                    control_id=129,
+                    class_name='SysTreeView32'
+                )
+                # sometime can't find handle ready, must retry
+                handle.wait('ready', 2)
+                return handle
+            except:
+                pass
+            
+    def _get_clipboard_data(self):
+        n=0
+        while n<1000000:
+            try:
+                
+                #print(type(pywinauto.clipboard.GetData()))
+                #print(pywinauto.clipboard.GetData())#[:-30])
+                #print(str(pywinauto.clipboard.GetData()).split('\n'))
+                #try:
+                    #return pywinauto.clipboard.GetData()
+                #except:
+                data = pywinauto.clipboard.GetData()
+                #print(io.StringIO(data[:n*(-1)]))
+                df = pd.read_csv(io.StringIO(data[:n*(-1)]),delimiter='\t',dtype=self._config.GRID_DTYPE,na_filter=False,encoding='utf-8')
+                                 #error_bad_lines=True,
+                                 #encoding='utf-8',
+                return df.to_dict('records')
+                #return pywinauto.clipboard.GetData()[:-30]
+            
+            except Exception as e:
+                log.warning('{}, retry ......'.format(e))
+                n=n+10
+                
     def get_realtime_holding(self):
         total_money=self.getAvailableFund()
         position_dict=self.getPosition()
