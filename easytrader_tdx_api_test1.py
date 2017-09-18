@@ -58,7 +58,7 @@ def update_histdatas(stock_sql):
     is_tdx_uptodate,is_pos_uptodate = False,False 
     user = use('yh_client')
     #title='通达信网上交易V6'
-    title = '中国银河证券海王星V2.50'
+    title = '中国银河证券海王星V2.53'
     user.set_title(title)
     account_dict={
         "inputaccount": "331600036005",

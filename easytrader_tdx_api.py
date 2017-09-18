@@ -156,7 +156,7 @@ class myYHClientTrader(YHClientTrader):
             #print('_has_login_window1=',self._has_login_window())
             if self._has_login_window():
                 break
-            if i%30==0:
+            if i%30==0 and i/30>=1:
                 title_list = self.Title.split('.')
                 version = title_list[0]
                 subversion = '1'
@@ -167,7 +167,7 @@ class myYHClientTrader(YHClientTrader):
                 else:
                     pass
                 self.Title = title_list[0] + '.' + subversion
-                print(self.Title)
+                print('Try new vesion: ',self.Title)
             time.sleep(1)
         else:
             raise Exception('启动客户端失败，无法检测到登陆窗口')
