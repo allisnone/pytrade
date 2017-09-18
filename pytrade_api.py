@@ -183,7 +183,7 @@ class OperationSZX(YHClientTrader):
         entrust_no_dict = {}  
         if not is_trade_time_now():
             print('非交易时间，不允许下单')
-            return False
+            return entrust_no_dict
         pre_position = {}
         if post_confirm:
             pre_position = self.getPositionDict()
