@@ -13,6 +13,8 @@ import win32con
 import sendEmail as sm
 from pytrade_tdx import OperationThs
 from easytrader.yh_clienttrader import YHClientTrader
+from easytrader.config import client
+from tradeTime import *
 
 def trader(trade_api='shuangzixing',bebug=True):
     if trade_api=='haiwangxing':
@@ -26,15 +28,19 @@ def trader(trade_api='shuangzixing',bebug=True):
 class OperationSZX(YHClientTrader):
     """
     """
+    """
     def __init__(self,debug=False):
+       
         self.debug = debug
         self.init_hwnd()
+    """
+    debug=False
 
     def enable_debug(self,debug=True):
         self.debug=debug
             
-    def init_hwnd(self):
-        self.login()
+    def init_hwnd(self,user='331600036005', password='821853',exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
+        self.prepare(user=user, password=password,exe_path=exe_path)
 
         return
     
@@ -57,24 +63,6 @@ class OperationSZX(YHClientTrader):
         else:
             pass
         return
-    
-    def _buy(self, code, quantity,actual_price,limit=None):
-        """
-        买入函数
-        :param code: 股票代码，字符串
-        :param quantity: 数量， 字符串
-        """
-        
-        available_fund=self.getAvailableFund()
-        #if highest:
-        #    actual_price=highest
-        final_quantity=self._get_valid_buy_quantity(available_fund, actual_price, quantity)
-        if self.debug: print('final_buy_quantity=',final_quantity)
-        if final_quantity>=100:
-            self.__buy(code, quantity,actual_price,limit)
-        else:
-            if self.debug: print('可用资金不足买入100股%s，取消买入下单'%code)
-            pass
         
             
     def __buy(self, code, quantity,actual_price,limit=None):
@@ -85,6 +73,7 @@ class OperationSZX(YHClientTrader):
         """
         if limit:
             actual_price=limit[0]  #涨停价
+        #actual_price=str(actual_price)
         return self.buy(security=code, price=actual_price, amount=quantity)
         
             
@@ -109,18 +98,25 @@ class OperationSZX(YHClientTrader):
         final_quantity=min(max_valid_quantity,acceptable_quantity)
         return final_quantity
     
-    def _sell(self, code, quantity,actual_price,limit=None):
+    def _buy(self, code, quantity,actual_price,limit=None):
         """
-        卖出函数
-        :param code: 股票代码， 字符串
+        买入函数
+        :param code: 股票代码，字符串
         :param quantity: 数量， 字符串
         """
-        quantity=self._get_valid_sell_quantity(code, quantity)
-        if quantity>=100:
-            self.__sell(self, code, quantity,actual_price,limit=None)
+        
+        available_fund=self.getAvailableFund()
+        #if highest:
+        #    actual_price=highest
+        final_quantity=self._get_valid_buy_quantity(available_fund, actual_price, quantity)
+        if self.debug: print('final_buy_quantity=',final_quantity)
+        if final_quantity>=100:
+            return self.__buy(code, quantity,actual_price,limit)
         else:
-            if self.debug: print('不满100股%s，取消卖出下单'%code)
-            pass
+            if self.debug: print('可用资金不足买入100股%s，取消买入下单'%code)
+            return {}
+    
+    
         
     def __sell(self, code, quantity,actual_price,limit=None):
         """
@@ -130,6 +126,7 @@ class OperationSZX(YHClientTrader):
         """
         if limit:
             actual_price=limit[1]  #跌停价
+        #actual_price=str(actual_price)
         return self.sell(security=code, price=actual_price, amount=quantity)
 
     
@@ -153,6 +150,19 @@ class OperationSZX(YHClientTrader):
         final_quantity=min(max_valid_quantity,acceptable_quantity)
         if self.debug: print('final_sell_quantity=',final_quantity,type(final_quantity))
         return final_quantity
+    
+    def _sell(self, code, quantity,actual_price,limit=None):
+        """
+        卖出函数
+        :param code: 股票代码， 字符串
+        :param quantity: 数量， 字符串
+        """
+        quantity=self._get_valid_sell_quantity(code, quantity)
+        if quantity>=100:
+            return self.__sell(code, quantity,actual_price,limit=limit)  #{'entrust_no': entrust_no}{'entrust_no': entrust_no}
+        else:
+            if self.debug: print('不满100股%s，取消卖出下单'%code)
+            return {}
 
     def order(self, code, direction, quantity,actual_price,limit_price=None,post_confirm=True):
         """
@@ -162,6 +172,7 @@ class OperationSZX(YHClientTrader):
         :param quantity: 数量， 字符串，数量为‘0’时，由交易软件指定数量
         :param actual_price: 数量， 字符串，数量为‘0’时，由交易软件指定数量
         :param limit_price: [涨停价,跌停价]
+        reurn: 如果成功下单，返回下单委托号字典，否认返回空字典
         """
         #highest=None
         #lowest=None
@@ -169,6 +180,10 @@ class OperationSZX(YHClientTrader):
         #    highest=limit_price[0]
         #    lowest=limit_price[1]
         # restoreFocusWindow(self.__top_hwnd)
+        entrust_no_dict = {}  
+        if not is_trade_time_now():
+            print('非交易时间，不允许下单')
+            return False
         pre_position = {}
         if post_confirm:
             pre_position = self.getPositionDict()
@@ -176,21 +191,23 @@ class OperationSZX(YHClientTrader):
             if self.debug: print('Please input valid quantity!')
             return
         trade_num = quantity
-        if direction == 'B':
-            self._buy(code, quantity,actual_price,limit_price)
-        if direction == 'S':
+        
+        if direction.lower()=='b':
+            entrust_no_dict = self._buy(code, quantity,actual_price,limit_price)
+        if direction.lower()=='s':
             trade_num = -1*quantity
-            self._sell(code, quantity,actual_price,limit_price)
+            entrust_no_dict =self._sell(code, quantity,actual_price,limit_price)
         #if self.debug: print('self.__top_hwnd=',self.__top_hwnd)
         if post_confirm:
-            self.post_trade_confirm(self,code,plan_trade_num=trade_num,pre_position=pre_position,interval=60)
-        
+            self.post_trade_confirm(code,plan_trade_num=trade_num,pre_position=pre_position,interval=60)
+        return entrust_no_dict
+    
     def post_trade_confirm(self,code,plan_trade_num,pre_position,interval=60):
         time.sleep(interval)
         post_position = self.getPositionDict()
         pos_chg = self.getPostionChange(pre_position,post_position)
         if self.debug: print('pos_chg=',pos_chg)
-        self.trade_confirm(code, trade_num, pos_chg)
+        self.trade_confirm(code, plan_trade_num, pos_chg)
 
     def maximizeFocusWindow(self):
         """
@@ -220,8 +237,9 @@ class OperationSZX(YHClientTrader):
     def getAvailableFund(self):
         """获取可用资金
         """
-        money=0
+        money=0.0
         try:
+            money = self.balance[0]['可用金额']
             money=float(money)
         except:
             money=0.0
@@ -280,18 +298,34 @@ class OperationSZX(YHClientTrader):
                 market_value = market_value + float(stock_data[9])  #9 for '参考市值'
         return market_value,available_money
     
+    
+    def get_position_dict(self):
+        #单账户
+        print('111')
+        pos_dict = {}
+        my_pos = {}
+        for stock in self.position:
+            stock_code = int_code_to_stock_symbol(stock['证券代码'])
+            stock['证券代码'] = stock_code
+            pos_dict[stock_code] = stock
+        #my_pos[self.get_acc_id()] = pos_dict 
+        return pos_dict
+    
     def getCodePosition(self,code):
         """获取持仓股票信息
         return 持仓数量，可卖数量
         """
-        POSITION_COlS = 14 
-        position_dict = getDictViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
-        #print('position_dict=',position_dict)
+        #POSITION_COlS = 14 
+        #position_dict = getDictViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
+        position_dict = self.get_position_dict()
+        print('position_dict=',position_dict)
         hold_num = 0
         available_to_sell =0
         if code in list(position_dict.keys()):
             hold_num = position_dict[code]['当前持仓']
-            available_to_sell = position_dict[code]['可用余额 ']
+            print('hold_num=',hold_num)
+            available_to_sell = position_dict[code]['可用余额']
+            print('available_to_sell=',available_to_sell)
         return hold_num,available_to_sell
     
     def getPostionChange(self,pre_position,post_position):
@@ -577,6 +611,12 @@ class OperationSZX(YHClientTrader):
             buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
             
         return realtime_dict,position_dict
+
+def int_code_to_stock_symbol(code):
+    """
+    code, int type
+    """
+    return '0'*(6-len(str(code)))+str(code)
 
 def pickCodeFromItems(items_info):
     """

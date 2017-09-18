@@ -5,16 +5,21 @@
 import easytrader
 import datetime,time
 
+from pytrade_api import *
+
 print('start: ', datetime.datetime.now())
 #user = easytrader.use('yh')
 #user = use('yh_client')
-user = easytrader.use('yh_client')
+#user = easytrader.use('yh_client')
+user = trader(trade_api='shuangzixing')
+user.enable_debug()
 account_dict={
     "inputaccount": "331600036005",
     "trdpwd": "F71281A2D62C4b3a8268C6453E9C42212CCC5BA9AB89CAFF4E97CC31AE0E4C48"
 }
 #user.set_title(title='网上股票交易系统5.0')
-user.prepare(user='331600036005', password='821853')
+#user.prepare(user='331600036005', password='821853')
+user.init_hwnd(user='331600036005', password='821853',exe_path='C:\中国银河证券双子星3.2\Binarystar.exe')
 """
 #print(user.get_add_acc_handles())
 user.update_acc_id()
@@ -44,7 +49,10 @@ print('可用余额=',fund_list[0]['可用金额'])
 print('总市值=',fund_list[0]['总市值'])
 
 #user._add_account(user='331600038736', password='821853')
+limit=[15.40,12.60]
 
+#user.order(code='300383', direction='S', quantity=300,actual_price=14.6,limit_price=None,post_confirm=True)
+user.order(code='600401', direction='B', quantity=300,actual_price=1.58,limit_price=None,post_confirm=True)
 user.auto_ipo()
 user.exit()
 """
