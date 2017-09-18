@@ -709,6 +709,13 @@ class OperationSZX(YHClientTrader):
                 log.warning('{}, retry ......'.format(e))
                 n=n+10
                 
+    def _format_grid_data(self, data):
+        print(io.StringIO(data))
+        df = pd.read_csv(io.StringIO(data),delimiter='\t',dtype=self._config.GRID_DTYPE,na_filter=False,encoding='utf-8')
+                         #error_bad_lines=True,
+                         #encoding='utf-8',
+        return df.to_dict('records')
+                
     def get_realtime_holding(self):
         total_money=self.getAvailableFund()
         position_dict=self.getPosition()
