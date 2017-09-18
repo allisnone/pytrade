@@ -152,10 +152,22 @@ class myYHClientTrader(YHClientTrader):
                 raise FileNotFoundError('在　{} 未找到应用程序，请用 exe_path 指定应用程序目录'.format(exe_path))
             subprocess.Popen(exe_path)
         # 检测登陆窗口
-        for _ in range(30):
+        for i in range(300):
             #print('_has_login_window1=',self._has_login_window())
             if self._has_login_window():
                 break
+            if i%30==0:
+                title_list = self.Title.split('.')
+                version = title_list[0]
+                subversion = '1'
+                if len(subversion)>=1 and len(title_list)>=2:
+                    #version = title_list[0]
+                    subversion = title_list[1]
+                    subversion = str(int(subversion)+1)
+                else:
+                    pass
+                self.Title = title_list[0] + '.' + subversion
+                print(self.Title)
             time.sleep(1)
         else:
             raise Exception('启动客户端失败，无法检测到登陆窗口')
