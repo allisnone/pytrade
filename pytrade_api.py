@@ -672,6 +672,23 @@ class OperationSZX(YHClientTrader):
         buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
         return
     
+    
+    def _handle_cancel_gonggao_dialog(self):
+        while self._main.wrapper_object() != self._app.top_window().wrapper_object():
+            title = self._get_pop_dialog_title()
+            if '营业部公告' in title:
+                self._app.top_window().type_keys('%Y')
+            elif '提示' in title:
+                data = self._app.top_window().Static.window_text()
+                self._app.top_window()['确定'].click()
+                return {'message': data}
+            else:
+                data = self._app.top_window().Static.window_text()
+                self._app.top_window().close()
+                return {'message': 'unkown message: {}'.find(data)}
+            self._wait(0.2)
+    
+    
     #@functools.lru_cache()
     def _get_left_menus_handle(self):
         while True:

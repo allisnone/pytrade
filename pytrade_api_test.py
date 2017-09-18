@@ -42,7 +42,7 @@ fund_list = user.balance
 print('acc_id=',user.acc_id)
 print('可用余额=',fund_list[0]['可用金额'])
 print('总市值=',fund_list[0]['总市值'])
-user.change_acc(acc_id='36005',exe_path=exe_path)
+user.change_acc(acc_id='',exe_path=exe_path)
 #fund_list = user.fund
 time.sleep(1)
 #user.auto_ipo()
