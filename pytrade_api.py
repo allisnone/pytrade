@@ -686,6 +686,14 @@ class OperationSZX(YHClientTrader):
             except:
                 pass
             
+    def _get_grid_data(self, control_id):
+        grid = self._app.top_window().window(
+            control_id=control_id,
+            class_name='CVirtualGridCtrl'
+        )
+        grid.type_keys('^A^C')
+        return self._get_clipboard_data()
+            
     def _get_clipboard_data(self):
         n=0
         while n<1000000:
