@@ -521,103 +521,154 @@ class OperationSZX(YHClientTrader):
             pos_dict[stock_code] = stock
         #my_pos[self.get_acc_id()] = pos_dict 
         return pos_dict
-        
-    def get_acc_combobox_id(self,position_dict={},acc_combobox_map = {'36005':0,'38736':1}):
-        """
-        双帐号切换: 获取当前账号的id，和combobox_id
-        """
-        acount_dict = {'0130010635':'36005','A732980330':'36005','A355519785':'38736','0148358729':'38736'}
-        acc_id = ''
-        combobox_id = 0
-        if not position_dict:
-            position_dict = self.get_position_dict()
-        else:
-            pass
-        if position_dict:
-            code_gudong = position_dict[list(position_dict.keys())[0]]['股东代码']
-            acc_id = acount_dict[code_gudong]
-            combobox_id = acc_combobox_map[acc_id]
-        else:
-            pass
-        return acc_id,combobox_id
     
-    def select_combobox(self,p_acc_hwnd ,acc_hwnd,index_id):
-        self.p_acc_hwnd ,self.acc_hwnd =0,0
+    def order_acc_stock(self,acc_id=LI[0],stock_code, price, amount,direct='S',
+                        is_absolute_order=False,limit_price=None,confirm=True):
+        """
+        For single account
+        
+        limit_price: list type,  跌停价卖，涨停价买,[涨停价,跌停价]
+        """
+        #if is_absolute_order and limit_price: #跌停价卖，涨停价买
+        #        price = limit_price
+                
+        if acc_id and acc_id==self.acc_id:
+            pass
+        else:
+            self.change_acc()
+            if acc_id and acc_id==self.acc_id:
+                pass
+            else:
+                print('无效acc id')
+                return {}
+        return self.order(code, direction, quantity,actual_price,limit_price=limit_price,post_confirm=confirm)
+    
+    def change_to_valid_acc(self,acc_id):
+        if self.is_right_acc(acc_id):
+            pass
+        else:
+            self.change_acc()
+            if self.is_right_acc(acc_id):
+                pass
+            else:
+                print('无效acc_id')
+                return False
+        return True
+    
+    def is_holding_stock(self,acc_id,stock):
+        #is_valid_acc = self.change_to_valid_acc(acc_id)
+        if not self.change_to_valid_acc(acc_id):
+            return False
+        this_acc_positon = self.position
+        print('this_acc_positon=',this_acc_positon)
+        for pos in this_acc_positon:
+            code = pos['证券代码']
+            symbol = int_code_to_stock_symbol(code)
+            if stock==symbol:
+                return True
+        return False
+    
+    def exchange_stocks(self,acc_id,position, replaced_stock,replaced_stock_price, target_stock,
+                         target_stock_price,sell_then_buy=True,exchange_rate=1.0,absolute_order=False):
+        
+        if self.is_holding_stock(acc_id, replaced_stock):
+            pass
+        else:
+            print('There is not stock %s in this account %s ' % (replaced_stock,acc_id))
+            return False
+        available_money = self.get_available_money()
+        sleep_seconds = 1
+        print(position[acc_id][replaced_stock]['可用余额'])
+        replaced_stock_amount = int((position[acc_id][replaced_stock]['可用余额'] * exchange_rate//100) * 100)
+        target_stock_amount = int((replaced_stock_amount*replaced_stock_price/target_stock_price//100)*100)
+        if sell_then_buy and replaced_stock_amount>100 and target_stock_amount>100:#先卖后买
+            print('Plan to sell %s %s, and then buy %s %s' % (replaced_stock_amount,replaced_stock,target_stock_amount,target_stock))
+            sell_replace_stock = self.order_acc_stock(replaced_stock, replaced_stock_price, 
+                    replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order, limit_price=None)
+            time.sleep(sleep_seconds)
+            if sell_replace_stock:
+                buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
+                    target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order, limit_price=None)
+                print('Completed exchange order: sell then buy')
+                return buy_target_stock
+            else:
+                return False
+        elif not sell_then_buy and replaced_stock_amount>100 and target_stock_amount>100: #先买后卖
+            print('Plan to buy %s %s, and then sell %s %s' % (target_stock_amount,target_stock,replaced_stock_amount,replaced_stock))
+            if available_money>target_stock_amount*target_stock_price:
+                buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
+                    target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order, limit_price=None)
+                time.sleep(sleep_seconds)
+                if buy_target_stock:
+                    sell_replace_stock = self.order_acc_stock(replaced_stock, replaced_stock_price, 
+                    replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order, limit_price=None)
+                    print('Completed exchange order: sell then buy')
+                    return replaced_stock
+            else:
+                return False
+        else:
+            print('Try to exchange stock, but failed ')
+            return False
+    
+    def get_stock_exit_datas(self,position):
         return
     
-    def change_account(self,current_acc_id,current_box_id,position_dict={}):
+    def get_stock_buy_datas(self,position,avaiable_money):
+        return
+    
+    def order_acc_stocks(self,stock_order_datas,direct='S'):
         """
-        双帐号切换: 默认先登录36005,再登录38736
-        :param code: 股票代码
-        :param current_acc_id: 当前账户id,int
-        :param current_box_id: 当前账户切换的下拉菜单id, int
-        :param position_dict: 持仓, dict
-        :return: 0-未成交， 正整数是买入的数量， 负整数是卖出的数量
+        For multi-account
+        
+        stock_order_datas = {'12345':[
+        [stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price],],
+        '12346':[[stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price],]}
         """
-        #index_map = {'36005':0,'38736':1}
-        exchange_id = -1
-        if self.p_acc_hwnd and self.acc_hwnd:
-            valid_combobox_id = get_valid_combobo_ids(self.p_acc_hwnd, self.acc_hwnd)
-            if self.debug: print('valid_combobox_id=',valid_combobox_id)
-            len_id = len(valid_combobox_id)
-            if len_id>2:
-                pass
-                if self.debug: print('超过三个账户切换，未实现')
-            elif len_id==2:
-                if current_box_id==0 and current_acc_id=='36005':
-                    exchange_id = self.select_combobox(self.p_acc_hwnd ,self.acc_hwnd,index_id=1)
-                    #target_acc_id,target_box_id = self.get_acc_combobox_id(position_dict)
-                    if self.debug: print('从%s账户切换成功到：%s ' % (current_acc_id,'38736'))
-                    time.sleep(1)
-                elif current_box_id==1 and current_acc_id=='38736':
-                    exchange_id = self.select_combobox(self.p_acc_hwnd ,self.acc_hwnd,index_id=0)
-                    #target_acc_id,target_box_id = self.get_acc_combobox_id(position_dict)
-                    if self.debug: print('从%s账户切换成功到：%s ' % (current_acc_id,'36005'))
-                    time.sleep(1)
-                else:
-                    if self.debug: print('账户切换异常，请检查')
-            elif len_id==1:
-                pass
-                if self.debug: print('仅有一个登录账户，无需切换')
+        def get_stock_order_price(stock):
+            #stock=[stock_code, price, amount,direction,is_absolute_order,topest_price,lowest_price]
+            direction =stock[3]
+            is_absolute_order = stock[4]
+            price = stock[1]
+            if is_absolute_order and direction=='B':
+                price = stock[5]
+            elif is_absolute_order and direction=='S':
+                price = stock[6]
             else:
                 pass
-                if self.debug: print('无任何登录账户，无需切换')
+            return price,direction
+        order_num = 0
+        if self.enable_trade:
+            pass
         else:
-            sm.send_mail(sub='无法获得通达信帐户切换下来菜单的窗口句柄',content='下来菜单的父窗口句柄 =%s，下来菜单的窗口句柄= %s.也许软件亿升级。' %(self.p_acc_hwnd,self.acc_hwnd))
-        return exchange_id
+            return order_num
+        acc_ids = list(stock_order_datas.keys())
+        valid_acc_ids = list(set(LI).intersection(set(acc_ids)))
+        if len(valid_acc_ids)==1:
+            if self.is_right_acc(valid_acc_ids[0]):
+                pass
+            else:
+                self.change_acc()
+            for stock in stock_order_datas[valid_acc_ids[0]]:
+                price,direct = get_stock_order_price(stock)
+                self._order_stock(stock[0], price, stock[2],direct)
+                order_num = order_num + 1
+        elif len(valid_acc_ids)==2:
+            this_acc_id = self.get_acc_id()
+            for stock in stock_order_datas[this_acc_id]:
+                price,direct = get_stock_order_price(stock)
+                self._order_stock(stock[0], price, stock[2],direct)
+                order_num = order_num + 1
+            valid_acc_ids.pop(valid_acc_ids.index(this_acc_id))
+            second_acc_id = valid_acc_ids[0]
+            self.change_acc()
+            for stock1 in stock_order_datas[second_acc_id]:
+                price,direct = get_stock_order_price(stock)
+                self._order_stock(stock1[0], price, stock1[2],direct)
+                order_num = order_num + 1
+        else:
+            order_num = -1
+        return order_num    
     
-    def get_all_position(self):
-        """
-        获取多账户的所有持仓
-        return：
-        position：dict, 所有持仓字典
-        avl_sell_datas: dict， 所有可卖出股票（>=100股），分账号
-        monitor_stocks： 所有持仓股票代码，实时监测用途
-        """
-        avl_sell_datas = {}
-        position = self.get_position_dict()
-        current_acc_id,current_box_id = self.get_acc_combobox_id(position_dict=position)
-        print('first_acc=%s' % current_acc_id)
-        current_avl_sell = []
-        for code in list(position.keys()):
-            #print(position[code].keys())
-            avl_to_sell = position[code]['可用余额 ']
-            if avl_to_sell>=100:
-                current_avl_sell.append(code)
-        avl_sell_datas[current_acc_id] = current_avl_sell
-        exchange_id = self.change_account(current_acc_id, current_box_id, position)
-        second_acc_position = self.get_position_dict()
-        second_acc_id,second_box_id = self.get_acc_combobox_id(position_dict=second_acc_position)
-        print('second_acc=%s' % second_acc_id)
-        second_avl_sell = []
-        for code in list(second_acc_position.keys()):
-            avl_to_sell = second_acc_position[code]['可用余额 ']
-            if avl_to_sell>=100:
-                second_avl_sell.append(code)
-        avl_sell_datas[second_acc_id] = second_avl_sell
-        monitor_stocks = list(set(second_avl_sell + current_avl_sell))
-        position.update(second_acc_position)
-        return position,avl_sell_datas,monitor_stocks
     
     
     def _to_sell(self,strategy_dict):
@@ -799,6 +850,8 @@ class OperationSZX(YHClientTrader):
             buy_5_v_total=a1_v+a2_v+a3_v+a4_v+a5_v
             
         return realtime_dict,position_dict
+    
+    
 
 def int_code_to_stock_symbol(code):
     """

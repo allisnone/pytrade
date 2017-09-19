@@ -56,6 +56,24 @@ print('总市值=',fund_list[0]['总市值'])
 #user._add_account(user='331600038736', password='821853')
 limit=[15.40,12.60]
 
+all_pos = user.get_all_position()
+print('all position:', all_pos)
+
+print('time1: ', datetime.datetime.now())
+#account_id=user.account_config['inputaccount']
+#print('account_id=',account_id)
+replaced_stock = '000560'
+replaced_stock_price = 9.80
+target_stock = '002346'
+target_stock_price = 27.45
+
+user.exchange_stocks('36005',all_pos, replaced_stock,replaced_stock_price, target_stock,
+                         target_stock_price,sell_then_buy=True,exchange_rate=0.5,absolute_order=False)
+print('time2: ', datetime.datetime.now())
+user.get_my_position()
+#print(user.balance)
+print('time3: ', datetime.datetime.now())
+
 #user.order(code='002197', direction='S', quantity=1000,actual_price=13.39,limit_price=None,post_confirm=True)
 #user.order(code='002197', direction='B', quantity=500,actual_price=13.01,limit_price=None,post_confirm=True)
 #user.auto_ipo()
