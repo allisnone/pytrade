@@ -446,6 +446,24 @@ class OperationSZX(YHClientTrader):
         this_acc_id,combobox_id = self.get_acc_combobox_id()
         self.acc_id = this_acc_id
         
+    def get_acc_combobox_id(self,position_dict={},acc_combobox_map = {'36005':0,'38736':1}):
+        """
+        双帐号切换: 获取当前账号的id，和combobox_id
+        """
+        acount_dict = {'0130010635':'36005','A732980330':'36005','A355519785':'38736','0148358729':'38736'}
+        acc_id = ''
+        combobox_id = 0
+        if not position_dict:
+            position_dict = self.get_position_dict()
+        else:
+            pass
+        if position_dict:
+            code_gudong = position_dict[list(position_dict.keys())[0]]['股东代码']
+            acc_id = acount_dict[code_gudong]
+            combobox_id = acc_combobox_map[acc_id]
+        else:
+            pass
+        return acc_id,combobox_id    
     
     def change_acc(self,acc_id='',exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
         #trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
@@ -522,7 +540,7 @@ class OperationSZX(YHClientTrader):
         #my_pos[self.get_acc_id()] = pos_dict 
         return pos_dict
     
-    def order_acc_stock(self,acc_id=LI[0],stock_code, price, amount,direct='S',
+    def order_acc_stock(self,acc_id,stock_code, price, amount,direct='S',
                         is_absolute_order=False,limit_price=None,confirm=True):
         """
         For single account
@@ -583,8 +601,8 @@ class OperationSZX(YHClientTrader):
         target_stock_amount = int((replaced_stock_amount*replaced_stock_price/target_stock_price//100)*100)
         if sell_then_buy and replaced_stock_amount>100 and target_stock_amount>100:#先卖后买
             print('Plan to sell %s %s, and then buy %s %s' % (replaced_stock_amount,replaced_stock,target_stock_amount,target_stock))
-            sell_replace_stock = self.order_acc_stock(replaced_stock, replaced_stock_price, 
-                    replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order, limit_price=None)
+            sell_replace_stock = self.order_acc_stock(acc_id,replaced_stock, replaced_stock_price, 
+                    replaced_stock_amount, direct='S', is_absolute_order=absolute_order, limit_price=None)
             time.sleep(sleep_seconds)
             if sell_replace_stock:
                 buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
