@@ -41,8 +41,8 @@ from .xqtrader import XueQiuTrader
 from .yhtrader import YHTrader
 from .xczqtrader import XCZQTrader
 """
-from easytrader.yh_clienttrader import YHClientTrader
-
+#from easytrader.yh_clienttrader import YHClientTrader
+from yh_clienttrader import YHClientTrader
 import win32gui,win32con,win32api,struct
 from winguiauto import (dumpWindow, dumpWindows,clickButton)
 from easytrader_config0 import (HD,VA,LI,LOGIN_WINDOW_LEN,TRADE_WINDOW_LEN,YH_TRADE_CLASS)
@@ -209,7 +209,7 @@ class myYHClientTrader(YHClientTrader):
         log.info('客户端登陆成功')
         
     @staticmethod
-    def _mouse_click1(x, y):
+    def _mouse_click(x, y):
         """
         nx = int(x*65536/win32api.GetSystemMetrics(0))
         ny = int(y*65536/win32api.GetSystemMetrics(1))

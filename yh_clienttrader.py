@@ -16,8 +16,8 @@ import win32com.client
 import win32con
 from PIL import ImageGrab
 
-from . import helpers
-from .log import log
+from easytrader import helpers
+from easytrader.log import log
 
 
 class YHClientTrader():
