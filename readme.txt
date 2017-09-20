@@ -11,3 +11,25 @@
 7 复盘指数分析数据
 8 复盘持仓股票分析数据
 9 复盘所有股票分析数据，精选各种策略股票
+
+
+http://notemi.cn/how-to-make-the-ui-automation-program-still-interactive-after-the-remote-desktop-is-turned-off.html
+cmd close remote desktop:
+query session
+
+C:\Users\Administrator\pytrade>query session
+ 会话名            用户名                   ID  状态    类型        设备
+ services                                    0  断开
+ console                                     1  已连接
+>rdp-tcp#0         Administrator             2  运行中  rdpwd
+ rdp-tcp                                 65536  侦听
+
+C:\Users\Administrator\pytrade>tscon rdp-tcp#0 /dest:console
+
+
+tscon rdp-tcp#0 /dest:console
+
+tscon console /dest:rdp-tcp#0
+
+recover:
+rundll32.exe user32.dll,LockWorkStation
