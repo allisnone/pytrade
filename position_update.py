@@ -44,6 +44,12 @@ def update_k_data(update_type='yh'):
     print(lanchou_df['code'].values.tolist())
     """
     #"""
+    last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
+    latest_date_str = pds.tt.get_latest_trade_date(date_format='%Y/%m/%d')
+    next_date_str = pds.tt.get_next_trade_date(date_format='%Y/%m/%d')
+    print('last_date = ',last_date_str)
+    print('latest_date_str=',latest_date_str)
+    print('next_date_str=',next_date_str)
     indexs,funds,b_stock,all_stocks = pds.get_different_symbols()
     if update_type == 'index':
         #从银河更新指数
@@ -77,8 +83,24 @@ def update_k_data(update_type='yh'):
         #all_codes = ['999999', '000016', '399007', '399008', '399006', '000300', '399005', '399001',
         #             '399004','399106','000009','000010','000903','000905']
         #all_codes=['300162']
+        all_count = len(all_codes)
+        latest_count = 0
+        count = 0
+        pc0=0
         for code in all_codes:
             pds.get_yh_raw_hist_df(code,latest_count=None)
+            count = count + 1
+            pc = round(round(count,2)/all_count,2)* 100
+            if pc>pc0:
+                print('count=',count)
+                print('完成数据更新百分之%s' % pc)
+                pc0 = pc
+            if len(df)>=1:
+                last_code_trade_date = df.tail(1).iloc[0].date
+                if last_code_trade_date==latest_date_str:
+                    latest_count = latest_count + 1
+        latest_update_rate =round(round(latest_count,2)/all_count,2)
+        print('latest_update_rate=',latest_update_rate)
             
     else:
         pass
