@@ -549,19 +549,28 @@ def get_exit_setting_rate(exit_setting_dict={}):
     """
     confirm_rate=0.0026
     tolerate_dropdown_rate = -0.05
+    delay_minutes = 60
     if exit_setting_dict:
-        if 'tolerate_loss' in list(exit_setting_dict.keys()):
-            tolerate_dropdown_rate = exit_setting_dict['tolerate_loss']
-        if 'exit_confirm_rate' in list(exit_setting_dict.keys()):
-            confirm_rate = exit_setting_dict['exit_confirm_rate']
-    return confirm_rate,tolerate_dropdown_rate
+        if 'valid' in list(exit_setting_dict.keys()):
+            if exit_setting_dict['valid']:
+                if 'tolerate_loss' in list(exit_setting_dict.keys()):
+                    tolerate_dropdown_rate = exit_setting_dict['tolerate_loss']
+                if 'exit_confirm_rate' in list(exit_setting_dict.keys()):
+                    confirm_rate = exit_setting_dict['exit_confirm_rate']
+                if 'delay_minutes' in list(exit_setting_dict.keys()):
+                    delay_minutes = exit_setting_dict['delay_minutes']
+            else:
+                return 0,0,0
+        else:
+            pass
+        return confirm_rate,tolerate_dropdown_rate,delay_minutes
 
 def get_stock_exit_price(hold_codes=['300162'],exit_setting_dict={},data_path='C:/中国银河证券海王星/T0002/export/'):#, has_update_history=False):
     """获取包括股票的止损数据"""
     """
     confirm_rate:超过止损价后再次下跌的幅度，以确认止损
     """
-    confirm_rate,tolerate_dropdown_rate = get_exit_setting_rate(exit_setting_dict)
+    confirm_rate,tolerate_dropdown_rate,delay_minutes = get_exit_setting_rate(exit_setting_dict)
     #exit_dict={'300162': {'exit_half':22.5, 'exit_all': 19.0},'002696': {'exit_half':17.10, 'exit_all': 15.60}}
     has_update_history = True
     """
@@ -622,8 +631,8 @@ def get_stock_exit_price(hold_codes=['300162'],exit_setting_dict={},data_path='C
             max_high = round(describe_df.loc['max'].high,2)#三日最高价的最大值
             if tolerate_dropdown_rate<0: #如果有给定容许回撤
                 min_low = max(min_low,round(last_close*(1.0+tolerate_dropdown_rate),2))
-        exit_half_price = min_close * (1.0 + confirm_rate)
-        exit_all_price = min_low * (1.0 + confirm_rate)
+        exit_half_price = min_close * (1.0 - confirm_rate)
+        exit_all_price = min_low * (1.0 - confirm_rate)
         
         """
         if min_low<=5:
@@ -707,7 +716,7 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                     stopped=[], operation_tdx=None,exit_setting_dict={}):
     """风险监测和emai告警"""
     #index_exit_data=get_exit_price(['sh','cyb']
-    confirm_rate,tolerate_dropdown_rate = get_exit_setting_rate(exit_setting_dict)
+    confirm_rate,tolerate_dropdown_rate,delay_minutes = get_exit_setting_rate(exit_setting_dict)
     exit_data = init_exit_data
     if not exit_data:
         exit_data = get_exit_price(symbols)
@@ -736,7 +745,7 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                 stopped.append(symbol)
             else:
                 pass
-        if symbol=='300431' and demon_sql: #for test
+        if symbol=='300431' and demon_sql and False: #for test
             symbol_now_p = demon_sql.get_demon_value()
         code = symbol
         if code in list(yh_index_symbol_maps.keys()):
