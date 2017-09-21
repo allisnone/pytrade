@@ -88,7 +88,7 @@ def update_k_data(update_type='yh'):
         count = 0
         pc0=0
         for code in all_codes:
-            pds.get_yh_raw_hist_df(code,latest_count=None)
+            df = pds.get_yh_raw_hist_df(code,latest_count=None)
             count = count + 1
             pc = round(round(count,2)/all_count,2)* 100
             if pc>pc0:
