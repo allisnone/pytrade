@@ -3,6 +3,7 @@
 from pytrade_tdx import OperationTdx
 
 if __name__ == '__main__':
+    #time.sleep(60)
     debug = True
     op_tdx = OperationTdx(debug)
     op_tdx.getMoney()
