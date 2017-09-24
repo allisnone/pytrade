@@ -109,6 +109,7 @@ class OperationSZX(YHClientTrader):
             self._app.top_window().Edit2.type_keys(password)
 
             while True:
+                print('self._handle_verify_code=',self._handle_verify_code())
                 self._app.top_window().Edit3.type_keys(self._handle_verify_code())
 
                 self._app.top_window()['登录'].click()
@@ -118,6 +119,7 @@ class OperationSZX(YHClientTrader):
                     self._app.top_window().wait_not('exists', 2)
                     break
                 except:
+                    print('Edit3 except')
                     pass
 
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=10)
