@@ -82,7 +82,7 @@ def close_yingyebu_gonggao():
             clickButton(confirm_hwnd)
             #click(sub_confgirm[0][0])
             time.sleep(0.5)
-            return confirm_hwndv
+            return confirm_hwnd
     return -1
     
 
