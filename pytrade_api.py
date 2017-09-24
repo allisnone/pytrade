@@ -91,7 +91,7 @@ class OperationSZX(YHClientTrader):
         :param comm_password: 通讯密码, 华泰需要，可不设
         :return:
         """
-        print('self._config=',self._config)
+        #print('self._config=',self._config)
         try:
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=1)
         except Exception:
@@ -109,7 +109,7 @@ class OperationSZX(YHClientTrader):
             self._app.top_window().Edit2.type_keys(password)
 
             while True:
-                print('self._handle_verify_code=',self._handle_verify_code())
+                #print('self._handle_verify_code=',self._handle_verify_code())
                 self._app.top_window().Edit3.type_keys(self._handle_verify_code())
 
                 self._app.top_window()['登录'].click()
@@ -117,6 +117,7 @@ class OperationSZX(YHClientTrader):
                 # detect login is success or not
                 try:
                     self._app.top_window().wait_not('exists', 2)
+                    print('wait_not exists')
                     break
                 except:
                     print('Edit3 except')
