@@ -104,7 +104,7 @@ class OperationSZX(YHClientTrader):
                     break
                 except RuntimeError:
                     pass
-
+            print('self._app.top_window()=',self._app.top_window(),type(self._app.top_window()))
             self._app.top_window().Edit1.type_keys(user)
             self._app.top_window().Edit2.type_keys(password)
 
@@ -113,7 +113,7 @@ class OperationSZX(YHClientTrader):
                 self._app.top_window().Edit3.type_keys(self._handle_verify_code())
 
                 self._app.top_window()['登录'].click()
-                self._wait(1)
+                #self._wait(1)
                 # detect login is success or not
                 try:
                     self._app.top_window().wait_not('exists', 2)
