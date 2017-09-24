@@ -113,7 +113,7 @@ class OperationSZX(YHClientTrader):
                 self._app.top_window().Edit3.type_keys(self._handle_verify_code())
 
                 self._app.top_window()['登录'].click()
-
+                self._wait(1)
                 # detect login is success or not
                 try:
                     self._app.top_window().wait_not('exists', 2)
