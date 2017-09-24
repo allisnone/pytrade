@@ -127,14 +127,22 @@ class OperationSZX(YHClientTrader):
         
         self._close_prompt_windows()
         self._main = self._app.top_window()
-        self.close_gonggao()
+        #self.close_gonggao()
     def _get_pop_dialog_title(self):
         print('self._app.top_window()=',self._app.top_window())
         return self._app.top_window().window(
             control_id=self._config.POP_DIALOD_TITLE_CONTROL_ID
         ).window_text()
     
-    
+    def _close_prompt_windows(self):
+        self._wait(1)
+        print('windows=',self._app.windows(class_name='#32770'))
+        for w in self._app.windows(class_name='#32770'):
+            if w.window_text() != self._config.TITLE:
+                print('window_text=',w.window_text())
+                w.close()
+        self._wait(1)
+        
     def close_gonggao(self):
         print("self._main.wrapper_object()=",self._main.wrapper_object())
         print('self._app.top_window().wrapper_object()=',self._app.top_window().wrapper_object())
