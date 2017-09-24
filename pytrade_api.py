@@ -78,10 +78,11 @@ def close_yingyebu_gonggao():
             sub_confgirm=dumpWindow(sub_win_hwnd, wantedText='确定')#, wantedClass='Button')
             #activeWindow(sub_win_hwnd)
             print('sub_confgirm=',sub_confgirm)
-            clickButton(sub_confgirm[0][0])
+            confirm_hwnd = sub_confgirm[0][0]
+            clickButton(confirm_hwnd)
             #click(sub_confgirm[0][0])
             time.sleep(0.5)
-            return sub_confgirm
+            return confirm_hwndv
     return -1
     
 
@@ -175,7 +176,7 @@ class OperationSZX(YHClientTrader):
                 except:
                     print('Edit3 except')
                     pass
-                self._wait(1)
+                self._wait(0.5)
             close_yingyebu_gonggao()
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=10)
         #self._wait(2)
