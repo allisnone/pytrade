@@ -42,8 +42,8 @@ fund_list = user.balance
 print('acc_id=',user.acc_id)
 print('可用余额=',fund_list[0]['可用金额'])
 print('总市值=',fund_list[0]['总市值'])
-user.order(code='002197', direction='S', quantity=1000,actual_price=13.39,limit_price=None,post_confirm=True)
-user.order(code='002197', direction='B', quantity=500,actual_price=13.01,limit_price=None,post_confirm=True)
+user.order(code='002197', direction='S', quantity=1000,actual_price=13.39,limit_price=None,post_confirm_interval=10,check_valid_time=False)
+user.order(code='002197', direction='B', quantity=500,actual_price=13.01,limit_price=None,post_confirm_interval=10,check_valid_time=False)
 
 user.change_acc(acc_id='',exe_path=exe_path)
 #fund_list = user.fund
@@ -55,8 +55,8 @@ fund_list = user.balance
 print('acc_id=',user.acc_id)
 print('可用余额=',fund_list[0]['可用金额'])
 print('总市值=',fund_list[0]['总市值'])
-user.order(code='002405', direction='S', quantity=1000,actual_price=27.09,limit_price=None,post_confirm=True)
-user.order(code='002405', direction='B', quantity=100,actual_price=24,limit_price=None,post_confirm=True)
+user.order(code='002405', direction='S', quantity=1000,actual_price=27.09,limit_price=None,post_confirm_interval=10,check_valid_time=False)
+user.order(code='002405', direction='B', quantity=100,actual_price=24,limit_price=None,post_confirm_interval=10,check_valid_time=False)
 #user._add_account(user='331600038736', password='821853')
 limit=[15.40,12.60]
 """

@@ -36,24 +36,25 @@ import pandas as pd
 from winguiauto import dumpWindow,clickButton#,click,activeWindow
 
 
-def close_yingyebu_gonggao(key_text='营业部公告',click_text='确定'):
+def close_yingyebu_gonggao(key_text='营业部公告',click_text='确定',interval=0.2):
     """
       关闭弹出的对话窗口
     :param key_text: 关键字句柄标题，字符串
     :param click_text: 同级句柄标题，需要点击的按钮确定或者取消按钮， 字符串
     """
     all_dialog_hwnd = dumpWindow(hwnd=0, wantedText=None, wantedClass='#32770')
-    #print('all_dialog_hwnd=',all_dialog_hwnd)
+    print('all_dialog_hwnd=',all_dialog_hwnd)
     for subwin in all_dialog_hwnd:
         sub_win_hwnd = subwin[0]
         sub_gonggao=dumpWindow(sub_win_hwnd, wantedText=key_text)#, wantedClass='Static')
         if sub_gonggao:
-            sub_confgirm=dumpWindow(sub_win_hwnd, wantedText=click_text)#, wantedClass='Button')
-            #print('sub_confgirm=',sub_confgirm)
+            sub_confgirm=dumpWindow(sub_win_hwnd, wantedText=click_text)#0038736, wantedClass='Button')
+            print('sub_confgirm=',sub_confgirm)
             confirm_hwnd = sub_confgirm[0][0]
+            print('confirm_hwnd=',confirm_hwnd)
             clickButton(confirm_hwnd)
             #click(sub_confgirm[0][0])
-            time.sleep(0.5)
+            time.sleep(interval)
             return confirm_hwnd
     return -1
     
@@ -224,7 +225,7 @@ class OperationSZX(YHClientTrader):
         #if highest:
         #    actual_price=highest
         final_quantity=self._get_valid_buy_quantity(available_fund, actual_price, quantity)
-        if self.debug: print('final_buy_quantity=',final_quantity)
+        #if self.debug: print('final_buy_quantity=',final_quantity)
         if final_quantity>=100:
             return self.__buy(code, quantity,actual_price,limit)
         else:
@@ -263,7 +264,7 @@ class OperationSZX(YHClientTrader):
             expect_quantity=int(expect_quantity)
             acceptable_quantity=int(expect_quantity//mini_quantity)*mini_quantity
         final_quantity=min(max_valid_quantity,acceptable_quantity)
-        if self.debug: print('final_sell_quantity=',final_quantity,type(final_quantity))
+        #if self.debug: print('final_sell_quantity=',final_quantity,type(final_quantity))
         return final_quantity
     
     def _sell(self, code, quantity,actual_price,limit=None):
@@ -279,7 +280,7 @@ class OperationSZX(YHClientTrader):
             if self.debug: print('不满100股%s，取消卖出下单'%code)
             return {}
 
-    def order(self, code, direction, quantity,actual_price,limit_price=None,post_confirm=True):
+    def order(self, code, direction, quantity,actual_price,limit_price=None,post_confirm_interval=0,check_valid_time=True):
         """
         下单函数
         :param code: 股票代码， 字符串
@@ -287,6 +288,8 @@ class OperationSZX(YHClientTrader):
         :param quantity: 数量， 字符串，数量为‘0’时，由交易软件指定数量
         :param actual_price: 数量， 字符串，数量为‘0’时，由交易软件指定数量
         :param limit_price: [涨停价,跌停价]
+        :param post_confirm_interval: 延时确认交易结果的时间，秒，int，0秒表示不确认交易结果
+        :param check_valid_time, 是否检查当前是有效的交易时间
         reurn: 如果成功下单，返回下单委托号字典，否认返回空字典
         """
         #highest=None
@@ -296,11 +299,11 @@ class OperationSZX(YHClientTrader):
         #    lowest=limit_price[1]
         # restoreFocusWindow(self.__top_hwnd)
         entrust_no_dict = {}  
-        if not is_trade_time_now():
+        if not is_trade_time_now() and check_valid_time:
             print('非交易时间，不允许下单')
             return entrust_no_dict
         pre_position = {}
-        if post_confirm:
+        if post_confirm_interval:
             pre_position = self.get_my_position()
         if quantity<=0:#invalid quantity
             if self.debug: print('Please input valid quantity!')
@@ -313,15 +316,16 @@ class OperationSZX(YHClientTrader):
             trade_num = -1*quantity
             entrust_no_dict =self._sell(code, quantity,actual_price,limit_price)
         #if self.debug: print('self.__top_hwnd=',self.__top_hwnd)
-        if post_confirm:
-            self.post_trade_confirm(code,plan_trade_num=trade_num,pre_position=pre_position,interval=60)
+        close_yingyebu_gonggao(key_text='提示',click_text='确定',interval=0.2)
+        if post_confirm_interval:
+            self.post_trade_confirm(code,plan_trade_num=trade_num,pre_position=pre_position,interval=post_confirm_interval)
         return entrust_no_dict
     
     def post_trade_confirm(self,code,plan_trade_num,pre_position,interval=60):
         time.sleep(interval)
         post_position = self.get_my_position()
         pos_chg = self.getPostionChange(pre_position,post_position)
-        if self.debug: print('pos_chg=',pos_chg)
+        #if self.debug: print('pos_chg=',pos_chg)
         self.trade_confirm(code, plan_trade_num, pos_chg)
 
     def maximizeFocusWindow(self):
@@ -432,16 +436,19 @@ class OperationSZX(YHClientTrader):
         #POSITION_COlS = 14 
         #position_dict = getDictViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
         position_dict = self.get_my_position()
-        print('position_dict=',position_dict)
+        #print('position_dict=',position_dict)
         hold_num = 0
         available_to_sell =0
         if not position_dict:
+            log.info('当前空仓或者提取仓位数据错误,请手动确认！！')
             return 0,0
         if code in list(position_dict.keys()):
             hold_num = position_dict[code]['当前持仓']
-            print('hold_num=',hold_num)
+            #print('hold_num=',hold_num)
             available_to_sell = position_dict[code]['可用余额']
-            print('available_to_sell=',available_to_sell)
+            #print('available_to_sell=',available_to_sell)
+        else:
+            log.info('当前账号无股票%s的持仓'%code)
         return hold_num,available_to_sell
     
     def getPostionChange(self,pre_position,post_position):
@@ -465,7 +472,7 @@ class OperationSZX(YHClientTrader):
             else:
                 chg_num = post_position[code]['当前持仓'] - pre_position[code]['当前持仓']
                 pos_chg.update({code: chg_num})
-        if self.debug: print('pos_chg= ', pos_chg)
+        #if self.debug: print('pos_chg= ', pos_chg)
         return pos_chg
     
     def trade_confirm(self,code, trade_num, pos_chg={}):
@@ -478,7 +485,7 @@ class OperationSZX(YHClientTrader):
         if trade_num==0:# no trade
             return
         if not pos_chg or code not in list(pos_chg.keys()):
-            if self.debug: print('请手动确认股票  %s交易是否成功 !', code)
+            if self.debug: print('请手动确认股票  %s交易是否成功 !'% code)
             pass
         else:
             actual_trade_num = pos_chg[code]
