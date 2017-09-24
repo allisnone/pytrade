@@ -35,49 +35,21 @@ import pandas as pd
 
 from winguiauto import dumpWindow,clickButton#,click,activeWindow
 
-def get_exist_hwnd(hwnd,wantedText='',wantedClass='',exact_text=True):
-    windows = dumpWindows(hwnd)
-    #print('exist_windows=',windows)
-    wanted_hwnd = -1
-    for window in windows:
-        child_hwnd, window_text, window_class = window
-        cond = True
-        if wantedText:
-            cond = window_text==wantedText
-            if not exact_text:#包含即可
-                cond = wantedText in window_text
-            if wantedClass:
-                cond = cond and (window_class==wantedClass)
-            else:
-                pass
-        else:
-            if wantedClass:
-                cond = window_class==wantedClass
-            else:
-                pass
-        if not exact_text and wantedText:#包含即可
-            cond = wantedText in window_text
-        
-        if cond:
-            wanted_hwnd = child_hwnd
-            break
-        else:
-            pass
-    return wanted_hwnd
 
-def close_yingyebu_gonggao():
+def close_yingyebu_gonggao(key_text='营业部公告',click_text='确定'):
+    """
+      关闭弹出的对话窗口
+    :param key_text: 关键字句柄标题，字符串
+    :param click_text: 同级句柄标题，需要点击的按钮确定或者取消按钮， 字符串
+    """
     all_dialog_hwnd = dumpWindow(hwnd=0, wantedText=None, wantedClass='#32770')
-    print('all_dialog_hwnd=',all_dialog_hwnd)
-    #findTopWindow(wantedText=None, wantedClass=None)
+    #print('all_dialog_hwnd=',all_dialog_hwnd)
     for subwin in all_dialog_hwnd:
-        print(subwin)
         sub_win_hwnd = subwin[0]
-        sub_gonggao=dumpWindow(sub_win_hwnd, wantedText='营业部公告')#, wantedClass='Static')
-        print('sub_gonggao=',sub_gonggao)
+        sub_gonggao=dumpWindow(sub_win_hwnd, wantedText=key_text)#, wantedClass='Static')
         if sub_gonggao:
-            sub_confgirm=dumpWindow(sub_win_hwnd, wantedText='确定')#, wantedClass='Button')
-            #activeWindow(sub_win_hwnd)
-            print('sub_confgirm=',sub_confgirm)
+            sub_confgirm=dumpWindow(sub_win_hwnd, wantedText=click_text)#, wantedClass='Button')
+            #print('sub_confgirm=',sub_confgirm)
             confirm_hwnd = sub_confgirm[0][0]
             clickButton(confirm_hwnd)
             #click(sub_confgirm[0][0])
@@ -152,7 +124,7 @@ class OperationSZX(YHClientTrader):
             password = account['password']
         try:
             self.login(user, password, exe_path or self._config.DEFAULT_EXE_PATH, comm_password, **kwargs)
-        except:
+        except:#尝试两次login
             self.login(user, password, exe_path or self._config.DEFAULT_EXE_PATH, comm_password, **kwargs)
             
     def login(self, user, password, exe_path, comm_password=None, **kwargs):
@@ -177,7 +149,7 @@ class OperationSZX(YHClientTrader):
                     break
                 except RuntimeError:
                     pass
-            print('self._app.top_window()=',self._app.top_window(),type(self._app.top_window()))
+            #print('self._app.top_window()=',self._app.top_window(),type(self._app.top_window()))
             self._app.top_window().Edit1.type_keys(user)
             self._app.top_window().Edit2.type_keys(password)
 
@@ -190,77 +162,23 @@ class OperationSZX(YHClientTrader):
                 # detect login is success or not
                 try:
                     self._app.top_window().wait_not('exists', 2)
-                    print('wait_not exists')
+                    log.info('登录成功')
                     self._wait(0.2)
                     break
                 except:
-                    print('Edit3 except')
+                    log.info('重新输入验证码，登录中...')
                     pass
                 self._wait(0.5)
-            close_yingyebu_gonggao()
+            close_yingyebu_gonggao(key_text='营业部公告',click_text='确定')#关闭营业部公告弹出窗口，如果有
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=10)
         #self._wait(2)
         
         self._close_prompt_windows()
         self._main = self._app.top_window()
-        #self.close_gonggao()
-    def _get_pop_dialog_title(self):
-        print('self._app.top_window()=',self._app.top_window())
-        return self._app.top_window().window(
-            control_id=self._config.POP_DIALOD_TITLE_CONTROL_ID
-        ).window_text()
     
-    def _close_prompt_windows(self):
-        self._wait(1)
-        print('windows=',self._app.windows(class_name='#32770'))
-        for w in self._app.windows(class_name='#32770'):
-            if w.window_text() != self._config.TITLE:
-                print('window_text=',w.window_text())
-                w.close()
-        self._wait(1)
+    
+
         
-    def close_gonggao(self):
-        print("self._main.wrapper_object()=",self._main.wrapper_object())
-        print('self._app.top_window().wrapper_object()=',self._app.top_window().wrapper_object())
-        count = 0
-        while count<3:#self._main.wrapper_object() != self._app.top_window().wrapper_object():
-            pop_title = ''
-            try:
-                pop_title = self._get_pop_dialog_title()
-                print('pop_title=',pop_title)
-            except:
-                pass
-            """
-            if pop_title == '委托确认':
-                self._app.top_window().type_keys('%Y')
-            elif pop_title == '提示信息':
-                if '超出涨跌停' in self._app.top_window().Static.window_text():
-                    self._app.top_window().type_keys('%Y')
-            """
-            if pop_title == '营业部公告':
-                content = self._app.top_window().Static.window_text()
-                print('content=',content)
-                """
-                if 't' in content:
-                    entrust_no = self._extract_entrust_id(content)
-                    self._app.top_window()['确定'].click()
-                    return {'entrust_no': entrust_no}
-                else:
-                    self._app.top_window()['确定'].click()
-                    self._wait(0.05)
-                    raise exceptions.TradeError(content)
-                """
-                try:
-                    self._app.top_window()['确定'].click()
-                    break
-                except:
-                    self._wait(0.5)
-            else:
-                #self._app.top_window().close()
-                print('没有营业部共公告')
-                
-            count = count +1 
-            self._wait(2)  # wait next dialog displayv
                         
     def __buy(self, code, quantity,actual_price,limit=None):
         """
@@ -383,7 +301,7 @@ class OperationSZX(YHClientTrader):
             return entrust_no_dict
         pre_position = {}
         if post_confirm:
-            pre_position = self.get_position_dict()
+            pre_position = self.get_my_position()
         if quantity<=0:#invalid quantity
             if self.debug: print('Please input valid quantity!')
             return
@@ -401,7 +319,7 @@ class OperationSZX(YHClientTrader):
     
     def post_trade_confirm(self,code,plan_trade_num,pre_position,interval=60):
         time.sleep(interval)
-        post_position = self.get_position_dict()
+        post_position = self.get_my_position()
         pos_chg = self.getPostionChange(pre_position,post_position)
         if self.debug: print('pos_chg=',pos_chg)
         self.trade_confirm(code, plan_trade_num, pos_chg)
@@ -477,7 +395,7 @@ class OperationSZX(YHClientTrader):
             available_money = self.getAvailableFund()
         else:
             current_acc_id,current_box_id = self.get_acc_combobox_id()
-            position_dict = self.get_position_dict() 
+            position_dict = self.get_my_position() 
             exchange_id = self.change_account(current_acc_id, current_box_id, position_dict)
             pos_list = self.getPosition()
             if self.isRightAcc(acc, pos_list):
@@ -490,17 +408,22 @@ class OperationSZX(YHClientTrader):
         return market_value,available_money
     
     
+    """
     def get_position_dict(self):
         #单账户
         #print('111')
         pos_dict = {}
         my_pos = {}
-        for stock in self.position:
+        pos = self.position
+        if not pos:
+            return {}
+        for stock in pos:
             stock_code = int_code_to_stock_symbol(stock['证券代码'])
             stock['证券代码'] = stock_code
             pos_dict[stock_code] = stock
         #my_pos[self.get_acc_id()] = pos_dict 
         return pos_dict
+    """
     
     def getCodePosition(self,code):
         """获取持仓股票信息
@@ -508,10 +431,12 @@ class OperationSZX(YHClientTrader):
         """
         #POSITION_COlS = 14 
         #position_dict = getDictViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
-        position_dict = self.get_position_dict()
+        position_dict = self.get_my_position()
         print('position_dict=',position_dict)
         hold_num = 0
         available_to_sell =0
+        if not position_dict:
+            return 0,0
         if code in list(position_dict.keys()):
             hold_num = position_dict[code]['当前持仓']
             print('hold_num=',hold_num)
@@ -633,7 +558,7 @@ class OperationSZX(YHClientTrader):
         acc_id = ''
         combobox_id = 0
         if not position_dict:
-            position_dict = self.get_position_dict()
+            position_dict = self.get_my_position()
         else:
             pass
         if position_dict:
@@ -661,7 +586,7 @@ class OperationSZX(YHClientTrader):
                 if acc_id==LI[0]:
                     #changed = True
                     self.exit()
-                    print('Will change to ACC: ',acc_id)
+                    log.info('切换到 ACC=: %s' % acc_id)
                     #self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'],exe_path=exe_path)  
                     self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'], exe_path=exe_path)
                     #self.acc_id = LI[1]
@@ -669,18 +594,19 @@ class OperationSZX(YHClientTrader):
                 elif acc_id==LI[1]:
                     #changed = True
                     self.exit()
-                    print('Will change to ACC: ',acc_id)
+                    log.info('切换到 ACC=: %s' % acc_id)
                     #self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'],exe_path=exe_path)
                     self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'], exe_path=exe_path)
                     #self.acc_id = LI[0]  
                     changed_acc = True
                 else:
-                    print('给定无效acc_id')
+                    log.warning('给定无效acc_id=%s' % acc_id)
         else:
             if pre_acc_id==LI[0]:
                 #changed = True
                 self.exit()
-                print('Will change to ACC: ',LI[1])
+                log.info('切换到 ACC=: %s' % LI[1])
+                #print('Will change to ACC: ',LI[1])
                 #self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'],exe_path=exe_path)  
                 self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'], exe_path=exe_path)
                 #self.acc_id = LI[1]
@@ -688,13 +614,14 @@ class OperationSZX(YHClientTrader):
             elif pre_acc_id==LI[1]:
                 #changed = True
                 self.exit()
-                print('Will change to ACC: ',LI[0])
+                log.info('切换到 ACC=: %s' % LI[0])
+                #print('Will change to ACC: ',LI[0])
                 #self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'],exe_path=exe_path)
                 self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'], exe_path=exe_path)
                 #self.acc_id = LI[0]  
                 changed_acc = True
             else:
-                print('未预定acc_id')  
+                log.warning('未在配置文件预定acc_id')  
         if changed_acc:
             self.update_acc_id()
         return changed_acc
@@ -711,12 +638,13 @@ class OperationSZX(YHClientTrader):
         #单账户
         #print('111')
         pos_dict = {}
-        my_pos = {}
-        for stock in self.position:
+        pos = self.position
+        if not pos:
+            return {}
+        for stock in pos:
             stock_code = int_code_to_stock_symbol(stock['证券代码'])
             stock['证券代码'] = stock_code
             pos_dict[stock_code] = stock
-        #my_pos[self.get_acc_id()] = pos_dict 
         return pos_dict
     
     def order_acc_stock(self,acc_id,stock_code, price, amount,direct='S',
@@ -771,9 +699,9 @@ class OperationSZX(YHClientTrader):
         if self.is_holding_stock(acc_id, replaced_stock):
             pass
         else:
-            print('There is not stock %s in this account %s ' % (replaced_stock,acc_id))
+            log.warning('There is not stock %s in this account %s ' % (replaced_stock,acc_id))
             return False
-        available_money = self.get_available_money()
+        available_money = self.getAvailableFund()
         sleep_seconds = 1
         print(position[acc_id][replaced_stock]['可用余额'])
         replaced_stock_amount = int((position[acc_id][replaced_stock]['可用余额'] * exchange_rate//100) * 100)
@@ -804,7 +732,7 @@ class OperationSZX(YHClientTrader):
             else:
                 return False
         else:
-            print('Try to exchange stock, but failed ')
+            log.warning('试图调股换仓, 但是失败！！ ')
             return False
     
     def get_stock_exit_datas(self,position):
@@ -979,8 +907,12 @@ class OperationSZX(YHClientTrader):
                 #return pywinauto.clipboard.GetData()[:-30]
             
             except Exception as e:
-                log.warning('{}, retry ......'.format(e))
+                if n<100:
+                    log.warning('{}, retry ......'.format(e))
+                else:
+                    pass
                 n=n+10
+        return {}
                 
     def _format_grid_data(self, data):
         print(io.StringIO(data))

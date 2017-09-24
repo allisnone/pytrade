@@ -63,7 +63,7 @@ print('all position:', all_pos)
 print('time1: ', datetime.datetime.now())
 #account_id=user.account_config['inputaccount']
 #print('account_id=',account_id)
-replaced_stock = '000560'
+replaced_stock = '002560'
 replaced_stock_price = 9.80
 target_stock = '002346'
 target_stock_price = 27.45
