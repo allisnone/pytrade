@@ -7,7 +7,7 @@ import datetime,time
 
 from pytrade_api import *
 
-time.sleep(20)
+time.sleep(1)
 print('start: ', datetime.datetime.now())
 #user = easytrader.use('yh')
 #user = use('yh_client')
