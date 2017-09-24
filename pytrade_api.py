@@ -109,9 +109,7 @@ class OperationSZX(YHClientTrader):
             self._app.top_window().Edit2.type_keys(password)
 
             while True:
-                self._app.top_window().Edit3.type_keys(
-                    self._handle_verify_code()
-                )
+                self._app.top_window().Edit3.type_keys(self._handle_verify_code())
 
                 self._app.top_window()['登录'].click()
 
@@ -124,9 +122,60 @@ class OperationSZX(YHClientTrader):
 
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=10)
         self._wait(2)
+        
         self._close_prompt_windows()
         self._main = self._app.top_window()
+        self.close_gonggao()
+    def _get_pop_dialog_title(self):
+        print('self._app.top_window()=',self._app.top_window())
+        return self._app.top_window().window(
+            control_id=self._config.POP_DIALOD_TITLE_CONTROL_ID
+        ).window_text()
+    
+    
+    def close_gonggao(self):
+        print("self._main.wrapper_object()=",self._main.wrapper_object())
+        print('self._app.top_window().wrapper_object()=',self._app.top_window().wrapper_object())
+        count = 0
+        while count<3:#self._main.wrapper_object() != self._app.top_window().wrapper_object():
+            pop_title = ''
+            try:
+                pop_title = self._get_pop_dialog_title()
+                print('pop_title=',pop_title)
+            except:
+                pass
+            """
+            if pop_title == '委托确认':
+                self._app.top_window().type_keys('%Y')
+            elif pop_title == '提示信息':
+                if '超出涨跌停' in self._app.top_window().Static.window_text():
+                    self._app.top_window().type_keys('%Y')
+            """
+            if pop_title == '营业部公告':
+                content = self._app.top_window().Static.window_text()
+                print('content=',content)
+                """
+                if 't' in content:
+                    entrust_no = self._extract_entrust_id(content)
+                    self._app.top_window()['确定'].click()
+                    return {'entrust_no': entrust_no}
+                else:
+                    self._app.top_window()['确定'].click()
+                    self._wait(0.05)
+                    raise exceptions.TradeError(content)
+                """
+                try:
+                    self._app.top_window()['确定'].click()
+                    break
+                except:
+                    self._wait(0.5)
+            else:
+                #self._app.top_window().close()
+                print('没有营业部共公告')
                 
+            count = count +1 
+            self._wait(2)  # wait next dialog displayv
+                        
     def __buy(self, code, quantity,actual_price,limit=None):
         """
         直接买入函数
