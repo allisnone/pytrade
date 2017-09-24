@@ -33,6 +33,58 @@ from easytrader import exceptions
 from easytrader.log import log
 import pandas as pd
 
+from winguiauto import dumpWindow,clickButton#,click,activeWindow
+
+def get_exist_hwnd(hwnd,wantedText='',wantedClass='',exact_text=True):
+    windows = dumpWindows(hwnd)
+    #print('exist_windows=',windows)
+    wanted_hwnd = -1
+    for window in windows:
+        child_hwnd, window_text, window_class = window
+        cond = True
+        if wantedText:
+            cond = window_text==wantedText
+            if not exact_text:#包含即可
+                cond = wantedText in window_text
+            if wantedClass:
+                cond = cond and (window_class==wantedClass)
+            else:
+                pass
+        else:
+            if wantedClass:
+                cond = window_class==wantedClass
+            else:
+                pass
+        if not exact_text and wantedText:#包含即可
+            cond = wantedText in window_text
+        
+        if cond:
+            wanted_hwnd = child_hwnd
+            break
+        else:
+            pass
+    return wanted_hwnd
+
+def close_yingyebu_gonggao():
+    all_dialog_hwnd = dumpWindow(hwnd=0, wantedText=None, wantedClass='#32770')
+    print('all_dialog_hwnd=',all_dialog_hwnd)
+    #findTopWindow(wantedText=None, wantedClass=None)
+    for subwin in all_dialog_hwnd:
+        print(subwin)
+        sub_win_hwnd = subwin[0]
+        sub_gonggao=dumpWindow(sub_win_hwnd, wantedText='营业部公告')#, wantedClass='Static')
+        print('sub_gonggao=',sub_gonggao)
+        if sub_gonggao:
+            sub_confgirm=dumpWindow(sub_win_hwnd, wantedText='确定')#, wantedClass='Button')
+            #activeWindow(sub_win_hwnd)
+            print('sub_confgirm=',sub_confgirm)
+            clickButton(sub_confgirm[0][0])
+            #click(sub_confgirm[0][0])
+            time.sleep(0.5)
+            return sub_confgirm
+    return -1
+    
+
 def trader(trade_api='shuangzixing',bebug=True):
     if trade_api=='haiwangxing':
         return  OperationTdx()
@@ -113,18 +165,20 @@ class OperationSZX(YHClientTrader):
                 self._app.top_window().Edit3.type_keys(self._handle_verify_code())
 
                 self._app.top_window()['登录'].click()
-                #self._wait(1)
+                
                 # detect login is success or not
                 try:
                     self._app.top_window().wait_not('exists', 2)
                     print('wait_not exists')
+                    self._wait(0.2)
                     break
                 except:
                     print('Edit3 except')
                     pass
-
+                self._wait(1)
+            close_yingyebu_gonggao()
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=10)
-        self._wait(2)
+        #self._wait(2)
         
         self._close_prompt_windows()
         self._main = self._app.top_window()
