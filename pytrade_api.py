@@ -93,6 +93,61 @@ class OperationSZX(YHClientTrader):
         退出交易api
     """
         #return
+    def auto_ipo(self):
+        #self._switch_left_menus(['新股申购', '一键打新'])
+        self._switch_left_menus(['新股申购', '批量新股申购'])
+        #self._click(self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID)
+        self._click(1007)#点击重填
+        #self._click(1098)#点击全部选中
+        time.sleep(0.5)
+        self._click(self._config.AUTO_IPO_BUTTON_CONTROL_ID)#点击全一键打新
+        time.sleep(0.5)
+
+        return self._handle_auto_ipo_pop_dialog()
+    
+    def _handle_auto_ipo_pop_dialog(self):
+        while self._main.wrapper_object() != self._app.top_window().wrapper_object():
+            try:
+                title = self._get_pop_dialog_title()
+            except:
+                log.warning('今日可能没有新股申购,请复核')
+                return {'message': 'unkown message: {}'}
+            print('title=',title)
+            if '提示信息' in title:
+                self._app.top_window().type_keys('%Y')
+            elif '提示' in title:
+                data = self._app.top_window().Static.window_text()
+                self._app.top_window()['确定'].click()
+                print('data',data)
+                if self._main.wrapper_object() != self._app.top_window().wrapper_object():
+                    continue
+                return {'message': data}
+            elif '委托确认' in title:
+                data = self._app.top_window().Static.window_text()
+                self._app.top_window()['是(&Y)'].click()
+                print('data2',data)
+                print(self._main.wrapper_object())
+                print(self._app.top_window().wrapper_object())
+                """
+                title = self._get_pop_dialog_title()
+                print('title1=',title)
+                if '提示' in title:
+                    data = self._app.top_window().Static.window_text()
+                    self._app.top_window()['确定'].click()
+                    print('data',data)
+                if self._main.wrapper_object() != self._app.top_window().wrapper_object():
+                    continue
+                print('data21',data)
+                """
+                log.warning('完成今日新股申购,请复核')
+                return {'message': data}
+            
+            else:
+                data = self._app.top_window().Static.window_text()
+                self._app.top_window().close()
+                print('data1',data)
+                return {'message': 'unkown message: {}'.find(data)}
+            self._wait(0.1)
     
     def _new_stock_order(self):
         """
@@ -221,7 +276,7 @@ class OperationSZX(YHClientTrader):
         :param quantity: 数量， 字符串
         """
         
-        available_fund=self.getAvailableFund()
+        available_fund=self.get_available_money()
         #if highest:
         #    actual_price=highest
         final_quantity=self._get_valid_buy_quantity(available_fund, actual_price, quantity)
@@ -254,7 +309,7 @@ class OperationSZX(YHClientTrader):
         :param expect_quantity: 期望卖出数量
         :param patial: 使用资金比例，如0.75,，0.5,0.33，0.25,0.10
         """
-        all_holding,available_position=self.getCodePosition(code)
+        all_holding,available_position=self.get_stock_position(code)
         if patial!=None and patial>0 and patial<=1.0:
             available_position=available_position*patial
         mini_quantity=100
@@ -324,7 +379,7 @@ class OperationSZX(YHClientTrader):
     def post_trade_confirm(self,code,plan_trade_num,pre_position,interval=60):
         time.sleep(interval)
         post_position = self.get_my_position()
-        pos_chg = self.getPostionChange(pre_position,post_position)
+        pos_chg = self.get_postion_change(pre_position,post_position)
         #if self.debug: print('pos_chg=',pos_chg)
         self.trade_confirm(code, plan_trade_num, pos_chg)
 
@@ -343,7 +398,7 @@ class OperationSZX(YHClientTrader):
         """点击刷新按钮
         """
         #clickWindow(self.__menu_hwnds[0][0], self.__button['refresh'])
-        #self.getAvailableFund()
+        #self.get_available_money()
         """点击'关联同一只股票'按钮
         """
         #click(self.__buy_sell_hwnds[49][0])
@@ -353,7 +408,7 @@ class OperationSZX(YHClientTrader):
         #print('refresh_hwnd=',self.__buy_sell_hwnds[49][0])
         #print(datetime.datetime.now())
 
-    def getAvailableFund(self):
+    def get_available_money(self):
         """获取可用资金
         """
         money=0.0
@@ -366,44 +421,47 @@ class OperationSZX(YHClientTrader):
         if self.debug: print('可用资金=',money)
         return money
     
-
+    """
     def getPosition(self):
-        """获取持仓股票信息
-        return list
-        """
+        
         return self.position
+    """
     
         
-    def isRightAcc(self,acc='36005',pos_list=list()):
+    def is_right_acc(self,acc='36005',position=list()):
         """确认是否正确账号
         return bool
         """
         acount_dict = {'0130010635':'36005','A732980330':'36005','A355519785':'38736','0148358729':'38736'}
-        pos_list = self.getPosition()
-        print('pos_list=',pos_list)
-        is_right_acc = False
+        pos_list =[]
+        if position:
+            pos_list =position
+        else:
+            pos_list = self.position
+        #print('pos_list=',pos_list)
+        right_acc = False
         if pos_list:
             stock_owner = pos_list[0][12]
             if stock_owner in list(acount_dict.keys()):
-                is_right_acc = acc==acount_dict[stock_owner]
-        return is_right_acc
+                right_acc = acc==acount_dict[stock_owner]
+        return right_acc
     
-    def getAccountMoney(self,acc='36005'):
+    def get_account_money(self,acc='36005'):
         """获取账户持仓
         return 市值，可用资金
         """
-        pos_list = self.getPosition()
+        pos_list = self.position
         market_value = 0.0
         available_money = 0.0
-        if self.isRightAcc(acc, pos_list):
-            available_money = self.getAvailableFund()
+        if self.is_right_acc(acc, pos_list):
+            available_money = self.get_available_money()
         else:
             current_acc_id,current_box_id = self.get_acc_combobox_id()
             position_dict = self.get_my_position() 
             exchange_id = self.change_account(current_acc_id, current_box_id, position_dict)
-            pos_list = self.getPosition()
-            if self.isRightAcc(acc, pos_list):
-                available_money = self.getAvailableFund()
+            pos_list = self.position
+            if self.is_right_acc(acc, pos_list):
+                available_money = self.get_available_money()
             else:
                 return market_value,available_money
         if pos_list:
@@ -429,7 +487,7 @@ class OperationSZX(YHClientTrader):
         return pos_dict
     """
     
-    def getCodePosition(self,code):
+    def get_stock_position(self,code):
         """获取持仓股票信息
         return 持仓数量，可卖数量
         """
@@ -451,7 +509,7 @@ class OperationSZX(YHClientTrader):
             log.info('当前账号无股票%s的持仓'%code)
         return hold_num,available_to_sell
     
-    def getPostionChange(self,pre_position,post_position):
+    def get_postion_change(self,pre_position,post_position):
         """
         获取成交数量
         :param pre_position: 下单前的持仓, dict type  (getPosition)
@@ -708,7 +766,7 @@ class OperationSZX(YHClientTrader):
         else:
             log.warning('There is not stock %s in this account %s ' % (replaced_stock,acc_id))
             return False
-        available_money = self.getAvailableFund()
+        available_money = self.get_available_money()
         sleep_seconds = 1
         print(position[acc_id][replaced_stock]['可用余额'])
         replaced_stock_amount = int((position[acc_id][replaced_stock]['可用余额'] * exchange_rate//100) * 100)
@@ -929,8 +987,8 @@ class OperationSZX(YHClientTrader):
         return df.to_dict('records')
                 
     def get_realtime_holding(self):
-        total_money=self.getAvailableFund()
-        position_dict=self.getPosition()
+        total_money=self.get_available_money()
+        position_dict=self.position  #may error
         realtime_dict={}
         holding_codes=list(position_dict.keys())
         if not position_dict or (code_str not in list(position_dict.keys()) and position_dict):

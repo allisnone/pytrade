@@ -46,7 +46,8 @@ print('总市值=',fund_list[0]['总市值'])
 user.change_acc(acc_id='',exe_path=exe_path)
 #fund_list = user.fund
 time.sleep(1)
-#user.auto_ipo()
+user.auto_ipo()
+print("auto_ipo")
 fund_list = user.balance
 #print('fund=',fund_list,len(fund_list)==1)
 #fund= [{'总市值': 165955.81, '可用金额': 902.38, '货币单位': '人民币', '资金帐户': 331600036005, '总资产': 166858.18, '资金余额': 902.37}]
