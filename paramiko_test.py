@@ -7,15 +7,15 @@ import paramiko
 
 
 class Myssh(object):
-    def __init__(self):
-        self.cmds = []
-        self.servers = {}
+    def __init__(self,cmds = ['uptime', 'ifconfig'],servers={'192.168.1.1':{'username':'root','password':'rootroot'}}):
+        self.cmds = cmds
+        self.servers = servers
         pass
     
     def set_cmds(self,cmds):
         self.cmds = cmds
         
-    def add_server(self,server_ip,username,password):
+    def add_server(self,server_ip,username='root',password='rootroot'):
         #server = {'ip':'192.168.1.1','username':'root','password':'root'}
         server_info = {'username':username,'password':password}
         self.servers.update({'server_ip':server_info})
@@ -24,9 +24,18 @@ class Myssh(object):
         self.servers.pop(server_ip)
         
     def add_servers(self,server_list=[]):
+        if not server_list:
+            return
         for serv in server_list:
             if len(serv)>=3:
                 server_ip,username,password=serv[0],serv[1],serv[2]
+                if server_ip:
+                    if not username:
+                        username='root'
+                    if not password:
+                        password='rootroot'
+                else:
+                    continue
                 self.add_server(server_ip, username, password)
             else:
                 pass
@@ -47,7 +56,7 @@ class Myssh(object):
                 lines = stdout.readlines()
                 # print out
                 for line in lines:
-                    print line,
+                    print line
             print '%s\t 运行完毕\r\n' % (ip)
         except Exception, e:
             print '%s\t 运行失败,失败原因\r\n%s' % (ip, e)
@@ -84,14 +93,16 @@ class Myssh(object):
         finally:
             t.close()  
             
-    def server_processing(self):
+    def server_processing(self,server_list=[]):
+        """Run set_cmds and add_servers before call this function"""
         # 需要执行的命令列表
-        cmds = ['uptime', 'ifconfig']
+        #cmds = ['uptime', 'ifconfig']
         # 需要进行远程监控的服务器列表
-        server_list = ['xxx.xxx.xxx.xxx']
-        self.add_servers(server_list)
-        username = "root"
-        passwd = "xxxxxx"
+        #server_list = ['xxx.xxx.xxx.xxx']
+        if server_list:
+            self.add_servers(server_list)
+        #username = "root"
+        #passwd = "xxxxxx"
         threads = []
         print "程序开始运行%s" % datetime.datetime.now()
         # 每一台服务器创建一个线程处理

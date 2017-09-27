@@ -40,6 +40,7 @@ print(user.position)
 #user.sell('162411', price=0.55, amount=100)
 user.update_acc_id()
 fund_list = user.balance
+user.auto_ipo()
 print('acc_id=',user.acc_id)
 print('可用余额=',fund_list[0]['可用金额'])
 print('总市值=',fund_list[0]['总市值'])
