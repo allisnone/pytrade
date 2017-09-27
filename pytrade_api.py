@@ -46,9 +46,10 @@ def close_yingyebu_gonggao(key_text='营业部公告',click_text='确定',interv
     print('all_dialog_hwnd=',all_dialog_hwnd)
     for subwin in all_dialog_hwnd:
         sub_win_hwnd = subwin[0]
-        sub_gonggao=dumpWindow(sub_win_hwnd, wantedText=key_text)#, wantedClass='Static')
+        sub_gonggao=dumpWindow(sub_win_hwnd, wantedText=key_text, wantedClass='Static')
+        print('sub_gonggao=',sub_gonggao)
         if sub_gonggao:
-            sub_confgirm=dumpWindow(sub_win_hwnd, wantedText=click_text)#0038736, wantedClass='Button')
+            sub_confgirm=dumpWindow(sub_win_hwnd, wantedText=click_text, wantedClass='Button')
             print('sub_confgirm=',sub_confgirm)
             confirm_hwnd = sub_confgirm[0][0]
             print('confirm_hwnd=',confirm_hwnd)
@@ -93,6 +94,14 @@ class OperationSZX(YHClientTrader):
         退出交易api
     """
         #return
+    def _get_pop_dialog_title(self,id=0):
+        control_id=self._config.POP_DIALOD_TITLE_CONTROL_ID
+        if id:
+            control_id = id
+        return self._app.top_window().window(
+            control_id=control_id
+        ).window_text()
+        
     def auto_ipo(self):
         #self._switch_left_menus(['新股申购', '一键打新'])
         self._switch_left_menus(['新股申购', '批量新股申购'])
@@ -101,9 +110,10 @@ class OperationSZX(YHClientTrader):
         #self._click(1098)#点击全部选中
         time.sleep(0.5)
         self._click(self._config.AUTO_IPO_BUTTON_CONTROL_ID)#点击全一键打新
+        time.sleep(1)
+        close_yingyebu_gonggao(key_text='提示',click_text='确定',interval=0.2)
         time.sleep(0.5)
-
-        return self._handle_auto_ipo_pop_dialog()
+        self._handle_auto_ipo_pop_dialog()
     
     def _handle_auto_ipo_pop_dialog(self):
         while self._main.wrapper_object() != self._app.top_window().wrapper_object():
@@ -125,20 +135,24 @@ class OperationSZX(YHClientTrader):
             elif '委托确认' in title:
                 data = self._app.top_window().Static.window_text()
                 self._app.top_window()['是(&Y)'].click()
-                print('data2',data)
+                #self._app.top_window()['确定'].click()
+                print('data2=',data)
                 print(self._main.wrapper_object())
                 print(self._app.top_window().wrapper_object())
-                """
-                title = self._get_pop_dialog_title()
+                #"""
+                try:
+                    title = self._get_pop_dialog_title()
+                except:
+                    log.warning('没有弹出对话框')
                 print('title1=',title)
                 if '提示' in title:
-                    data = self._app.top_window().Static.window_text()
+                    #data = self._app.top_window().Static.window_text()
                     self._app.top_window()['确定'].click()
                     print('data',data)
                 if self._main.wrapper_object() != self._app.top_window().wrapper_object():
                     continue
                 print('data21',data)
-                """
+                #"""
                 log.warning('完成今日新股申购,请复核')
                 return {'message': data}
             
@@ -628,6 +642,7 @@ class OperationSZX(YHClientTrader):
             pass
         if position_dict:
             code_gudong = position_dict[list(position_dict.keys())[0]]['股东代码']
+            print('code_gudong=',code_gudong)
             acc_id = acount_dict[code_gudong]
             combobox_id = acc_combobox_map[acc_id]
         else:
