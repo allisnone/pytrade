@@ -45,7 +45,7 @@ print('总市值=',fund_list[0]['总市值'])
 user.order(code='002197', direction='S', quantity=1000,actual_price=13.39,limit_price=None,post_confirm_interval=10,check_valid_time=False)
 user.order(code='002197', direction='B', quantity=500,actual_price=13.01,limit_price=None,post_confirm_interval=10,check_valid_time=False)
 
-user.change_acc(acc_id='',exe_path=exe_path)
+user.change_account(acc_id='',exe_path=exe_path)
 #fund_list = user.fund
 time.sleep(1)
 #user.auto_ipo()

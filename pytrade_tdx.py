@@ -214,7 +214,9 @@ class OperationTdx:
             sm.send_mail(sub='无法获得  买卖关联同一支股票 的窗口句柄',content='请点击  双向委托 按钮' )
             tkinter.messagebox.showerror('错误', '无法获得 "买卖关联同一支股票"的窗口句柄')
         """
-            
+    def enable_debug(self,debug=True):
+        self.debug=debug
+                
     def init_hwnd(self):
         self.__top_hwnd = findTopWindow(wantedClass='TdxW_MainFrame_Class')
         self.__button = {'refresh': 180, 'position': 145, 'deal': 112, 'withdrawal': 83, 'sell': 50, 'buy': 20}
@@ -412,7 +414,8 @@ class OperationTdx:
         if self.debug: print('final_sell_quantity=',final_quantity,type(final_quantity))
         return final_quantity
 
-    def order(self, code, direction, quantity,actual_price,limit_price=None):
+    #def order(self, code, direction, quantity,actual_price,limit_price=None):
+    def order(self, code, direction, quantity,actual_price,limit_price=None,post_confirm_interval=0,check_valid_time=True):
         """
         下单函数
         :param code: 股票代码， 字符串
@@ -427,7 +430,7 @@ class OperationTdx:
         #    highest=limit_price[0]
         #    lowest=limit_price[1]
         # restoreFocusWindow(self.__top_hwnd)
-        pre_position = self.getPositionDict()
+        pre_position = self.get_my_position()
         if quantity<=0:#invalid quantity
             if self.debug: print('Please input valid quantity!')
             return
@@ -439,7 +442,7 @@ class OperationTdx:
             self.__sell(code, quantity,actual_price,limit_price)
         #if self.debug: print('self.__top_hwnd=',self.__top_hwnd)
         closePopupWindows(self.__top_hwnd)
-        post_position = self.getPositionDict()
+        post_position = self.get_my_position()
         pos_chg = self.getPostionChange(pre_position,post_position)
         if self.debug: print('pos_chg=',pos_chg)
         self.trade_confirm(code, trade_num, pos_chg)
@@ -518,7 +521,7 @@ class OperationTdx:
         POSITION_COlS = 14 
         return getListViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
     
-    def getPositionDict(self):
+    def get_my_position(self):
         POSITION_COlS = 14 
         return getDictViewInfo(self.__buy_sell_hwnds[-4][0], POSITION_COlS)
         
@@ -541,7 +544,7 @@ class OperationTdx:
             available_money = self.getMoney()
         else:
             current_acc_id,current_box_id = self.get_acc_combobox_id()
-            position_dict = self.getPositionDict() 
+            position_dict = self.get_my_position() 
             exchange_id = self.change_account(current_acc_id, current_box_id, position_dict)
             pos_list = self.getPosition()
             if self.isRightAcc(acc, pos_list):
@@ -646,7 +649,7 @@ class OperationTdx:
         acc_id = ''
         combobox_id = 0
         if not position_dict:
-            position_dict = self.getPositionDict()
+            position_dict = self.get_my_position()
         else:
             pass
         if position_dict:
@@ -700,7 +703,7 @@ class OperationTdx:
     
     def get_all_position(self):
         avl_sell_datas = {}
-        position = self.getPositionDict()
+        position = self.get_my_position()
         current_acc_id,current_box_id = self.get_acc_combobox_id(position_dict=position)
         print('first_acc=%s' % current_acc_id)
         current_avl_sell = []
@@ -711,7 +714,7 @@ class OperationTdx:
                 current_avl_sell.append(code)
         avl_sell_datas[current_acc_id] = current_avl_sell
         exchange_id = self.change_account(current_acc_id, current_box_id, position)
-        second_acc_position = self.getPositionDict()
+        second_acc_position = self.get_my_position()
         second_acc_id,second_box_id = self.get_acc_combobox_id(position_dict=second_acc_position)
         print('second_acc=%s' % second_acc_id)
         second_avl_sell = []

@@ -335,7 +335,7 @@ class OperationSZX(YHClientTrader):
             if self.debug: print('不满100股%s，取消卖出下单'%code)
             return {}
 
-    def order(self, code, direction, quantity,actual_price,limit_price=None,post_confirm_interval=0,check_valid_time=True):
+    def order(self, code, direction, quantity,actual_price,limit_price=None,post_confirm_interval=10,check_valid_time=True):
         """
         下单函数
         :param code: 股票代码， 字符串
@@ -634,7 +634,7 @@ class OperationSZX(YHClientTrader):
             pass
         return acc_id,combobox_id    
     
-    def change_acc(self,acc_id='',exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
+    def change_account(self,acc_id='',exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'):
         #trade_main_hwnd = win32gui.FindWindow(0, self.Title)  # 交易窗口
         #is_acc = self.is_acc_36005()
         #acc_id = self.update_acc_id()
@@ -694,7 +694,7 @@ class OperationSZX(YHClientTrader):
     def get_all_position(self):
         pos_dict = dict()
         pos_dict[self.get_acc_id()] = self.get_my_position()
-        self.change_acc()
+        self.change_account()
         pos_dict[self.get_acc_id()] = self.get_my_position()
         return pos_dict
     
@@ -713,7 +713,7 @@ class OperationSZX(YHClientTrader):
         return pos_dict
     
     def order_acc_stock(self,acc_id,stock_code, price, amount,direct='S',
-                        is_absolute_order=False,limit_price=None,confirm=True):
+                        is_absolute_order=False,limit_price=None,confirm=10,check_valid_time=True):
         """
         For single account
         
@@ -725,19 +725,21 @@ class OperationSZX(YHClientTrader):
         if acc_id and acc_id==self.acc_id:
             pass
         else:
-            self.change_acc()
+            self.change_account()
             if acc_id and acc_id==self.acc_id:
                 pass
             else:
                 print('无效acc id')
                 return {}
-        return self.order(code, direction, quantity,actual_price,limit_price=limit_price,post_confirm=confirm)
+        #return self.order(code, direction, quantity,actual_price,limit_price=limit_price,post_confirm=confirm)
+        return self.order(self, code, direction, quantity,actual_price,limit_price=limit_price,
+                     post_confirm_interval=confirm,check_valid_time=check_valid_time)
     
     def change_to_valid_acc(self,acc_id):
         if self.is_right_acc(acc_id):
             pass
         else:
-            self.change_acc()
+            self.change_account()
             if self.is_right_acc(acc_id):
                 pass
             else:
@@ -759,7 +761,8 @@ class OperationSZX(YHClientTrader):
         return False
     
     def exchange_stocks(self,acc_id,position, replaced_stock,replaced_stock_price, target_stock,
-                         target_stock_price,sell_then_buy=True,exchange_rate=1.0,absolute_order=False):
+                         target_stock_price,sell_then_buy=True,exchange_rate=1.0,absolute_order=False,
+                         limit_price_dict={},confirm=10,check_valid_time=True):
         
         if self.is_holding_stock(acc_id, replaced_stock):
             pass
@@ -771,14 +774,25 @@ class OperationSZX(YHClientTrader):
         print(position[acc_id][replaced_stock]['可用余额'])
         replaced_stock_amount = int((position[acc_id][replaced_stock]['可用余额'] * exchange_rate//100) * 100)
         target_stock_amount = int((replaced_stock_amount*replaced_stock_price/target_stock_price//100)*100)
+        replaced_stock_limit_price = []
+        traget_stock_limit_price = []
+        if limit_price_dict:
+            try:
+                replaced_stock_limit_price = limit_price_dict[replaced_stock]
+                traget_stock_limit_price = limit_price_dict[target_stock]
+            except:
+                pass
+                
+        else:
+            pass
         if sell_then_buy and replaced_stock_amount>100 and target_stock_amount>100:#先卖后买
             print('Plan to sell %s %s, and then buy %s %s' % (replaced_stock_amount,replaced_stock,target_stock_amount,target_stock))
             sell_replace_stock = self.order_acc_stock(acc_id,replaced_stock, replaced_stock_price, 
-                    replaced_stock_amount, direct='S', is_absolute_order=absolute_order, limit_price=None)
+                    replaced_stock_amount, direct='S', is_absolute_order=absolute_order,limit_price=replaced_stock_limit_price,confirm=confirm,check_valid_time=check_valid_time)
             time.sleep(sleep_seconds)
             if sell_replace_stock:
                 buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
-                    target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order, limit_price=None)
+                    target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order,limit_price=traget_stock_limit_price,confirm=confirm,check_valid_time=check_valid_time)
                 print('Completed exchange order: sell then buy')
                 return buy_target_stock
             else:
@@ -787,11 +801,11 @@ class OperationSZX(YHClientTrader):
             print('Plan to buy %s %s, and then sell %s %s' % (target_stock_amount,target_stock,replaced_stock_amount,replaced_stock))
             if available_money>target_stock_amount*target_stock_price:
                 buy_target_stock = self.order_acc_stock(target_stock, target_stock_price, 
-                    target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order, limit_price=None)
+                    target_stock_amount, acc_id, direct='B', is_absolute_order=absolute_order,limit_price=traget_stock_limit_price,confirm=confirm,check_valid_time=check_valid_time)
                 time.sleep(sleep_seconds)
                 if buy_target_stock:
                     sell_replace_stock = self.order_acc_stock(replaced_stock, replaced_stock_price, 
-                    replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order, limit_price=None)
+                    replaced_stock_amount, acc_id, direct='S', is_absolute_order=absolute_order,limit_price=replaced_stock_limit_price,confirm=confirm,check_valid_time=check_valid_time)
                     print('Completed exchange order: sell then buy')
                     return replaced_stock
             else:
@@ -837,7 +851,7 @@ class OperationSZX(YHClientTrader):
             if self.is_right_acc(valid_acc_ids[0]):
                 pass
             else:
-                self.change_acc()
+                self.change_account()
             for stock in stock_order_datas[valid_acc_ids[0]]:
                 price,direct = get_stock_order_price(stock)
                 self._order_stock(stock[0], price, stock[2],direct)
@@ -850,7 +864,7 @@ class OperationSZX(YHClientTrader):
                 order_num = order_num + 1
             valid_acc_ids.pop(valid_acc_ids.index(this_acc_id))
             second_acc_id = valid_acc_ids[0]
-            self.change_acc()
+            self.change_account()
             for stock1 in stock_order_datas[second_acc_id]:
                 price,direct = get_stock_order_price(stock)
                 self._order_stock(stock1[0], price, stock1[2],direct)

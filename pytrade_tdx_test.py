@@ -9,7 +9,7 @@ if __name__ == '__main__':
     op_tdx.getMoney()
     pre_position = op_tdx.getPosition()
     print('pre_position=',pre_position)
-    pre_position = op_tdx.getPositionDict() 
+    pre_position = op_tdx.get_my_position() 
     code = '601166'
     direction = 'B'
     quantity = 100
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     #op_tdx.getDeal(code,pre_position,cur_position)
     #op_tdx.clickRefreshButton()
 
-    post_position = op_tdx.getPositionDict() 
+    post_position = op_tdx.get_my_position() 
     print('post_position=',post_position)
     pos_chg = op_tdx.getPostionChange(pre_position,post_position)
     #print('pos_chg=',pos_chg)

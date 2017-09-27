@@ -783,10 +783,10 @@ def is_risk_to_exit(symbols=['sh','cyb'],init_exit_data={},
                 this_risk['risk_time'] = datetime.datetime.now()
                 """
                 if operation_tdx:
-                    pre_position = operation_tdx.getPositionDict() 
+                    pre_position = operation_tdx.get_my_position() 
                     available_to_sell = pre_position[symbol]['可用余额'] * risk_state
                     operation_tdx.order(code=symbol, direction='S', quantity=available_to_sell, actual_price=symbol_now_p)
-                    post_position = operation_tdx.getPositionDict()
+                    post_position = operation_tdx.get_my_position()
                     print('post_position=',post_position)
                     pos_chg = operation_tdx.getPostionChange(pre_position,post_position)
                 """
@@ -826,7 +826,7 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
     #position,alv_sell_stocks = op_tdx.get_all_position()
     risk_stocks = list(risk_data.keys())
     current_acc_id,current_box_id = operation_tdx.get_acc_combobox_id()
-    this_acc_position = operation_tdx.getPositionDict() 
+    this_acc_position = operation_tdx.get_my_position() 
     acc_list = list(alv_sell_stocks.keys())
     if current_acc_id in acc_list:
         this_acc_avl_sell = alv_sell_stocks[current_acc_id]
@@ -859,13 +859,14 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 limit_p = [symbol_topest,symbol_lowest]
                 if symbol=='300432' and demon_sql: #for test
                     symbol_now_p = demon_sql.get_demon_value()
-                operation_tdx.order(code=symbol, direction='S', quantity=this_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+                #operation_tdx.order(code=symbol, direction='S', quantity=this_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+                operation_tdx.order(code=symbol, direction='S', quantity=this_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None,post_confirm_interval=0,check_valid_time=True)
         else:
             pass
     if len(acc_list)==2:
         exchange_id = operation_tdx.change_account(current_acc_id, current_box_id)
         second_acc_id,second_box_id = operation_tdx.get_acc_combobox_id()
-        second_acc_position = operation_tdx.getPositionDict() 
+        second_acc_position = operation_tdx.get_my_position() 
         if second_acc_id in acc_list:
             second_acc_avl_sell = alv_sell_stocks[second_acc_id]
             if second_acc_avl_sell:
@@ -888,7 +889,8 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                     limit_p = [symbol_topest,symbol_lowest]
                     if symbol=='300432' and demon_sql: #for test
                         symbol_now_p = demon_sql.get_demon_value()
-                    operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+                    #operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+                    operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None,post_confirm_interval=0,check_valid_time=True)
             else:
                 pass
     return
@@ -1099,7 +1101,8 @@ def to_sell_and_lock_profit(symbol,symbol_quot,stop_profit_stocks,fix_price_data
             if symbol_now_price<symbol_stop_profit_price and stop_profit_enable:
                  """To sell and stop prifit"""
                  second_acc_num_to_sell =[]
-                 operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_stop_profit_price,limit_price=None)
+                 #operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_stop_profit_price,limit_price=None)
+                 operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_stop_profit_price,limit_price=None,post_confirm_interval=0,check_valid_time=True)
                  """Write to sql, and T action or not"""
                  pass
             
@@ -1124,7 +1127,8 @@ def to_stop_profit(symbol_quot,stop_type='fixed_drop_rate',stop_profit_enable=Fa
             if symbol_now_price<symbol_stop_profit_price and stop_profit_enable:
                  """To sell and stop prifit"""
                  second_acc_num_to_sell =[]
-                 operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_stop_profit_price,limit_price=None)
+                 operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_stop_profit_price,limit_price=None,post_confirm_interval=0,check_valid_time=True)
+                 symbol_stop_profit_price
                  """Write to sql, and T action or not"""
                  pass
             
@@ -1137,7 +1141,7 @@ def sell_stock_to_stop_profit(risk_data,position,alv_sell_stocks,symbol_quot,ope
     #position,alv_sell_stocks = op_tdx.get_all_position()
     risk_stocks = list(risk_data.keys())
     current_acc_id,current_box_id = operation_tdx.get_acc_combobox_id()
-    this_acc_position = operation_tdx.getPositionDict() 
+    this_acc_position = operation_tdx.get_my_position() 
     acc_list = list(alv_sell_stocks.keys())
     if current_acc_id in acc_list:
         this_acc_avl_sell = alv_sell_stocks[current_acc_id]
@@ -1170,13 +1174,13 @@ def sell_stock_to_stop_profit(risk_data,position,alv_sell_stocks,symbol_quot,ope
                 limit_p = [symbol_topest,symbol_lowest]
                 if symbol=='300432' and demon_sql: #for test
                     symbol_now_p = demon_sql.get_demon_value()
-                operation_tdx.order(code=symbol, direction='S', quantity=this_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+                operation_tdx.order(code=symbol, direction='S', quantity=this_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None,post_confirm_interval=0,check_valid_time=True)
         else:
             pass
     if len(acc_list)==2:
         exchange_id = operation_tdx.change_account(current_acc_id, current_box_id)
         second_acc_id,second_box_id = operation_tdx.get_acc_combobox_id()
-        second_acc_position = operation_tdx.getPositionDict() 
+        second_acc_position = operation_tdx.get_my_position() 
         if second_acc_id in acc_list:
             second_acc_avl_sell = alv_sell_stocks[second_acc_id]
             if second_acc_avl_sell:
@@ -1199,7 +1203,7 @@ def sell_stock_to_stop_profit(risk_data,position,alv_sell_stocks,symbol_quot,ope
                     limit_p = [symbol_topest,symbol_lowest]
                     if symbol=='300432' and demon_sql: #for test
                         symbol_now_p = demon_sql.get_demon_value()
-                    operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None)
+                    operation_tdx.order(code=symbol, direction='S', quantity=second_acc_num_to_sell, actual_price=symbol_now_p,limit_price=None,post_confirm_interval=10,check_valid_time=True)
             else:
                 pass
     return
@@ -1213,7 +1217,7 @@ def buy_stocks(op_tdx, acc_list, stock_sql, buy_rate,strategy=1,given_buy_stocks
             symbol = stock_data[0]
             buy_shares = stock_data[1]
             buy_price = stock_data[2]
-            operation_tdx.order(code=symbol, direction='b', quantity=buy_shares, actual_price=buy_price,limit_price=None)
+            operation_tdx.order(code=symbol, direction='b', quantity=buy_shares, actual_price=buy_price,limit_price=None,post_confirm_interval=0,check_valid_time=True)
         #account switchover
     return 
 
