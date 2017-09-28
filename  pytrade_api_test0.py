@@ -12,6 +12,7 @@ print('start: ', datetime.datetime.now())
 #user = use('yh_client')
 #user = easytrader.use('yh_client')
 user = trader(trade_api='shuangzixing')
+
 user.enable_debug()
 account_dict={
     "inputaccount": "331600036005",
