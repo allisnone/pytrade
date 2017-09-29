@@ -6,7 +6,6 @@ import easytrader
 import datetime,time
 
 from pytrade_api import *
-
 time.sleep(2)
 print('start: ', datetime.datetime.now())
 #user = easytrader.use('yh')

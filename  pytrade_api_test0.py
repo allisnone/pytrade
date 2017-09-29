@@ -4,9 +4,7 @@
 #from easytrader import use
 import easytrader
 import datetime,time
-
 from pytrade_api import *
-
 print('start: ', datetime.datetime.now())
 #user = easytrader.use('yh')
 #user = use('yh_client')
