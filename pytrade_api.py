@@ -98,9 +98,15 @@ class OperationSZX(YHClientTrader):
         control_id=self._config.POP_DIALOD_TITLE_CONTROL_ID
         if id:
             control_id = id
-        return self._app.top_window().window(
-            control_id=control_id
-        ).window_text()
+        try:
+            return self._app.top_window().window(
+                                                 control_id=control_id
+                                                 ).window_text()
+        except:
+            return ''
+                                                 
+        
+        
         
     def auto_ipo(self):
         #self._switch_left_menus(['新股申购', '一键打新'])
@@ -117,9 +123,8 @@ class OperationSZX(YHClientTrader):
     
     def _handle_auto_ipo_pop_dialog(self):
         while self._main.wrapper_object() != self._app.top_window().wrapper_object():
-            try:
-                title = self._get_pop_dialog_title()
-            except:
+            title = self._get_pop_dialog_title(0)
+            if not title:
                 log.warning('今日可能没有新股申购,请复核')
                 return {'message': 'unkown message: {}'}
             print('title=',title)
@@ -140,10 +145,7 @@ class OperationSZX(YHClientTrader):
                 print(self._main.wrapper_object())
                 print(self._app.top_window().wrapper_object())
                 #"""
-                try:
-                    title = self._get_pop_dialog_title()
-                except:
-                    log.warning('没有弹出对话框')
+                title = self._get_pop_dialog_title(0)
                 print('title1=',title)
                 if '提示' in title:
                     #data = self._app.top_window().Static.window_text()
@@ -242,9 +244,9 @@ class OperationSZX(YHClientTrader):
             close_yingyebu_gonggao(key_text='营业部公告',click_text='确定')#关闭营业部公告弹出窗口，如果有
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=10)
         #self._wait(2)
-        
         self._close_prompt_windows()
         self._main = self._app.top_window()
+        
     
     
 
@@ -261,7 +263,32 @@ class OperationSZX(YHClientTrader):
         #actual_price=str(actual_price)
         return self.buy(security=code, price=actual_price, amount=quantity)
         
-            
+    def trade(self, security, price, amount):
+        self._set_trade_params(security, price, amount)
+
+        self._submit_trade()
+
+        while self._main.wrapper_object() != self._app.top_window().wrapper_object():
+            pop_title = self._get_pop_dialog_title(0)
+            if pop_title == '委托确认':
+                self._app.top_window().type_keys('%Y')
+            elif pop_title == '提示信息':
+                if '超出涨跌停' in self._app.top_window().Static.window_text():
+                    self._app.top_window().type_keys('%Y')
+            elif pop_title == '提示':
+                content = self._app.top_window().Static.window_text()
+                if '成功' in content:
+                    entrust_no = self._extract_entrust_id(content)
+                    self._app.top_window()['确定'].click()
+                    return {'entrust_no': entrust_no}
+                else:
+                    self._app.top_window()['确定'].click()
+                    self._wait(0.05)
+                    raise exceptions.TradeError(content)
+            else:
+                self._app.top_window().close()
+            self._wait(0.2)  # wait next dialog display
+                    
     def _get_valid_buy_quantity(self,available_fund,actual_price,expect_quantity=None,patial=None):
         """
         买入数量函数
@@ -945,7 +972,7 @@ class OperationSZX(YHClientTrader):
     
     def _handle_cancel_gonggao_dialog(self):
         while self._main.wrapper_object() != self._app.top_window().wrapper_object():
-            title = self._get_pop_dialog_title()
+            title = self._get_pop_dialog_title(0)
             if '营业部公告' in title:
                 self._app.top_window().type_keys('%Y')
             elif '提示' in title:
