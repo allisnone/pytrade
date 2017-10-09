@@ -9,6 +9,10 @@ except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015
                            '2017-10-04','2017-10-05','2017-10-06','2018-01-01','2018-02-15','2018-02-16','2018-02-19',\
                            '2018-02-20','2018-02-21','2018-04-05','2018-02-06']
 
+except_trade_day_list1 = []
+for date_str in except_trade_day_list:
+    except_trade_day_list1.append(date_str.replace('-', '/'))
+
 def is_trade_date(given_date_str=None):
     """
     :param given_date_str: str type, like '2017-10-01'
@@ -19,7 +23,7 @@ def is_trade_date(given_date_str=None):
     this_str=this_day.strftime(date_format)
     open_str=' 09:15:00'
     if given_date_str!=None:
-        if given_date_str in except_trade_day_list:
+        if given_date_str in except_trade_day_list or given_date_str in except_trade_day_list1:
             return False
         else:
             if '-' in given_date_str:
@@ -28,7 +32,7 @@ def is_trade_date(given_date_str=None):
                 date_format='%Y/%m/%d'
             this_day=datetime.datetime.strptime(given_date_str+open_str,date_format + ' %X')
     else:
-        if this_str in except_trade_day_list:
+        if this_str in except_trade_day_list or given_date_str in except_trade_day_list1:
             return False
         else:
             pass
