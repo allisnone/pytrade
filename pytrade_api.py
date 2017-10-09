@@ -18,7 +18,7 @@ import win32con
 #import tushare as ts
 #import pdSql
 import sendEmail as sm
-from pytrade_tdx import OperationThs
+from pytrade_tdx import OperationTdx
 from easytrader.yh_clienttrader import YHClientTrader
 from easytrader.config import client
 from tradeTime import *
@@ -61,12 +61,14 @@ def close_yingyebu_gonggao(key_text='营业部公告',click_text='确定',interv
     
 
 def trader(trade_api='shuangzixing',bebug=True):
+    print('No %s API. Please input')
     if trade_api=='haiwangxing':
         return  OperationTdx()
     elif trade_api=='shuangzixing':
         return OperationSZX()
     else:
         print('No %s API. Please input right trade API' % trade_api)
+    return None
 
 
 class OperationSZX(YHClientTrader):

@@ -610,6 +610,7 @@ def _readListViewItems(hwnd, column_index=0):
     # Allocate virtual memory inside target process
     pid = ctypes.create_string_buffer(4)
     p_pid = ctypes.addressof(pid)
+    print('p_pid=',p_pid)
     GetWindowThreadProcessId(hwnd, p_pid)  # process owning the given hwnd
     hProcHnd = OpenProcess(win32con.PROCESS_ALL_ACCESS, False, struct.unpack("i", pid)[0])
     pLVI = VirtualAllocEx(hProcHnd, 0, 4096, win32con.MEM_RESERVE | win32con.MEM_COMMIT, win32con.PAGE_READWRITE)

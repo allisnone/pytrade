@@ -4,7 +4,7 @@ from pdSql import *
 import datetime
 from pytrade_tdx import OperationTdx
 import sys
-from pytrade_api import trader
+from pytrade_api import *
 
 def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
             enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,
@@ -18,7 +18,9 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
     print(datetime.datetime.now())
     #hold_df,holds,all_monitors = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
     #op_tdx = OperationTdx(debug=debug_enable)
-    op_tdx =trader(trade_api='shuangzixing',bebug=True)
+    #trade_api='shuangzixing'
+    trade_api='haiwangxing'
+    op_tdx =trader(trade_api,bebug=True)
     op_tdx.enable_debug(debug=True)
     #pre_position = op_tdx.getPositionDict()
     
