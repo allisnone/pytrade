@@ -61,14 +61,24 @@ def close_yingyebu_gonggao(key_text='营业部公告',click_text='确定',interv
     
 
 def trader(trade_api='shuangzixing',bebug=True):
-    print('No %s API. Please input')
     if trade_api=='haiwangxing':
-        return  OperationTdx()
+        return  OperationTdx(bebug)
     elif trade_api=='shuangzixing':
-        return OperationSZX()
+        szx_obj = OperationSZX()
+        szx_obj.enable_debug(bebug)
+        account_dict={
+            "inputaccount": "331600036005",
+            "trdpwd": "F71281A2D62C4b3a8268C6453E9C42212CCC5BA9AB89CAFF4E97CC31AE0E4C48"
+        }
+        #user.set_title(title='网上股票交易系统5.0')
+        #user.prepare(user='331600036005', password='821853')
+        exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'
+        szx_obj.prepare(user='331600036005', password='821853',exe_path=exe_path)
+        szx_obj.update_acc_id()
+        return szx_obj
     else:
         print('No %s API. Please input right trade API' % trade_api)
-    return None
+        return None
 
 
 class OperationSZX(YHClientTrader):
@@ -639,10 +649,12 @@ class OperationSZX(YHClientTrader):
             return False
         hnwd = get_exist_hwnd(self.trade_main_hwnd, wantedtext)
         """
+        if not self.acc_id:
+            self.update_acc_id()
         return self.acc_id==acc_id
     
     def get_acc_id(self):
-        """
+        #"""
         valid_acc_ids = LI
         acc_id = 0
         for acc_id in valid_acc_ids:
@@ -651,8 +663,8 @@ class OperationSZX(YHClientTrader):
             else:
                 pass
         this_acc_id,combobox_id = self.get_acc_combobox_id()
-        """
-        return self.acc_id
+        #"""
+        return this_acc_id
     
     def update_acc_id(self):
         this_acc_id,combobox_id = self.get_acc_combobox_id()
@@ -737,9 +749,13 @@ class OperationSZX(YHClientTrader):
     
     def get_all_position(self):
         pos_dict = dict()
-        pos_dict[self.get_acc_id()] = self.get_my_position()
+        acc_id = self.get_acc_id()
+        if acc_id:
+            pos_dict[acc_id] = self.get_my_position()
         self.change_account()
-        pos_dict[self.get_acc_id()] = self.get_my_position()
+        acc_id_new = self.get_acc_id()
+        if acc_id_new:
+            pos_dict[acc_id_new] = self.get_my_position()
         return pos_dict
     
     

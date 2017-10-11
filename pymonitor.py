@@ -9,7 +9,7 @@ from pytrade_api import *
 def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
             enable_exit=True,start_exit_minute=(9*60+30),enable_buy=False,
             start_buy_minute=(9*60+30),mail_interval=10,debug_enable=False,
-            except_stocks=['160722']):
+            except_stocks=['160722'],trader_api='haiwangxing'):
     hist_dir='C:/中国银河证券海王星/T0002/export/'
     all_stocks = get_all_code(hist_dir)
     
@@ -19,9 +19,14 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
     #hold_df,holds,all_monitors = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
     #op_tdx = OperationTdx(debug=debug_enable)
     #trade_api='shuangzixing'
+    op_tdx = trader(trader_api,bebug=debug_enable)
+    if not op_tdx:
+        return
+    """
     trade_api='haiwangxing'
     op_tdx =trader(trade_api,bebug=True)
     op_tdx.enable_debug(debug=True)
+    """
     #pre_position = op_tdx.getPositionDict()
     
     position,avl_sell_datas,monitor_stocks = op_tdx.get_all_position()
@@ -179,6 +184,8 @@ if __name__ == '__main__':
     half_sell = False
     enable_trd = True
     debug = False
+    trader_api='haiwangxing'
+    #trader_api='shuangzixing'
     if len(sys.argv)>=2:
         if sys.argv[1] and int(sys.argv[1])==1:
             half_sell = True
@@ -200,4 +207,4 @@ if __name__ == '__main__':
     monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,
             enable_exit=enable_trd,start_exit_minute=start_exit, 
             enable_buy=False,start_buy_minute=start_buy,debug_enable=debug,
-            except_stocks=excepts)
+            except_stocks=excepts,trader_api=trader_api)
