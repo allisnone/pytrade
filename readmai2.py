@@ -108,7 +108,9 @@ server.pass_(password)
 print('Message: %s, Size: %s' % server.stat())  
 resp, mails, octets = server.list()  
 print('mails=',mails)  
-  
+ 
+ 
+
 #解析邮件  
 index = len(mails)  
 ind =index
@@ -128,6 +130,9 @@ while True:#ind>0:
     #except:
     #    pass 
     """
+    print('Message: %s, Size: %s' % server.stat())
+    noop_reps = server.noop()
+    print('noop_reps=',noop_reps)
     resp, mails, octets = server.list()  
     index = len(mails)  
     ind =index
@@ -135,6 +140,9 @@ while True:#ind>0:
     msg = get_mail_msg(pop_connection=server,mail_index=ind,decoder='GBK')
     result = get_msg_property(msg)
     print('result=',result)
+    
+    top_mail = server.top( which=ind, howmuch=20)
+    print('top_mail=',top_mail)
     ind = ind - 1
     #break
   
