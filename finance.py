@@ -8,9 +8,11 @@ basic_df = basic_df.sort_index(axis=0, by='totalAssets', ascending=False)
 #ts.get_profit_statement()
 
 today_df = ts.get_today_all()
+count = int(len(today_df)*0.1)
 #print(today_df)
+today_df = today_df[(today_df['per']>0) & (today_df['high']>0)]
 today_df_top_cap = today_df.sort_index(axis=0, by='mktcap', ascending=False)
 today_df_top_per = today_df.sort_index(axis=0, by='per', ascending=False)
-today_df_top_per = today_df_top_per[today_df_top_per['per']>0]
-print(today_df_top_cap.head(100))
-print(today_df_top_per.tail(100))
+#today_df_top_per = today_df_top_per[today_df_top_per['per']>0&today_df_top_per['high']>0]
+print(today_df_top_cap.head(count))
+print(today_df_top_per.tail(count))
