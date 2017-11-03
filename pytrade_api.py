@@ -511,7 +511,8 @@ class OperationSZX(YHClientTrader):
         else:
             current_acc_id,current_box_id = self.get_acc_combobox_id()
             position_dict = self.get_my_position() 
-            exchange_id = self.change_account(current_acc_id, current_box_id, position_dict)
+            #exchange_id = self.change_account(current_acc_id, current_box_id, position_dict)
+            exchange_id = self.change_account()
             pos_list = self.position
             if self.is_right_acc(acc, pos_list):
                 available_money = self.get_available_money()
@@ -757,6 +758,34 @@ class OperationSZX(YHClientTrader):
         if acc_id_new:
             pos_dict[acc_id_new] = self.get_my_position()
         return pos_dict
+    
+    def get_all_position(self):
+        avl_sell_datas = {}
+        position = self.get_my_position()
+        current_acc_id,current_box_id = self.get_acc_combobox_id(position_dict=position)
+        print('first_acc=%s' % current_acc_id)
+        print('position=',position)
+        current_avl_sell = []
+        for code in list(position.keys()):
+            #print(position[code].keys())
+            avl_to_sell = position[code]['可用余额']
+            if avl_to_sell>=100:
+                current_avl_sell.append(code)
+        avl_sell_datas[current_acc_id] = current_avl_sell
+        #exchange_id = self.change_account(current_acc_id, current_box_id, position)
+        exchange_id = self.change_account()
+        second_acc_position = self.get_my_position()
+        second_acc_id,second_box_id = self.get_acc_combobox_id(position_dict=second_acc_position)
+        print('second_acc=%s' % second_acc_id)
+        second_avl_sell = []
+        for code in list(second_acc_position.keys()):
+            avl_to_sell = second_acc_position[code]['可用余额']
+            if avl_to_sell>=100:
+                second_avl_sell.append(code)
+        avl_sell_datas[second_acc_id] = second_avl_sell
+        monitor_stocks = list(set(second_avl_sell + current_avl_sell))
+        position.update(second_acc_position)
+        return position,avl_sell_datas,monitor_stocks
     
     
     def get_my_position(self):

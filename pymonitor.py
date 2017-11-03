@@ -184,8 +184,8 @@ if __name__ == '__main__':
     half_sell = False
     enable_trd = True
     debug = False
-    trader_api='haiwangxing'
-    #trader_api='shuangzixing'
+    #trader_api='haiwangxing'
+    trader_api='shuangzixing'
     if len(sys.argv)>=2:
         if sys.argv[1] and int(sys.argv[1])==1:
             half_sell = True
