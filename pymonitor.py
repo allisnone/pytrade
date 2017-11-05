@@ -152,7 +152,8 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
                 #first_sleep = 60
                 time.sleep(first_sleep)
                 #stock_sql = StockSQL()
-                op_tdx.init_hwnd()
+                if trader_api=='haiwangxing': 
+                    op_tdx.init_hwnd()
                 this_date_str = datetime.datetime.now().strftime('%Y-%m-%d')
                 if this_date_str>=next_trade_date_str and datetime.datetime.now().hour<=9:#第二天开盘前5分钟更新止损数据
                     #hold_df,holds,all_monitors = stock_sql.get_hold_stocks(accounts = ['36005', '38736'])
