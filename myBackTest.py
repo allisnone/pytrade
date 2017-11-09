@@ -132,6 +132,9 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
             continue
         print(i,stock_symbol)
         s_stock=tds.Stockhistory(stock_symbol,'D',test_num=k_num,source=source,rate_to_confirm=rate_to_confirm)
+        if s_stock.h_df.empty:
+            print('New stock %s and no history data' % stock_symbol)
+            continue
         if True:
         #try:
             result_df = s_stock.form_temp_df(stock_symbol)
@@ -265,37 +268,37 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                    'break_in_count','break_in_date', 'break_in_distance',
                    'stopped','invalid','max_r','25%','50%','75%',]
     all_result_df = all_result_df[result_column_list]
-    all_result_df.to_csv('./temp/regression_test_' + addition_name +tail_name)
-    deep_star_df.to_csv('./temp/pos20_star_%s'% regress_column_type + addition_name +tail_name)
-    dapan_ho_df.to_csv('./temp/dapan_high_open_%s'% regress_column_type + addition_name +tail_name)
+    all_result_df.to_csv('C:/work/temp/regression_test_' + addition_name +tail_name)
+    deep_star_df.to_csv('C:/work/temp/pos20_star_%s'% regress_column_type + addition_name +tail_name)
+    dapan_ho_df.to_csv('C:/work/temp/dapan_high_open_%s'% regress_column_type + addition_name +tail_name)
     if all_result_df.empty:
         pass
     else:
         consider_df = all_result_df[(all_result_df['max_amount_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & (all_result_df['invalid']==0)]# & (all_result_df['last_trade_price'] ==0)]
-        consider_df.to_csv('./temp/consider_' + addition_name +tail_name)
+        consider_df.to_csv('C:/work/temp/consider_' + addition_name +tail_name)
         
         active_df = all_result_df[(all_result_df['max_r']<0.4)  & (all_result_df['name']!='NA') & # (all_result_df['min']>-0.08)  & (all_result_df['position']>0.35) &
                                   (all_result_df['max']>(3.9 *all_result_df['min'].abs())) & (all_result_df['invalid']==0) &(all_result_df['stopped']==0)]
         active_df['active_score'] = active_df['fuli_prf']/active_df['max_r']/active_df['std']*active_df['fuli_prf']/active_df['cum_prf']
         active_df = active_df.sort_values(axis=0, by='active_score', ascending=False)
-        active_df.to_csv('./temp/active_' + addition_name +tail_name)
+        active_df.to_csv('C:/work/temp/active_' + addition_name +tail_name)
         tupo_df = all_result_df[(all_result_df['break_in_distance']!=0) &(all_result_df['break_in_distance']<=20) & 
                                 (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & 
                                 (all_result_df['invalid']==0) & (all_result_df['name']!='NA') & (all_result_df['last_trade_price']!=0)]# & (all_result_df['last_trade_price'] ==0)]
-        tupo_df.to_csv('./temp/tupo_' + addition_name +tail_name)
+        tupo_df.to_csv('C:/work/temp/tupo_' + addition_name +tail_name)
         
         
-    result_summary.to_csv('./temp/result_summary_' + addition_name +tail_name)
-    all_trend_result_df_chinese.to_csv('./temp/trend_result_%s' % ma_num + addition_name +'%s_to_%s_%s.csv' % (k_num,latest_date_str,rate_to_confirm_str))
+    result_summary.to_csv('C:/work/temp/result_summary_' + addition_name +tail_name)
+    all_trend_result_df_chinese.to_csv('C:/work/temp/trend_result_%s' % ma_num + addition_name +'%s_to_%s_%s.csv' % (k_num,latest_date_str,rate_to_confirm_str))
     if not all_temp_hist_df.empty:
         #all_temp_hist_df = all_temp_hist_df[column_list]
         all_temp_hist_df = all_temp_hist_df.set_index('code')
-        all_temp_hist_df.to_csv('./temp/all_temp_' + addition_name +tail_name)
+        all_temp_hist_df.to_csv('C:/work/temp/all_temp_' + addition_name +tail_name)
         reverse_df = all_temp_hist_df[(all_temp_hist_df['reverse']>0) & 
                                       (all_temp_hist_df['LINEARREG_ANGLE8']<-2.0) &
                                       (all_temp_hist_df['position']>0.35)]#
         #reverse_df['r_sort'] = reverse_df['star_chg']/reverse_df['pos20']
-        reverse_df.to_csv('./temp/reverse_df_' + addition_name +tail_name)
+        reverse_df.to_csv('C:/work/temp/reverse_df_' + addition_name +tail_name)
         
         long_turn_min_angle = -0.5
         short_turn_min_angle = 0.2
@@ -309,7 +312,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                                    (all_temp_hist_df['LINEARREG_ANGLE8ROC1']>0.0) &
                                    (all_temp_hist_df['close']>all_temp_hist_df['ma30']) &
                                 (all_temp_hist_df['position']>0.35)]#
-        ma30_df.to_csv('./temp/ma30_df_' + addition_name +tail_name)
+        ma30_df.to_csv('C:/work/temp/ma30_df_' + addition_name +tail_name)
     
     return all_result_df
 

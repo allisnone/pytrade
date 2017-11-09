@@ -104,10 +104,10 @@ if __name__ == "__main__":
     
     hold_result_df = back_test(k_num,given_codes=holds,except_stocks=['002807','603515','160722'],type='hold',source=source_type)#,dapan_stocks=[])#except_stocks)
     addition_name = 'hold'
-    hold_result_df.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
+    hold_result_df.to_csv('C:/work/temp/regression_test_' + addition_name +'%s.csv' % date_str)
     
     #hold_statistics = pds.get_hold_stock_statistics(hold_stocks=hold_stocks+hold_funds)
-    #hold_statistics.to_csv('./temp/statistics_test_' + addition_name +'%s.csv' % date_str)
+    #hold_statistics.to_csv('C:/work/temp/statistics_test_' + addition_name +'%s.csv' % date_str)
     #print(hold_statistics)
     """ TA_LIB
     his = easyhistory.History(dtype='D', path='C:/hist',type='csv',codes=hold_stocks+hold_funds)
@@ -138,13 +138,13 @@ if __name__ == "__main__":
     all_result_df = back_test(k_num,given_codes=[],except_stocks=[],type='stock',source=source_type,rate_to_confirm=0,dapan_stocks=dapan_codes)#except_stocks)
     #all_codes = all_result_df.index.values.tolist()
     #all_statistics = pds.get_hold_stock_statistics(hold_stocks=all_stocks,stock_dir='C:/hist/day/temp/')
-    #all_statistics.to_csv('./temp/statistics_test_' + 'all' +'%s.csv' % date_str)
+    #all_statistics.to_csv('C:/work/temp/statistics_test_' + 'all' +'%s.csv' % date_str)
     """
     all_hold_stocks =hold_stocks
     if all_hold_stocks:
         hold_result = all_result_df[all_result_df.index.isin(all_hold_stocks)]
         addition_name = 'hold'
-        hold_result.to_csv('./temp/regression_test_' + addition_name +'%s.csv' % date_str)
+        hold_result.to_csv('C:/work/temp/regression_test_' + addition_name +'%s.csv' % date_str)
     """
     #k_num = 120
     #print(s_stock.temp_hist_df.tail(20))

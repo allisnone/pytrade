@@ -1822,7 +1822,7 @@ class Stockhistory:
                                                    (high_open_df[regress_column].shift(day)-high_open_df[base_column])/high_open_df[base_column],0)
         high_open_df = high_open_df[high_open_df['low_high_open']!= 0]
         high_open_df = high_open_df[columns]
-        #high_open_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,column_type))
+        #high_open_df.to_csv('C:/work/temp/low_high_open_%s_%s.csv' % (self.code,column_type))
         return high_open_df,columns
     
     def regress_common(self,criteria,post_days=[0,-1,-2,-3,-4,-5],regress_column = 'close',
@@ -1837,7 +1837,7 @@ class Stockhistory:
                                                    (self.temp_hist_df[regress_column].shift(day)-self.temp_hist_df[base_column])/self.temp_hist_df[base_column],0)
         regress_df = self.temp_hist_df[criteria]
         regress_df = regress_df[fix_columns]
-        regress_df.to_csv('./temp/low_high_open_%s_%s.csv' % (self.code,regress_column))
+        regress_df.to_csv('C:/work/temp/low_high_open_%s_%s.csv' % (self.code,regress_column))
         return regress_df,fix_columns
     
     def get_market_score(self,short_turn_weight=None,k_data=None):
@@ -2370,8 +2370,8 @@ class Stockhistory:
         summary_profit['max_amount_distance'] = last_id - id_amount_rate_min2_max20 + 1
         summary_profit['yearly_prf'] = yearly_prf
         #print(temp_df)
-        #self.temp_hist_df.to_csv('./temp/hist_temp_%s.csv' % self.code)
-        temp_df.to_csv('./temp/bs_%s.csv' % self.code)
+        #self.temp_hist_df.to_csv('C:/work/temp/hist_temp_%s.csv' % self.code)
+        temp_df.to_csv('C:/work/temp/bs_%s.csv' % self.code)
         return summary_profit
     
     def form_temp_df(self,code_str):

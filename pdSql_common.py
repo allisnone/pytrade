@@ -161,6 +161,8 @@ def get_easyhistory_df(code_str,source='easyhistory'):  #ta_lib
     if source=='YH' or source=='yh':
         data_path = 'C:/中国银河证券海王星/T0002/export/'
     his = easyhistory.History(dtype='D', path=data_path,type='csv',codes=[code_str])
+    if his.empty:
+        return his
     res = his.get_hist_indicator(code_str)
     return res
 
@@ -364,6 +366,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/中国银河证�
             symbol = index_symbol_maps[symbol]
         yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
         #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
+        #print('yh_file_namev=',yh_file_name)
         yh_index_df = pd.read_csv(yh_file_name)
         #yh_index_df['factor'] = 1.0
         yh_df = yh_index_df.set_index('date')
