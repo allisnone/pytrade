@@ -494,9 +494,12 @@ class OperationSZX(YHClientTrader):
         #print('pos_list=',pos_list)
         right_acc = False
         if pos_list:
-            stock_owner = pos_list[0][12]
-            if stock_owner in list(acount_dict.keys()):
-                right_acc = acc==acount_dict[stock_owner]
+            for pos in pos_list:
+                stock_owner = pos[12]
+                if stock_owner in list(acount_dict.keys()):
+                    right_acc = acc==acount_dict[stock_owner]
+                    if right_acc:
+                        return True
         return right_acc
     
     def get_account_money(self,acc='36005'):
@@ -683,10 +686,14 @@ class OperationSZX(YHClientTrader):
         else:
             pass
         if position_dict:
-            code_gudong = position_dict[list(position_dict.keys())[0]]['股东代码']
-            print('code_gudong=',code_gudong)
-            acc_id = acount_dict[code_gudong]
-            combobox_id = acc_combobox_map[acc_id]
+            print('list(position_dict.keys())=',position_dict)
+            for code in list(position_dict.keys()):
+                code_gudong = position_dict[code]['股东代码']
+                print('code_gudong=',code_gudong)
+                if code_gudong in list(acount_dict.keys()):
+                    acc_id = acount_dict[code_gudong]
+                    combobox_id = acc_combobox_map[acc_id]
+                    return acc_id,combobox_id    
         else:
             pass
         return acc_id,combobox_id    

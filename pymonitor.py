@@ -80,6 +80,7 @@ def monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False,half_s=False,
             print('over_avrg_datas=',over_avrg_datas_df)
             print('risk_data=',risk_data)
             print('this_date_mail_count=',this_date_mail_count)
+            risk_data= {'300431': {'risk_now': 19, 'risk_time': datetime.datetime(2017, 11, 9, 8, 40, 19, 778795), 'risk_state': 1.0, 'risk_code': '300431'}}
             count = count + 1
             print('count=', count)
             if enable_exit:
@@ -205,7 +206,7 @@ if __name__ == '__main__':
     start_exit = 10*60+30
     start_buy = 14*60
     excepts=['160722','601375','300668']
-    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=False, half_s=half_sell,
+    monitor(interval=30,monitor_indexs=['sh','cyb'],demo=True, half_s=half_sell,
             enable_exit=enable_trd,start_exit_minute=start_exit, 
             enable_buy=False,start_buy_minute=start_buy,debug_enable=debug,
             except_stocks=excepts,trader_api=trader_api)

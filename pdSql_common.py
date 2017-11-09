@@ -836,7 +836,7 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 risk_state = risk_data[symbol]['risk_state']
                 if (risk_state==0.5 and not half_sell) or risk_state==0:
                     continue
-                this_acc_num_to_sell = this_acc_position[symbol]['可用余额 '] * risk_state
+                this_acc_num_to_sell = this_acc_position[symbol]['可用余额'] * risk_state
                 """
                 set_columns= ['ask1', 'bid1_volume', 'code', 'price_volume_amount', 'ask5_volume', 'ask5', 
                               'PE', 'now', 'bid2_volume', 'bid5', 'recent_trade', 'wave', 'high', 'close', 
@@ -873,7 +873,8 @@ def sell_risk_stock(risk_data,position,alv_sell_stocks,symbol_quot,operation_tdx
                 this_acc_exit_stocks = list(set(risk_stocks) & set(second_acc_avl_sell))
                 for symbol in this_acc_exit_stocks:
                     risk_state = risk_data[symbol]['risk_state']
-                    if (risk_state==0.5 and not half_sell) or risk_state==0:
+                    print('second_acc_position[symbol]=',second_acc_position[symbol])
+                    if (risk_state==0.5 and not half_sell) or risk_state==0: #and '可用余额 ' not in list(risk_data[symbol].keys()):
                         continue
                     second_acc_num_to_sell = second_acc_position[symbol]['可用余额 '] * risk_state
                     symbol_bid1_p = symbol_quot[symbol]['bid1']
