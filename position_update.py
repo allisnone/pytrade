@@ -248,7 +248,5 @@ if __name__ == '__main__':
     3  601009  南京银行     0    0  
     """
     
-    
-    
     #stock_sql.drop_table(table_name='myholding')
     #stock_sql.insert_table(data_frame=holding_stocks_df,table_name='myholding')
