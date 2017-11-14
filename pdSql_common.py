@@ -162,8 +162,8 @@ def get_easyhistory_df(code_str,source='easyhistory'):  #ta_lib
     if source=='YH' or source=='yh':
         data_path = 'C:/中国银河证券海王星/T0002/export/'
     his = easyhistory.History(dtype='D', path=data_path,type='csv',codes=[code_str])
-    if his.empty:
-        return his
+    #if his.empty:
+    #    return his
     res = his.get_hist_indicator(code_str)
     return res
 

@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-from myBackTest import *
+# !/usr/bin/env python
+from myBackTest1 import *
 import datetime
 #import pdSql as pds
 

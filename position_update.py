@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+# !/usr/bin/env python
 #import easytrader
 import easyhistory
 import pdSql_common as pds
@@ -185,6 +186,7 @@ if __name__ == '__main__':
     #update_type = 'stock'
     update_type = 'yh'
     #update_type = 'aa'
+    start = time.time()
     now_time =datetime.datetime.now()
     now_time_str = now_time.strftime('%Y/%m/%d %X')
     d_format='%Y/%m/%d'
@@ -206,6 +208,9 @@ if __name__ == '__main__':
     code_list_dict = seprate_list(all_codes,4)
     #print('code_list_dict=',code_list_dict)
     multiprocess_update_k_data(code_list_dict)
+    
+    end = time.time()
+    print('Task update yh hist data runs %0.2f seconds.' % (end - start))
     """
     print('Parent process %s.' % os.getpid())
     #update_yh_hist_data(codes_list=[],process_id=0)
