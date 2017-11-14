@@ -123,24 +123,28 @@ def back_test_stocks(test_codes,k_num=0,source='yh',rate_to_confirm = 0.01,proce
             result_df = s_stock.form_temp_df(stock_symbol)
             test_result = s_stock.regression_test(rate_to_confirm)
             recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
+            print('12')
             s_stock.diff_ma(ma=[10,30],target_column='close',win_num=5)
+            print('13')
             temp_hist_df = s_stock.temp_hist_df.set_index('date')
+            print('14')
             #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_symbol)
             temp_hist_df_tail = temp_hist_df.tail(1)
             temp_hist_df_tail['code'] = stock_symbol
-            print('1')
-            print(temp_hist_df.colums.value.to_list())
+            print('16')
             all_temp_hist_df= all_temp_hist_df.append(temp_hist_df_tail)
             #columns = ['close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3','high_o_day5','high_o_day10','high_o_day20']
             #high_o_df,high_open_columns = s_stock.regress_high_open(regress_column = regress_column_type,base_column='open')
             #criteria = s_stock.temp_hist_df['low_high_open']!= 0
             criteria = ((s_stock.temp_hist_df['star_l']> 0.50) & (s_stock.temp_hist_df['l_change']<-3.0) & (s_stock.temp_hist_df['pos20'].shift(1)<0.2))
+            print('17')
             high_o_df,high_open_columns = s_stock.regress_common(criteria,post_days=[0,-1,-2,-3,-4,-5,-10,-20,-60],regress_column = regress_column_type,
                        base_column='close',fix_columns=['date','close','p_change','o_change','position','pos20','MAX20high','star_l'])
             high_o_df['code'] = stock_symbol
+            print('18')
             high_o_df['star_index'] = np.where(high_o_df['pos20']<=0,0,(high_o_df['star_l']/high_o_df['pos20']*((high_o_df['MAX20high']-high_o_df['close'])/high_o_df['MAX20high'])).round(2))
             deep_star_df= deep_star_df.append(high_o_df)
-            print('2')
+            print('20')
             i = i+1
             if test_result.empty:
                 pass
@@ -353,6 +357,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     #all_result_df['name'] = result_codes_dict
     all_result_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
     deep_star_df['name'] = tds.Series(result_codes_dict,index=deep_star_df.index)
+    print('deep_star_df=',deep_star_df)
     deep_star_df = deep_star_df[['code','name','star_index']+high_open_columns]
     
     dapan_codes_dict = {}
