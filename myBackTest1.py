@@ -127,7 +127,6 @@ def back_test_stocks(test_codes,k_num=0,source='yh',rate_to_confirm = 0.01,proce
             s_stock.diff_ma(ma=[10,30],target_column='close',win_num=5)
             print('13')
             temp_hist_df = s_stock.temp_hist_df.set_index('date')
-            print('14')
             #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_symbol)
             temp_hist_df_tail = temp_hist_df.tail(1)
             temp_hist_df_tail['code'] = stock_symbol
