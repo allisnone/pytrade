@@ -131,44 +131,35 @@ def back_test_stocks(test_codes,k_num=0,source='yh',rate_to_confirm = 0.01,proce
             #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_symbol)
             temp_hist_df_tail = temp_hist_df.tail(1)
             temp_hist_df_tail['code'] = stock_symbol
-            print('16')
             all_temp_hist_df= all_temp_hist_df.append(temp_hist_df_tail)
             #columns = ['close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3','high_o_day5','high_o_day10','high_o_day20']
             #high_o_df,high_open_columns = s_stock.regress_high_open(regress_column = regress_column_type,base_column='open')
             #criteria = s_stock.temp_hist_df['low_high_open']!= 0
             criteria = ((s_stock.temp_hist_df['star_l']> 0.50) & (s_stock.temp_hist_df['l_change']<-3.0) & (s_stock.temp_hist_df['pos20'].shift(1)<0.2))
-            print('17')
             high_o_df,high_open_columns = s_stock.regress_common(criteria,post_days=[0,-1,-2,-3,-4,-5,-10,-20,-60],regress_column = regress_column_type,
                        base_column='close',fix_columns=['date','close','p_change','o_change','position','pos20','MAX20high','star_l'])
             high_o_df['code'] = stock_symbol
-            print('18')
             high_o_df['star_index'] = np.where(high_o_df['pos20']<=0,0,(high_o_df['star_l']/high_o_df['pos20']*((high_o_df['MAX20high']-high_o_df['close'])/high_o_df['MAX20high'])).round(2))
             deep_star_df= deep_star_df.append(high_o_df)
-            print('20')
             i = i+1
             if test_result.empty:
                 pass
             else: 
-                print('20')
                 test_result_df = tds.pd.DataFrame(test_result.to_dict(), columns=all_result_columns, index=[stock_symbol])
-                print('21')
                 all_result_df = all_result_df.append(test_result_df,ignore_index=False)
-            print('30')
             if recent_trend.empty:
                 pass
             else:
-                print('3')
                 trend_result_df = tds.pd.DataFrame(recent_trend.to_dict(), columns=trend_columns, index=[stock_symbol])
                 all_trend_result_df = all_trend_result_df.append(trend_result_df,ignore_index=False)
         #except:
         #    print('Regression test exception for stock: %s' % stock_symbol)
-        if save_type=='csv':
+        if save_type=='csv': #write to csv
             print('4')
             all_temp_hist_df_file_name = 'C:/work/temp1/all_temp_hist_%s' %processor_id +'.csv'
             all_result_df_file_name = 'C:/work/temp1/all_result_%s' %processor_id +'.csv'
             deep_star_df_file_name = 'C:/work/temp1/deep_star_%s' %processor_id +'.csv'
             all_trend_result_df_file_name = 'C:/work/temp1/all_trend_result_%s' %processor_id +'.csv'
-            
             all_temp_hist_df.to_csv(all_temp_hist_df_file_name)
             all_result_df.to_csv(all_result_df_file_name)
             deep_star_df.to_csv(deep_star_df_file_name)
@@ -195,21 +186,20 @@ def multiprocess_back_test(code_list_dict,k_num=0,source='yh',rate_to_confirm = 
 
 def combine_multi_process_result(processor_num=4,all_result_columns=[],all_temp_columns=[],trend_columns=[],deep_star_columns=[]):
     #all_result_columns,all_temp_columns,trend_columns,deep_star_columns=[],[],[],[]
-    all_result_df = tds.pd.DataFrame({}, columns=all_result_columns)
-    all_trend_result_df = tds.pd.DataFrame({}, columns=trend_columns)
-    all_temp_hist_df = tds.pd.DataFrame({}, columns=all_temp_columns)
-    deep_star_df = tds.pd.DataFrame({}, columns=deep_star_columns)
+    all_result_df = tds.pd.DataFrame({}, columns=[])#all_result_columns)
+    all_trend_result_df = tds.pd.DataFrame({}, columns=[])#trend_columns)
+    all_temp_hist_df = tds.pd.DataFrame({}, columns=[])#all_temp_columns)
+    deep_star_df = tds.pd.DataFrame({}, columns=[])#deep_star_columns)
+    df0 = None
     for processor_id in range(4):
         all_temp_hist_df_file_name = 'C:/work/temp1/all_temp_hist_%s' %processor_id +'.csv'
         all_result_df_file_name = 'C:/work/temp1/all_result_%s' %processor_id +'.csv'
         deep_star_df_file_name = 'C:/work/temp1/deep_star_%s' %processor_id +'.csv'
         all_trend_result_df_file_name = 'C:/work/temp1/all_trend_result_%s' %processor_id +'.csv'
-    
-        all_temp_hist_df.append(tds.pd.read_csv(all_temp_hist_df_file_name,names=all_temp_columns, header=0,encoding='gb2312'))
-        all_result_df.append(tds.pd.read_csv(all_result_df_file_name,names=all_result_columns, header=0,encoding='gb2312'))
-        deep_star_df.append(tds.pd.read_csv(deep_star_df_file_name,names=deep_star_columns, header=0,encoding='gb2312'))
-        all_trend_result_df.append(tds.pd.read_csv(all_trend_result_df_file_name,names=trend_columns, header=0,encoding='gb2312'))
-
+        all_temp_hist_df = all_temp_hist_df.append(tds.pd.read_csv(all_temp_hist_df_file_name, header=0,encoding='gb2312'),ignore_index=True) #names=all_temp_columns
+        all_result_df = all_result_df.append(tds.pd.read_csv(all_result_df_file_name, header=0,encoding='gb2312'),ignore_index=True) #names=all_result_columns,
+        deep_star_df = deep_star_df.append(tds.pd.read_csv(deep_star_df_file_name, header=0,encoding='gb2312'),ignore_index=True)#names=deep_star_columns,
+        all_trend_result_df = all_trend_result_df.append(tds.pd.read_csv(all_trend_result_df_file_name, header=0,encoding='gb2312'),ignore_index=True) #names=trend_columns,
     return all_temp_hist_df,all_result_df,deep_star_df,all_trend_result_df
 
 def seprate_list(all_codes,seprate_num=4):
