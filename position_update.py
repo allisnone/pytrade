@@ -50,6 +50,10 @@ def update_yh_hist_data(all_codes,process_id,latest_date_str):
         print('latest_update_rate_processor_%s=%s'%(process_id,latest_update_rate))
     return
 
+def update_one_stock_k_data(code):
+    df = pds.get_yh_raw_hist_df(code,latest_count=None)
+    return
+
 def multiprocess_update_k_data(code_list_dict,update_type='yh'):
     #code_list_dict = seprate_list(all_codes,4)
     #print('code_list_dict=',code_list_dict)
@@ -59,6 +63,20 @@ def multiprocess_update_k_data(code_list_dict,update_type='yh'):
     p = Pool()
     for i in range(processor_num):
         p.apply_async(update_yh_hist_data, args=(code_list_dict[i],i,last_date_str,))
+    print('Waiting for all subprocesses done...')
+    p.close()
+    p.join()
+    print('All subprocesses done.')
+    return
+
+def multiprocess_update_k_data1(allcodes,update_type='yh'):
+    #code_list_dict = seprate_list(all_codes,4)
+    #print('code_list_dict=',code_list_dict)
+    print('Parent process %s.' % os.getpid())
+    processor_num=len(allcodes)
+    #update_yh_hist_data(codes_list=[],process_id=0)
+    p = Pool(10)
+    p.map(update_one_stock_k_data,allcodes)
     print('Waiting for all subprocesses done...')
     p.close()
     p.join()
@@ -207,7 +225,9 @@ if __name__ == '__main__':
     #all_codes=['300162']
     code_list_dict = seprate_list(all_codes,4)
     #print('code_list_dict=',code_list_dict)
-    multiprocess_update_k_data(code_list_dict)
+    
+    #multiprocess_update_k_data(code_list_dict)  #apply,非阻塞，传不同参数，支持回调函数
+    multiprocess_update_k_data1(all_codes,update_type='yh')  #map，阻塞，一个参数
     
     end = time.time()
     print('Task update yh hist data runs %0.2f seconds.' % (end - start))
