@@ -42,6 +42,9 @@ def duoxiangshi(x,y,n):
     return p,y1
 
 def get_nihe_num(x,y):
+    """
+    多项式预测值平滑
+    """
     var_err_std = 10000.0
     #var_err_std_dict = {}
     varerr_list = []
@@ -51,7 +54,8 @@ def get_nihe_num(x,y):
         p,y1 = duoxiangshi(x,y,i)
         var_err_std = round(np.sqrt(sum((p(x)-y)*(p(x)-y))/len(y)),2)
         if y1<yn*0.9 or y1>yn*1.1:
-            print('invalid %s' % i)
+            #print('invalid %s' % i)
+            pass
         else:
             print('y1_%s = %s， err=%s ' %(i,y1,var_err_std))
             y_pridict.append(y1)
@@ -60,12 +64,14 @@ def get_nihe_num(x,y):
     varerr_list.remove(max(varerr_list))
     varerr_list.remove(min(varerr_list))
     avrg_err = sum(varerr_list)/len(varerr_list)
+    y_pridict.remove(max(y_pridict))
+    y_pridict.remove(min(y_pridict))
     avrg_y_pridict = sum(y_pridict)/len(y_pridict)
     return avrg_y_pridict,avrg_err
 
 
 y=[15.09,14.77,14.84,15.24,15.71,15.71,15.78,15.61,15.09,15.08,14.93,14.83,15.02,15.27,15.12,15.22,15.68,15.40,
-   14.80,14.93,15.39,15.62,15.37,15.98,16.15,15.74,15.73,16.38,16.30,16.40]
+   14.80,14.93,15.39,15.62,15.37,15.98,16.15,15.74,15.73,16.38,16.30,16.40,16.11]
 
 x= range(len(y))
 
