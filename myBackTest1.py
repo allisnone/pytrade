@@ -111,21 +111,17 @@ def back_test_stocks(test_codes,k_num=0,source='yh',rate_to_confirm = 0.01,proce
     for stock_symbol in test_codes:
         if stock_symbol=='000029' and source=='easyhistory':
             continue
-        print(i,stock_symbol)
+        print('processor_id=%s :%s,%s' %(processor_id,i,stock_symbol))
         s_stock=tds.Stockhistory(stock_symbol,'D',test_num=k_num,source=source,rate_to_confirm=rate_to_confirm)
-        print('10')
         if s_stock.h_df.empty:
             print('New stock %s and no history data' % stock_symbol)
             continue
         if True:
         #try:
-            print('11')
             result_df = s_stock.form_temp_df(stock_symbol)
             test_result = s_stock.regression_test(rate_to_confirm)
             recent_trend = s_stock.get_recent_trend(num=ma_num,column='close')
-            print('12')
             s_stock.diff_ma(ma=[10,30],target_column='close',win_num=5)
-            print('13')
             temp_hist_df = s_stock.temp_hist_df.set_index('date')
             #temp_hist_df.to_csv('C:/hist/day/temp/%s.csv' % stock_symbol)
             temp_hist_df_tail = temp_hist_df.tail(1)
@@ -154,7 +150,6 @@ def back_test_stocks(test_codes,k_num=0,source='yh',rate_to_confirm = 0.01,proce
         #except:
         #    print('Regression test exception for stock: %s' % stock_symbol)
         if save_type=='csv': #write to csv
-            print('4')
             all_temp_hist_df_file_name = 'C:/work/temp1/all_temp_hist_%s' %processor_id +'.csv'
             all_result_df_file_name = 'C:/work/temp1/all_result_%s' %processor_id +'.csv'
             deep_star_df_file_name = 'C:/work/temp1/deep_star_%s' %processor_id +'.csv'
@@ -171,6 +166,7 @@ def multiprocess_back_test(code_list_dict,k_num=0,source='yh',rate_to_confirm = 
     #code_list_dict = seprate_list(all_codes,4)
     #print('code_list_dict=',code_list_dict)
     print('Parent process %s.' % os.getpid())
+    start = time.time()
     processor_num=len(code_list_dict)
     #update_yh_hist_data(codes_list=[],process_id=0)
     p = Pool()
@@ -181,6 +177,8 @@ def multiprocess_back_test(code_list_dict,k_num=0,source='yh',rate_to_confirm = 
     p.close()
     p.join()
     print('All subprocesses done.')
+    end = time.time()
+    print('Task multiprocess_back_test runs %0.2f seconds.' % (end - start))
     return 
 
 def combine_multi_process_result(processor_num=4,all_result_columns=[],all_temp_columns=[],trend_columns=[],deep_star_columns=[]):
@@ -224,6 +222,7 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
     """
     #addition_name = ''
     #if type == 'index':
+    start = time.time()
     addition_name = type
     all_codes = []
     all_stop_codes = []
@@ -441,6 +440,8 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
         dapan_ho_df = dapan_ho_df[['code','name','ho_index']+dapan_high_open_columns]
     dapan_ho_df.to_csv('C:/work/temp/dapan_high_open_%s'% regress_column_type + addition_name +tail_name)
     """
+    end = time.time()
+    print('Task Mybacktest runs %0.2f seconds.' % (end - start))
     return all_result_df
 
 
