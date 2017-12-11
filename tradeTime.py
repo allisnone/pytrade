@@ -61,7 +61,6 @@ def get_latest_trade_date(this_date=None,date_format='%Y-%m-%d'):
         else:
             this_day=this_day+datetime.timedelta(days=-1)
             this_str=this_day.strftime(date_format)  
-        print('this_str=',this_str)
 
 def get_next_trade_date(given_datetime=None,date_format='%Y-%m-%d'):
     """
@@ -197,7 +196,6 @@ def get_remain_time_to_trade():
         #print('10')
         next_date_str=get_next_trade_date()
         next_trade_str=next_date_str +  MORNING_START
-    print('next_trade_str=',next_trade_str)
     next_trade_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')
     delta_time=datetime.datetime.strptime(next_trade_str,'%Y-%m-%d %X')-this_time
     delta_seconds=delta_time.days*24*3600+delta_time.seconds+0.000001*delta_time.microseconds
@@ -209,6 +207,17 @@ def get_timestamp(date_time_str=None):#获取时间戳
         return time.time()
     else:
         return time.mktime(time.strptime(date_time_str, '%Y-%m-%d %X'))
+    
+def is_need_update_histdata(taget_last_date_str):
+    """
+    历史数据更新到交易的前一天，当天是交易日，16点后更新数据
+    """
+    last_date_str = get_last_trade_date(date_format='%Y/%m/%d')
+    if is_trade_date() and datetime.datetime.now().hour>=16:
+        last_date_str = get_latest_trade_date(date_format='%Y/%m/%d')
+    if '-' in taget_last_date_str:
+        taget_last_date_str = taget_last_date_str.replace('-', '/') 
+    return taget_last_date_str<last_date_str
 """
 print(is_trade_date('2017-08-04'))
 print(get_pass_trade_time())

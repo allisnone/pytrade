@@ -15,13 +15,30 @@ print('latest_date_str=',latest_date_str)
 print('next_date_str=',next_date_str)
 code = '000001'
 df = pds.get_yh_raw_hist_df(code,latest_count=None)
-print(df)
+print(df.empty)
 last_code_trade_date = df.tail(1).iloc[0].date
 print('last_code_trade_date=',last_code_trade_date)#,type(last_code_trade_date))
 
+def get_last_tradte_date_yh_hist(default_codes=['601398','000002','002001','300059','601857','600028','000333','300251','601766','002027']):
+    last_date_str=''
+    for test_code in default_codes:
+        df = pds.get_yh_raw_hist_df(test_code,latest_count=None)
+        last_code_trade_date = df.tail(1).iloc[0].date
+        print('last_code_trade_date=',last_code_trade_date)#,type(last_code_trade_date))
+        if not df.empty:
+            last_date_str = df.tail(1).iloc[0].date
+            if last_date_str:
+                break
+    return last_date_str
+
 
 if True:
+    taget_last_date_str = get_last_tradte_date_yh_hist()
+    is_need_update = pds.tt.is_need_update_histdata(taget_last_date_str)
+    print('is_need_update=',is_need_update)
     now_time =datetime.datetime.now()
+    now_hour = datetime.datetime.now().hour 
+    print('now_hour=',now_hour)
     now_time_str = now_time.strftime('%Y/%m/%d %X')
     print('now_time = ',now_time_str)
     print('update_latest update datetime to sql')

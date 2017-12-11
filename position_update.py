@@ -11,6 +11,9 @@ from multiprocessing import Pool
 import os, time
 
 def seprate_list(all_codes,seprate_num=4):
+    """
+    分割股票池
+    """
     #all_codes = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
     c = len(all_codes)
     sub_c = int(c/seprate_num)
@@ -21,6 +24,9 @@ def seprate_list(all_codes,seprate_num=4):
     return code_list_dict
 
 def update_yh_hist_data(all_codes,process_id,latest_date_str):
+    """
+    更新历史数据，单个CPU
+    """
     all_count = len(all_codes)
     print('processor %s: all_count=%s '% (process_id,all_count))
     if all_count<=0:
@@ -54,7 +60,11 @@ def update_one_stock_k_data(code):
     df = pds.get_yh_raw_hist_df(code,latest_count=None)
     return
 
-def multiprocess_update_k_data(code_list_dict,update_type='yh'):
+def multiprocess_update_k_data0(code_list_dict,update_type='yh'):
+    """
+    多进程更新历史数据，apply_async方法
+    存在问题：数据分片丢失
+    """
     #code_list_dict = seprate_list(all_codes,4)
     #print('code_list_dict=',code_list_dict)
     print('Parent process %s.' % os.getpid())
@@ -69,13 +79,16 @@ def multiprocess_update_k_data(code_list_dict,update_type='yh'):
     print('All subprocesses done.')
     return
 
-def multiprocess_update_k_data1(allcodes,update_type='yh'):
+def multiprocess_update_k_data(allcodes,update_type='yh',pool_num=10):
+    """
+    多进程更新历史数据，map方法
+    """
     #code_list_dict = seprate_list(all_codes,4)
     #print('code_list_dict=',code_list_dict)
-    print('Parent process %s.' % os.getpid())
+    print('Parent process %s, multiprocess_num=%s.' % (os.getpid(),pool_num))
     processor_num=len(allcodes)
     #update_yh_hist_data(codes_list=[],process_id=0)
-    p = Pool(10)
+    p = Pool(pool_num)
     p.map(update_one_stock_k_data,allcodes)
     print('Waiting for all subprocesses done...')
     p.close()
@@ -195,6 +208,37 @@ def update_k_data(update_type='yh'):
     else:
         pass
     
+def get_last_trade_date_yh_hist(default_codes=['601398','000002','002001','300059','601857','600028','000333','300251','601766','002027']):
+    last_date_str=''
+    for test_code in default_codes:
+        df = pds.get_yh_raw_hist_df(test_code,latest_count=None)
+        if not df.empty:
+            last_date_str = df.tail(1).iloc[0].date
+            if last_date_str:
+                break
+    return last_date_str
+
+def update_hist_k_datas(update_type='yh'):
+    last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
+    is_need_update = pds.tt.is_need_update_histdata(get_last_trade_date_yh_hist())
+    update_state = 0
+    if is_need_update:
+        start = time.time()
+        all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
+        #multiprocess_update_k_data(code_list_dict)  #apply,非阻塞，传不同参数，支持回调函数
+        multiprocess_update_k_data(all_codes,update_type)  #map，阻塞，一个参数
+        end = time.time()
+        print('Task update yh hist data runs %0.2f seconds.' % (end - start))
+        """Post-check"""
+        is_need_update = pds.tt.is_need_update_histdata(get_last_trade_date_yh_hist())
+        if is_need_update:
+            print('尝试更新历史数据，但是更新失败；请全部盘后数据已下载...')
+            update_state = -1
+        else:
+            update_state = 1
+    else:
+        print('No need to update history data')
+    return update_state
     
 if __name__ == '__main__':
     #freeze_support()
@@ -204,17 +248,18 @@ if __name__ == '__main__':
     #update_type = 'stock'
     update_type = 'yh'
     #update_type = 'aa'
-    start = time.time()
+    
     now_time =datetime.datetime.now()
     now_time_str = now_time.strftime('%Y/%m/%d %X')
     d_format='%Y/%m/%d'
     last_date_str = pds.tt.get_last_trade_date(date_format=d_format)
     print('now_time = ',now_time_str)
-    print('last_date = ',last_date_str)
-    
+    print('last_trade_date = ',last_date_str)
+ 
     if len(sys.argv)>=2:
         if sys.argv[1] and isinstance(sys.argv[1], str):
             update_type = sys.argv[1]  #start date string   
+    """
     #update_type = 'index'
     #update_type = 'position'
     #update_type = 'aa'
@@ -227,10 +272,11 @@ if __name__ == '__main__':
     #print('code_list_dict=',code_list_dict)
     
     #multiprocess_update_k_data(code_list_dict)  #apply,非阻塞，传不同参数，支持回调函数
-    multiprocess_update_k_data1(all_codes,update_type='yh')  #map，阻塞，一个参数
+    multiprocess_update_k_data(all_codes,update_type='yh')  #map，阻塞，一个参数
     
-    end = time.time()
-    print('Task update yh hist data runs %0.2f seconds.' % (end - start))
+    """
+    update_state = update_hist_k_datas(update_type)
+    
     """
     print('Parent process %s.' % os.getpid())
     #update_yh_hist_data(codes_list=[],process_id=0)
