@@ -1402,4 +1402,20 @@ def get_hold_stock_statistics(hold_stocks= ['000007', '000932', '601009', '15028
                 statistics_df = statistics_df.append(temp_hold_df)
     statistics_df = statistics_df.set_index('code')
     return statistics_df
+
+
+def position_datafrom_from_dict(position={'36005':{'300241':{}},'36006':{'300241':{}}}):
+    new_pos = {}
+    for acc in position.keys():
+        acc_pos = position[acc]
+        for stock in acc_pos.keys():
+            acc_pos[stock]['acc'] = acc
+        new_pos.update(acc_pos)
+    pos_df = pd.DataFrame.from_dict(new_pos, orient='index')
+    undefile_column =''
+    for col in pos_df.columns.values.tolist():
+        if 'Unnamed' in col:
+            undefile_column = col
+    if undefile_column: del pos_df[undefile_column]
+    return pos_df
         

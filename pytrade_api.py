@@ -60,21 +60,21 @@ def close_yingyebu_gonggao(key_text='营业部公告',click_text='确定',interv
     return -1
     
 
-def trader(trade_api='shuangzixing',bebug=True):
+def trader(trade_api='shuangzixing',acc='331600036005',bebug=True):
     if trade_api=='haiwangxing':
         return  OperationTdx(bebug)
     elif trade_api=='shuangzixing':
         szx_obj = OperationSZX()
         szx_obj.enable_debug(bebug)
         account_dict={
-            "inputaccount": "331600036005",
+            "inputaccount": acc,
             "trdpwd": "F71281A2D62C4b3a8268C6453E9C42212CCC5BA9AB89CAFF4E97CC31AE0E4C48"
         }
         #user.set_title(title='网上股票交易系统5.0')
         #user.prepare(user='331600036005', password='821853')
         exe_path='C:\中国银河证券双子星3.2\Binarystar.exe'
-        szx_obj.prepare(user='331600036005', password='821853',exe_path=exe_path)
-        szx_obj.update_acc_id()
+        szx_obj.prepare(user=acc, password='821853',exe_path=exe_path)  #will set acc_id
+        #szx_obj.update_acc_id()
         return szx_obj
     else:
         print('No %s API. Please input right trade API' % trade_api)
@@ -91,6 +91,7 @@ class OperationSZX(YHClientTrader):
         self.init_hwnd()
     """
     debug=False
+    acc_id = 0
 
     def enable_debug(self,debug=True):
         self.debug=debug
@@ -223,6 +224,7 @@ class OperationSZX(YHClientTrader):
         #print('self._config=',self._config)
         try:
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=1)
+            self.update_acc_id()
         except Exception:
             self._app = pywinauto.Application().start(exe_path)
 
@@ -246,15 +248,16 @@ class OperationSZX(YHClientTrader):
                 # detect login is success or not
                 try:
                     self._app.top_window().wait_not('exists', 2)
-                    log.info('登录成功')
+                    log.info('登录成功%s' % user[-5:])
                     self._wait(0.2)
                     break
                 except:
-                    log.info('重新输入验证码，登录中...')
+                    log.info('重新输入验证码，登录%s中...' % user[-5:])
                     pass
                 self._wait(0.5)
             close_yingyebu_gonggao(key_text='营业部公告',click_text='确定')#关闭营业部公告弹出窗口，如果有
             self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=10)
+            self.update_acc_id(user[-5:])
         #self._wait(2)
         self._close_prompt_windows()
         self._main = self._app.top_window()
@@ -481,7 +484,7 @@ class OperationSZX(YHClientTrader):
     """
     
         
-    def is_right_acc(self,acc='36005',position=list()):
+    def is_right_acc_raw(self,acc='36005',position=list()):
         """确认是否正确账号
         return bool
         """
@@ -658,7 +661,7 @@ class OperationSZX(YHClientTrader):
         return self.acc_id==acc_id
     
     def get_acc_id(self):
-        #"""
+        """
         valid_acc_ids = LI
         acc_id = 0
         for acc_id in valid_acc_ids:
@@ -667,11 +670,17 @@ class OperationSZX(YHClientTrader):
             else:
                 pass
         this_acc_id,combobox_id = self.get_acc_combobox_id()
-        #"""
-        return this_acc_id
+        if self.acc_id and self.acc_id in LI:
+            return self.acc_id
+        else:
+            
+        """
+        return self.acc_id
     
-    def update_acc_id(self):
-        this_acc_id,combobox_id = self.get_acc_combobox_id()
+    def update_acc_id(self,this_acc_id=None):
+        if not this_acc_id:
+            this_acc_id,combobox_id = self.get_acc_combobox_id()
+            log.info("当前实质acc_id=%s" % this_acc_id)
         self.acc_id = this_acc_id
         
     def get_acc_combobox_id(self,position_dict={},acc_combobox_map = {'36005':0,'38736':1}):
@@ -686,10 +695,10 @@ class OperationSZX(YHClientTrader):
         else:
             pass
         if position_dict:
-            print('list(position_dict.keys())=',position_dict)
+            #print('list(position_dict.keys())=',position_dict)
             for code in list(position_dict.keys()):
                 code_gudong = position_dict[code]['股东代码']
-                print('code_gudong=',code_gudong)
+                #print('code_gudong=',code_gudong)
                 if code_gudong in list(acount_dict.keys()):
                     acc_id = acount_dict[code_gudong]
                     combobox_id = acc_combobox_map[acc_id]
@@ -730,7 +739,7 @@ class OperationSZX(YHClientTrader):
                     changed_acc = True
                 else:
                     log.warning('给定无效acc_id=%s' % acc_id)
-        else:
+        else:#为指定ACC ID  直接切换到另外的ACC
             if pre_acc_id==LI[0]:
                 #changed = True
                 self.exit()
@@ -740,6 +749,7 @@ class OperationSZX(YHClientTrader):
                 self.prepare(user=HD + LI[1], password=VA[LI[1]]['A2'], exe_path=exe_path)
                 #self.acc_id = LI[1]
                 changed_acc = True
+                acc_id = LI[1]
             elif pre_acc_id==LI[1]:
                 #changed = True
                 self.exit()
@@ -749,10 +759,11 @@ class OperationSZX(YHClientTrader):
                 self.prepare(user=HD + LI[0], password=VA[LI[0]]['A2'], exe_path=exe_path)
                 #self.acc_id = LI[0]  
                 changed_acc = True
+                acc_id = LI[0]
             else:
-                log.warning('未在配置文件预定acc_id')  
-        if changed_acc:
-            self.update_acc_id()
+                log.warning('未在配置文件预定acc_id') 
+        if changed_acc and acc_id in LI:
+            self.update_acc_id(acc_id)
         return changed_acc
     
     def get_all_position(self):
@@ -766,12 +777,12 @@ class OperationSZX(YHClientTrader):
             pos_dict[acc_id_new] = self.get_my_position()
         return pos_dict
     
-    def get_all_position(self):
+    def get_all_positions(self):
         avl_sell_datas = {}
         position = self.get_my_position()
         current_acc_id,current_box_id = self.get_acc_combobox_id(position_dict=position)
-        print('first_acc=%s' % current_acc_id)
-        print('position=',position)
+        #print('first_acc=%s' % current_acc_id)
+        #print('position=',position)
         current_avl_sell = []
         for code in list(position.keys()):
             #print(position[code].keys())
@@ -848,7 +859,7 @@ class OperationSZX(YHClientTrader):
         if not self.change_to_valid_acc(acc_id):
             return False
         this_acc_positon = self.position
-        print('this_acc_positon=',this_acc_positon)
+        #print('this_acc_positon=',this_acc_positon)
         for pos in this_acc_positon:
             code = pos['证券代码']
             symbol = int_code_to_stock_symbol(code)
@@ -1083,7 +1094,8 @@ class OperationSZX(YHClientTrader):
             
             except Exception as e:
                 if n<100:
-                    log.warning('{}, retry ......'.format(e))
+                    if self.debug:log.warning('{}, retry ......'.format(e))
+                    pass
                 else:
                     pass
                 n=n+10

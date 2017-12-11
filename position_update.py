@@ -7,6 +7,8 @@ from pdSql import StockSQL
 import sys
 import datetime
 
+from pytrade_api import *
+
 from multiprocessing import Pool
 import os, time
 
@@ -208,19 +210,26 @@ def update_k_data(update_type='yh'):
     else:
         pass
     
-def get_last_trade_date_yh_hist(default_codes=['601398','000002','002001','300059','601857','600028','000333','300251','601766','002027']):
+def get_last_trade_date_yh_hist(target_last_date_str,default_codes=['601398','000002','002001','300059','601857','600028','000333','300251','601766','002027']):
     last_date_str=''
     for test_code in default_codes:
         df = pds.get_yh_raw_hist_df(test_code,latest_count=None)
         if not df.empty:
-            last_date_str = df.tail(1).iloc[0].date
-            if last_date_str:
+            last_date_str_stock = df.tail(1).iloc[0].date
+            if last_date_str_stock>=target_last_date_str:
+                last_date_str = last_date_str_stock
                 break
+            else:
+                if last_date_str_stock>last_date_str:
+                    last_date_str = last_date_str_stock
+                else:
+                    pass
+                
     return last_date_str
 
 def update_hist_k_datas(update_type='yh'):
     last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
-    is_need_update = pds.tt.is_need_update_histdata(get_last_trade_date_yh_hist())
+    is_need_update = pds.tt.is_need_update_histdata(get_last_trade_date_yh_hist(last_date_str))
     update_state = 0
     if is_need_update:
         start = time.time()
@@ -230,7 +239,7 @@ def update_hist_k_datas(update_type='yh'):
         end = time.time()
         print('Task update yh hist data runs %0.2f seconds.' % (end - start))
         """Post-check"""
-        is_need_update = pds.tt.is_need_update_histdata(get_last_trade_date_yh_hist())
+        is_need_update = pds.tt.is_need_update_histdata(get_last_trade_date_yh_hist(last_date_str))
         if is_need_update:
             print('尝试更新历史数据，但是更新失败；请全部盘后数据已下载...')
             update_state = -1
@@ -276,6 +285,35 @@ if __name__ == '__main__':
     
     """
     update_state = update_hist_k_datas(update_type)
+    
+    stock_sql = StockSQL()
+    if update_state:#写入数据库 已经更新历史数据
+        stock_sql.write_tdx_histdata_update_time(now_time_str)
+    #stock_sql.update_data(table='systime',fields='tdx_update_time',values=now_time_str,condition='id=0')
+    #stock_sql.update_data(table='systime',fields='tdx_update_time',values=now_time_str,condition='id=0')
+    trader_api='shuangzixing'
+    op_tdx = trader(trade_api='shuangzixing',acc='331600036005',bebug=False)
+    if not op_tdx:
+        print('Error')
+    """
+    op_tdx =trader(trade_api,bebug=True)
+    op_tdx.enable_debug(debug=True)
+    """
+    #pre_position = op_tdx.getPositionDict()
+    position = op_tdx.get_all_position()
+    #position,avl_sell_datas,monitor_stocks = op_tdx.get_all_positions()
+    print('position=',position)
+    pos_df = pds.position_datafrom_from_dict(position)
+    pos_df.to_csv('all_positions.csv')
+    
+    if not pos_df.empty:
+        stock_sql.update_all_position(pos_df,table_name='allpositions')
+        stock_sql.write_position_update_time(now_time_str)
+    df_dict = stock_sql.get_systime()
+    print(df_dict)
+    
+    is_tdx_uptodate,is_pos_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+    print(is_tdx_uptodate,is_pos_uptodate)
     
     """
     print('Parent process %s.' % os.getpid())

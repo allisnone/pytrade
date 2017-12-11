@@ -50,5 +50,5 @@ if True:
     df_dict = stock_sql.get_systime()
     print(df_dict)
     
-    is_tdx_uptodate,is_pos_uptodate = stock_sql.is_histdata_uptodate()
+    is_tdx_uptodate,is_pos_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
     print(is_tdx_uptodate,is_pos_uptodate)

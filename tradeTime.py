@@ -212,11 +212,15 @@ def is_need_update_histdata(taget_last_date_str):
     """
     历史数据更新到交易的前一天，当天是交易日，16点后更新数据
     """
-    last_date_str = get_last_trade_date(date_format='%Y/%m/%d')
-    if is_trade_date() and datetime.datetime.now().hour>=16:
-        last_date_str = get_latest_trade_date(date_format='%Y/%m/%d')
     if '-' in taget_last_date_str:
         taget_last_date_str = taget_last_date_str.replace('-', '/') 
+    last_date_str = get_last_trade_date(date_format='%Y/%m/%d')
+    if is_trade_date():
+        if datetime.datetime.now().hour>=16:
+            last_date_str = get_latest_trade_date(date_format='%Y/%m/%d')
+    else:
+        last_date_str = get_latest_trade_date(date_format='%Y/%m/%d')
+    
     return taget_last_date_str<last_date_str
 """
 print(is_trade_date('2017-08-04'))

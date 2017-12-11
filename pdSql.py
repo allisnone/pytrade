@@ -538,6 +538,14 @@ class StockSQL(object):
         #else:
             time.sleep(10)
             self.update_sql_position(users)
+            
+    def update_all_position(self,pos_df,table_name='allpositions',):
+        try:
+            self.drop_table(table_name)
+        except:
+             pass
+        self.insert_table(pos_df,table_name=table_name)
+        return
     
     def get_hold_stocks(self,accounts=['36005', '38736']):
         if len(accounts)<1:
