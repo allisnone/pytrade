@@ -224,14 +224,14 @@ class myYHClientTrader(YHClientTrader):
         
         pos=(x,y)
         print('pos=',pos)
-        time.sleep(5)
+        time.sleep(1)
         handle= win32gui.WindowFromPoint(pos)
         client_pos =win32gui.ScreenToClient(handle,pos)
         tmp=win32api.MAKELONG(client_pos[0],client_pos[1])
         win32gui.SendMessage(handle, win32con.WM_ACTIVATE,win32con.WA_ACTIVE,0)
-        #time.sleep(0.2)
+        time.sleep(0.2)
         win32gui.SendMessage(handle, win32con.WM_LBUTTONDOWN,win32con.MK_LBUTTON,tmp)
-        #time.sleep(0.2)
+        time.sleep(0.2)
         win32gui.SendMessage(handle, win32con.WM_LBUTTONUP,win32con.MK_LBUTTON,tmp)
         time.sleep(2)
         
