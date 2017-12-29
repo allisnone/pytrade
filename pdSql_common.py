@@ -3,12 +3,10 @@ from sqlalchemy import create_engine
 import pymysql 
 import pandas as pd
 import numpy as np
-from pandas.io import sql
-from pandas.lib import to_datetime
-from pandas.lib import Timestamp
 import datetime,time,os
 import tushare as ts
-
+#from pandas.lib import Timestamp
+from pandas._libs.lib import Timestamp
 import easytrader,easyhistory
 import time,os
 
@@ -16,6 +14,7 @@ import time,os
 #ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
 RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"  
+TDX_LAST_STRING = '数据来源:通达信'
 #HIST_DIR=ROOT_DIR+'/update/'
 #"""
 import tradeTime as tt
@@ -89,7 +88,38 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
     # print('%s_sql=%s'%(oper_type,sql))
     return sql
 
+def format_code(code):
+    """
+    股票代码规整
+    """
+    if not code:
+        pass
+    else:
+        if isinstance(code,int) or isinstance(code,str):
+            code_str = '%s'%code
+            if len(code_str)>=6:
+                code = code_str
+            else:
+                code = '0'*(6-len(code_str))+ '%s'%code_str
+        else:
+             pass
+    return  code
 
+def get_data_columns(dest_dir,remove_value='Unnamed: 0'):
+    """
+    获取某一目录下相同类型文件的列值，返回list
+    """
+    all_files = os.listdir(dest_dir)
+    if not all_files:
+        return list()
+    file_name = dest_dir + all_files[0]
+    columns = pd.read_csv(file_name,usecols=None).tail(1).columns.values.tolist()
+    try:
+        columns.remove(remove_value)
+    except:
+        pass
+    return  columns
+ 
 def get_raw_hist_df(code_str,latest_count=None):
     file_type='csv'
     file_name='C:/hist/day/data/'+code_str+'.'+file_type
@@ -115,13 +145,34 @@ def get_raw_hist_df(code_str,latest_count=None):
         #print('OSError:',e)
         return df_0
 
-def get_yh_raw_hist_df(code_str,latest_count=None):
+
+def append_to_csv(value,column_name='code',file_name='C:/work/temp/stop_stocks.csv',empty_first=False):
+    """
+    追加单列的CSV文件
+    """
+    stop_codes = []
+    if empty_first:
+        pd.DataFrame({column_name:[]}).to_csv(file_name,encoding='utf-8')
+    try:
+        stop_trade_df = df=pd.read_csv(file_name)
+        stop_codes = stop_trade_df[column_name].values.tolist()
+    except:
+        pd.DataFrame({column_name:[]}).to_csv(file_name,encoding='utf-8')
+    stop_codes.append(value)
+    new_df = pd.DataFrame({column_name:stop_codes})
+    new_df.to_csv(file_name,encoding='utf-8')
+    return new_df
+
+#append_to_csv('000562')
+
+def get_yh_raw_hist_df(code_str,latest_count=None,target_last_date_str='',is_updated_raw_export_date=False):
     file_type='csv'
     RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"
     file_name=RAW_HIST_DIR+code_str+'.'+file_type
     raw_column_list=['date','open','high','low','close','volume','amount']
     #print('file_name=',file_name)
     df_0=pd.DataFrame({},columns=raw_column_list)
+    has_tdx_last_string = False
     try:
     #if True:
         #print('code_str=%s'%code_str)
@@ -130,32 +181,46 @@ def get_yh_raw_hist_df(code_str,latest_count=None):
         if df.empty:
             #print('code_str=',code_str)
             df_0.to_csv(file_name,encoding='utf-8')
-            return df_0
+            return df_0,has_tdx_last_string
         #else:
         #    return
         last_date=df.tail(1).iloc[0].date
-        if last_date=='数据来源:通达信':
+        if last_date==TDX_LAST_STRING:
             df=df[:-1]
             #print('数据来源:通达信')
             #print(df.tail(1).iloc[0].date)
             if df.empty:
                 df_0.to_csv(file_name,encoding='utf-8')
-                return df_0
+                return df_0,has_tdx_last_string
             #else:
             #   return
             last_volume=df.tail(1).iloc[0].volume
+            last_trade_date_str = df.tail(1).iloc[0].date
+            if target_last_date_str and is_updated_raw_export_date:
+                if last_trade_date_str>=target_last_date_str:
+                    pass
+                else:
+                    """个股停牌，代码写入txt文件"""
+                    pass
+                """
+                    stop_stocks_csv_name = 'C:/stop_stocks.csv'
+                    stop_trade_df = df=pd.read_csv(stop_stocks_csv_name)
+                    new_stock_df = pd.DataFrame({'code':[code_str]})
+                    stop_trade_df.append(new_stock_df)
+                """
             if int(last_volume)==0:
                 df=df[:-1]
             df['date'].astype(Timestamp)
             df_to_write = df.set_index('date')
             df_to_write.to_csv(file_name,encoding='utf-8')
+            has_tdx_last_string = True
         else:
             pass
-        return df
+        return df,has_tdx_last_string
     except OSError as e:
         #print('OSError:',e)
         df_0.to_csv(file_name,encoding='utf-8')
-        return df_0
+        return df_0,has_tdx_last_string
     
 def get_easyhistory_df(code_str,source='easyhistory'):  #ta_lib
     data_path = 'C:/hist/day/data/'

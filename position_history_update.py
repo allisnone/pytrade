@@ -11,6 +11,8 @@ from pytrade_api import *
 
 from multiprocessing import Pool
 import os, time
+import file_config as fc
+import code
 
 def seprate_list(all_codes,seprate_num=4):
     """
@@ -42,7 +44,7 @@ def update_yh_hist_data(all_codes,process_id,latest_date_str):
         #print('all_codes=',all_codes)
         for code in all_codes:
             #print('code=',code)
-            df = pds.get_yh_raw_hist_df(code,latest_count=None)
+            df,has_tdx_last_string = pds.get_yh_raw_hist_df(code,latest_count=None)
             pc = round(round(count,2)/all_count,2)*100
             if pc>pc0:
                 #print('count=',count)
@@ -59,7 +61,7 @@ def update_yh_hist_data(all_codes,process_id,latest_date_str):
     return
 
 def update_one_stock_k_data(code):
-    df = pds.get_yh_raw_hist_df(code,latest_count=None)
+    df,has_tdx_last_string = pds.get_yh_raw_hist_df(code,latest_count=None)
     return
 
 def multiprocess_update_k_data0(code_list_dict,update_type='yh'):
@@ -192,7 +194,7 @@ def update_k_data(update_type='yh'):
         count = 0
         pc0=0
         for code in all_codes:
-            df = pds.get_yh_raw_hist_df(code,latest_count=None)
+            df,has_tdx_last_string = pds.get_yh_raw_hist_df(code,latest_count=None)
             count = count + 1
             pc = round(round(count,2)/all_count,2)* 100
             if pc>pc0:
@@ -209,11 +211,34 @@ def update_k_data(update_type='yh'):
             
     else:
         pass
-    
+
+def get_stock_last_trade_date_yh():
+    last_date_str=''
+    is_need_del_tdx_last_string=False
+    df,has_tdx_last_string = pds.get_yh_raw_hist_df(test_code,latest_count=None)
+    if has_tdx_last_string:
+        is_need_del_tdx_last_string =True
+    if not df.empty:
+        last_date_str_stock = df.tail(1).iloc[0].date
+        if last_date_str_stock>=target_last_date_str:
+            last_date_str = last_date_str_stock
+        else:
+            if last_date_str_stock>last_date_str:
+                last_date_str = last_date_str_stock
+            else:
+                pass
+    else:
+        pass
+                
+    return last_date_str,is_need_del_tdx_last_string 
+   
 def get_last_trade_date_yh_hist(target_last_date_str,default_codes=['601398','000002','002001','300059','601857','600028','000333','300251','601766','002027']):
     last_date_str=''
+    is_need_del_tdx_last_string = False
     for test_code in default_codes:
-        df = pds.get_yh_raw_hist_df(test_code,latest_count=None)
+        df,has_tdx_last_string = pds.get_yh_raw_hist_df(test_code,latest_count=None)
+        if has_tdx_last_string:
+            is_need_del_tdx_last_string =True
         if not df.empty:
             last_date_str_stock = df.tail(1).iloc[0].date
             if last_date_str_stock>=target_last_date_str:
@@ -225,13 +250,14 @@ def get_last_trade_date_yh_hist(target_last_date_str,default_codes=['601398','00
                 else:
                     pass
                 
-    return last_date_str
+    return last_date_str,is_need_del_tdx_last_string
 
 def update_hist_k_datas(update_type='yh'):
-    last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
-    is_need_update = pds.tt.is_need_update_histdata(get_last_trade_date_yh_hist(last_date_str))
+    target_last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
+    last_date_str,is_need_del_tdx_last_string = get_last_trade_date_yh_hist(target_last_date_str)
+    is_need_update = pds.tt.is_need_update_histdata(last_date_str)
     update_state = 0
-    if is_need_update:
+    if True:#is_need_update or is_need_del_tdx_last_string:
         start = time.time()
         all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
         #multiprocess_update_k_data(code_list_dict)  #apply,非阻塞，传不同参数，支持回调函数
@@ -239,8 +265,9 @@ def update_hist_k_datas(update_type='yh'):
         end = time.time()
         print('Task update yh hist data runs %0.2f seconds.' % (end - start))
         """Post-check"""
-        is_need_update = pds.tt.is_need_update_histdata(get_last_trade_date_yh_hist(last_date_str))
-        if is_need_update:
+        last_date_str,is_need_del_tdx_last_string = get_last_trade_date_yh_hist(target_last_date_str)
+        is_need_update = pds.tt.is_need_update_histdata(last_date_str)
+        if is_need_update and not is_need_del_tdx_last_string:
             print('尝试更新历史数据，但是更新失败；请全部盘后数据已下载...')
             update_state = -1
         else:
@@ -248,8 +275,100 @@ def update_hist_k_datas(update_type='yh'):
     else:
         print('No need to update history data')
     return update_state
+
+def append_to_csv(value,column_name='code',file_name='C:/work/temp/stop_stocks.csv',empty_first=False):
+    """
+    追加单列的CSV文件
+    """
+    stop_codes = []
+    if empty_first:
+        pd.DataFrame({column_name:[]}).to_csv(file_name,encoding='utf-8')
+    try:
+        stop_trade_df = df=pd.read_csv(file_name)
+        stop_codes = stop_trade_df[column_name].values.tolist()
+    except:
+        pd.DataFrame({column_name:[]}).to_csv(file_name,encoding='utf-8')
+    stop_codes.append(value)
+    new_df = pd.DataFrame({column_name:stop_codes})
+    new_df.to_csv(file_name,encoding='utf-8')
+    return new_df
+
+def combine_file(tail_num=1,dest_dir='C:/work/temp/',keyword='',prefile_slip_num=0,columns=None):
+    """
+    合并指定目录的最后几行
+    """
+    all_files = os.listdir(dest_dir)
+    df = pd.DataFrame({})
+    if not all_files:
+        return df
+    file_names = []
+    if not keyword:
+        file_names = all_files
+    else:#根据keywo过滤文件
+        for file in all_files:
+            if keyword in file:
+                file_names.append(file)
+            else:
+                continue
+    #file_names=['bs_000001.csv', 'bs_000002.csv']
+    #file_names=['000001.csv', '000002.csv']
+    for file_name in file_names:
+        tail_df = pd.read_csv(dest_dir+file_name,usecols=None).tail(tail_num)
+        #columns = tail_df.columns.values.tolist()
+        #print('columns',columns)
+        prefile_name = file_name.split('.')[0]
+        if prefile_slip_num:
+            prefile_name = prefile_name[prefile_slip_num:]
+        tail_df['name'] = prefile_name
+        df=df.append(tail_df)
+    return df
+
+def get_latest_yh_k_stocks(write_file_name=fc.ALL_YH_KDATA_FILE,data_dir=fc.YH_SOURCE_DATA_DIR):
+    """
+    获取所有银河最后一个K线的数据：特定目录下
+    """
+    columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'amount']
+    columns = pds.get_data_columns(dest_dir=data_dir)
+    df = combine_file(tail_num=1,dest_dir=data_dir,keyword='',prefile_slip_num=0,columns=columns)
+    if df.empty:
+        return df
+    df['counts']=df.index
+    df = df[['date', 'open', 'high', 'low', 'close', 'volume', 'amount']+['counts','name']]
+    df['name'] = df['name'].apply(lambda x: pds.format_code(x))
+    df = df.set_index('name')
+    if write_file_name:
+        df.to_csv(write_file_name,encoding='utf-8')
+    return df
+
+def get_latest_yh_k_stocks_from_csv(file_name=fc.ALL_YH_KDATA_FILE):
+    """
+    获取股票K线数据，数据来源银河证券
+    """
+    #file_name = 'C:/work/result/all_yh_stocks.csv'
+    #columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'amount']+['counts','name']
+    columns = pds.get_data_columns(dest_dir=fc.YH_SOURCE_DATA_DIR) + ['counts','name']
+    #try:
+    if True:
+        df = pd.read_csv(file_name,usecols=columns)
+        #print(df)
+        print(type(df['name']))
+        df['name'] = df['name'].apply(lambda x:pds.format_code(x))
+        df = df.set_index('name')
+        return df
+    #except:
+    #    return get_latest_yh_k_stocks(write_file_name=file_name)
+#print(get_latest_yh_k_stocks_from_csv())
+def get_stop_stock(last_date_str,source='from_yh'):
+    """
+    获取停牌股票，数据来源银河证券
+    """
+    df = get_latest_yh_k_stocks_from_csv(write_file_name=fc.ALL_YH_KDATA_FILE)
+    if df.empty:
+            return pd.DataFrame({})
+    stop_df = df[df.date<last_date_str]
+    return stop_df
     
-if __name__ == '__main__':
+def update_history_postion():
     #freeze_support()
     #update_type = ''
     update_type = 'index'
@@ -260,8 +379,7 @@ if __name__ == '__main__':
     
     now_time =datetime.datetime.now()
     now_time_str = now_time.strftime('%Y/%m/%d %X')
-    d_format='%Y/%m/%d'
-    last_date_str = pds.tt.get_last_trade_date(date_format=d_format)
+    last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
     print('now_time = ',now_time_str)
     print('last_trade_date = ',last_date_str)
  
@@ -284,36 +402,53 @@ if __name__ == '__main__':
     multiprocess_update_k_data(all_codes,update_type='yh')  #map，阻塞，一个参数
     
     """
-    update_state = update_hist_k_datas(update_type)
-    
     stock_sql = StockSQL()
-    if update_state:#写入数据库 已经更新历史数据
-        stock_sql.write_tdx_histdata_update_time(now_time_str)
+    pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+    #pre_is_tdx_uptodate,pre_is_pos_uptodate=False,False
+    if not pre_is_tdx_uptodate:#更新历史数据
+        update_state = update_hist_k_datas(update_type)
+        if update_state:
+            """写入数据库:标识已经更新通达信历史数据 """
+            #stock_sql.write_tdx_histdata_update_time(now_time_str)
+            stock_sql.update_system_time(update_field='tdx_update_time')
+            
+            """更新all-in-one历史数据文件"""
+            get_latest_yh_k_stocks(fc.ALL_YH_KDATA_FILE)
+    else:
+        print('历史数据已经更新，无需更新;上一次更新时间：%s' % systime_dict['tdx_update_time'])
     #stock_sql.update_data(table='systime',fields='tdx_update_time',values=now_time_str,condition='id=0')
     #stock_sql.update_data(table='systime',fields='tdx_update_time',values=now_time_str,condition='id=0')
-    trader_api='shuangzixing'
-    op_tdx = trader(trade_api='shuangzixing',acc='331600036005',bebug=False)
-    if not op_tdx:
-        print('Error')
-    """
-    op_tdx =trader(trade_api,bebug=True)
-    op_tdx.enable_debug(debug=True)
-    """
-    #pre_position = op_tdx.getPositionDict()
-    position = op_tdx.get_all_position()
-    #position,avl_sell_datas,monitor_stocks = op_tdx.get_all_positions()
-    print('position=',position)
-    pos_df = pds.position_datafrom_from_dict(position)
-    pos_df.to_csv('all_positions.csv')
+    if not pre_is_pos_uptodate:
+        """更新持仓数据"""
+        trader_api='shuangzixing'
+        op_tdx = trader(trade_api='shuangzixing',acc='331600036005',bebug=False)
+        if not op_tdx:
+            print('Error')
+        """
+        op_tdx =trader(trade_api,bebug=True)
+        op_tdx.enable_debug(debug=True)
+        """
+        #pre_position = op_tdx.getPositionDict()
+        position = op_tdx.get_all_position()
+        #position,avl_sell_datas,monitor_stocks = op_tdx.get_all_positions()
+        print('position=',position)
+        pos_df = pds.position_datafrom_from_dict(position)
+       
+        if not pos_df.empty:
+            """写入数据库:标识已经更新持仓数据 """
+            stock_sql.update_all_position(pos_df,table_name='allpositions')
+            #stock_sql.write_position_update_time(now_time_str)
+            stock_sql.update_system_time(update_field='pos_update_time')
+            """持仓数据写入CSV文件"""
+            pos_df.to_csv(fc.POSITION_FILE,encoding='utf-8')
+        df_dict = stock_sql.get_systime()
+        print(df_dict)
+    else:
+        print('持仓数据已经更新，无需更新；上一次更新时间：%s' % systime_dict['pos_update_time'])
     
-    if not pos_df.empty:
-        stock_sql.update_all_position(pos_df,table_name='allpositions')
-        stock_sql.write_position_update_time(now_time_str)
-    df_dict = stock_sql.get_systime()
-    print(df_dict)
-    
-    is_tdx_uptodate,is_pos_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
-    print(is_tdx_uptodate,is_pos_uptodate)
+    is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+    print( 'is_tdx_uptodate=%s, is_pos_uptodate=%s'% (is_tdx_uptodate,is_pos_uptodate))
+    print('完成历史数据和持仓数据更新！')
     
     """
     print('Parent process %s.' % os.getpid())

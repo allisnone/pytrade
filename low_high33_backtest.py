@@ -11,6 +11,9 @@ from pydoc import describe
 
 from multiprocessing import Pool
 import os, time
+import file_config as fc 
+from position_history_update import combine_file
+from position_history_update import get_latest_yh_k_stocks_from_csv
 
 def get_stop_trade_symbol():
     today_df = ts.get_today_all()
@@ -161,25 +164,54 @@ def back_test_stocks(test_codes,k_num=0,source='yh',rate_to_confirm = 0.01,proce
             
     return all_temp_hist_df,all_result_df,deep_star_df,all_trend_result_df
 
-def multiprocess_back_test(code_list_dict,k_num=0,source='yh',rate_to_confirm = 0.01,processor_id=0,save_type='',
-                     all_result_columns=[],trend_columns=[],all_temp_columns=[],deep_star_columns=[]):
+def back_test_one_stock(stock_symbol,rate_to_confirm=0.0001,temp_dir=fc.ALL_TEMP_DIR,bs_temp_dir=fc.ALL_BACKTEST_DIR):
+    if stock_symbol=='000029' and source=='easyhistory':
+        return
+    s_stock=tds.Stockhistory(stock_symbol,'D',test_num=0,source='yh',rate_to_confirm=0.01)
+    if s_stock.h_df.empty:
+        print('New stock %s and no history data' % stock_symbol)
+        return
+    result_df = s_stock.form_temp_df(stock_symbol)
+    s_stock.form_regression_result(save_dir=bs_temp_dir,rate_to_confirm = 0.0001)
+    #recent_trend = s_stock.get_recent_trend(num=20,column='close')
+    s_stock.diff_ma_score(ma=[10,30,60,120,250],target_column='close',win_num=5)
+    temp_hist_df = s_stock.temp_hist_df.set_index('date')
+    temp_hist_df.to_csv(temp_dir + '%s.csv' % stock_symbol)
+    """
+    temp_hist_df_tail = temp_hist_df.tail(1)
+    temp_hist_df_tail['code'] = stock_symbol
+    """
+    return
+
+def multiprocess_back_test(allcodes,pool_num=10):
+                           #(code_list_dict,k_num=0,source='yh',rate_to_confirm = 0.01,processor_id=0,save_type='',
+                     #all_result_columns=[],trend_columns=[],all_temp_columns=[],deep_star_columns=[]):
     #code_list_dict = seprate_list(all_codes,4)
     #print('code_list_dict=',code_list_dict)
     print('Parent process %s.' % os.getpid())
+    print('num_stocks=',len(allcodes))
     start = time.time()
+    """
     processor_num=len(code_list_dict)
     #update_yh_hist_data(codes_list=[],process_id=0)
+    
     p = Pool()
     for i in range(processor_num):
         p.apply_async(back_test_stocks, args=(code_list_dict[i],k_num,source,rate_to_confirm,i,'csv',
                      all_result_columns,trend_columns,all_temp_columns,deep_star_columns,))
+    """
+    
+    """ Map  multiprocess """
+    p = Pool(pool_num)
+    p.map(back_test_one_stock,allcodes)
+    
     print('Waiting for all subprocesses done...')
     p.close()
     p.join()
     print('All subprocesses done.')
     end = time.time()
     print('Task multiprocess_back_test runs %0.2f seconds.' % (end - start))
-    return 
+    return True
 
 def combine_multi_process_result(processor_num=4,all_result_columns=[],all_temp_columns=[],trend_columns=[],deep_star_columns=[]):
     #all_result_columns,all_temp_columns,trend_columns,deep_star_columns=[],[],[],[]
@@ -209,7 +241,127 @@ def seprate_list(all_codes,seprate_num=4):
     code_list_dict[j+1] = all_codes[(j+1)*sub_c:]
     return code_list_dict
 
-def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', source='easyhistory',rate_to_confirm = 0.01,dapan_stocks=['000001','000002']):
+def get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.ALL_BACKTEST_DIR):
+    """
+    获取所有回测最后一个K线的数据：特定目录下
+    """
+    #columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
+    #df = combine_file(tail_num=1,dest_dir=data_dir,keyword='bs_',prefile_slip_num=3,columns=columns)
+    columns = pds.get_data_columns(dest_dir=data_dir)
+    df = combine_file(tail_num=1,dest_dir=data_dir,keyword='',prefile_slip_num=0,columns=columns)
+    if df.empty:
+        return df
+    df['counts']=df.index
+    df = df[columns+['counts','name']]
+    df['name'] = df['name'].apply(lambda x: pds.format_code(x))
+    df = df.set_index('name')
+    if write_file_name:
+        df.to_csv(write_file_name,encoding='utf-8')
+    return df
+
+def get_latest_backtest_datas_from_csv(file_name=fc.ALL_BACKTEST_FILE):
+    """
+    获取所有回测最后一个K线的数据
+    """
+    #file_name = 'D:/work/backtest/all_bs_stocks.csv'
+    columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
+    columns = pds.get_data_columns(dest_dir=fc.ALL_BACKTEST_DIR) + ['counts','name']
+    try:
+        df = pd.read_csv(file_name,usecols=columns)
+        df['name'] = df['name'].apply(lambda x: pds.format_code(x))
+        df = df.set_index('name')
+        return df
+    except:
+        return get_latest_backtest_datas(write_file_name=file_name)
+    
+def get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR):
+    """
+    获取所有回测最后一个K线的数据：特定目录下
+    """
+    #columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
+    columns = pds.get_data_columns(dest_dir=data_dir)
+    #df = combine_file(tail_num=1,dest_dir=data_dir,keyword='bs_',prefile_slip_num=3,columns=columns)
+    df = combine_file(tail_num=1,dest_dir=data_dir,keyword='',prefile_slip_num=0,columns=columns)
+    if df.empty:
+        return df
+    df['counts']=df.index
+    df = df[columns+['counts','name']]
+    df['name'] = df['name'].apply(lambda x: pds.format_code(x))
+    df = df.set_index('name')
+    if write_file_name:
+        df.to_csv(write_file_name,encoding='utf-8')
+    return df
+
+#columns = pds.get_data_columns(dest_dir=fc.ALL_TEMP_DIR)
+#print('columns=',columns)
+#get_latest_temp_datas()
+
+
+def get_latest_temp_datas_from_csv(file_name=fc.ALL_TEMP_FILE):
+    """
+    获取所有回测最后一个K线的数据
+    """
+    #file_name = 'D:/work/backtest/all_bs_stocks.csv'
+    #columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
+    columns = pds.get_data_columns(dest_dir=fc.ALL_TEMP_DIR) + ['counts','name']
+    try:
+        df = pd.read_csv(file_name,usecols=columns)
+        df['name'] = df['name'].apply(lambda x: pds.format_code(x))
+        df = df.set_index('name')
+        return df
+    except:
+        return get_latest_backtest_datas(write_file_name=file_name)
+    
+def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
+    """
+高于三天收盘最大值时买入，低于三天最低价的最小值时卖出： 33策略
+    """
+    """
+    :param k_num: string type or int type: mean counts of history if int type; mean start date of history if date str
+    :param given_codes: str type, 
+    :param except_stocks: list type, 
+    :param type: str type, force update K data from YH
+    :return: source: history data from web if 'easyhistory',  history data from YH if 'YH'
+    """
+    #addition_name = ''
+    #if type == 'index':
+    last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
+    all_stock_df = get_latest_yh_k_stocks_from_csv()
+    all_stocks = all_stock_df.index.values.tolist()
+    if given_codes:
+        all_stocks = list(set(all_stocks).intersection(set(given_codes)))
+    print('所有股票数量： ',len(all_stocks))
+    stop_df = all_stock_df[all_stock_df.date<last_date_str]
+    all_stop_codes = stop_df.index.values.tolist()
+    print('停牌股票数量',len(all_stop_codes))
+    all_trade_codes = list(set(all_stocks).difference(set(all_stop_codes)))
+    final_codes = list(set(all_trade_codes).difference(set(except_stocks)))
+    print('最后回测股票数量',len(final_codes))
+    stock_sql = StockSQL()
+    pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+    print(pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict)
+    pre_is_backtest_uptodate = False
+    print('final_codes=',final_codes)
+    if not pre_is_backtest_uptodate:
+        multiprocess_back_test(final_codes,pool_num=10)
+        print('完成回测')
+    else:
+        print('已经完成回测，无需回测;上一次回测时间：%s' % systime_dict['backtest_time'])
+        
+    if mark_insql and not pre_is_backtest_uptodate:
+        stock_sql = StockSQL()
+        """标识已经更新回测数据"""
+        stock_sql.update_system_time(update_field='backtest_time')
+        """汇总回测数据，并写入CSV文件，方便交易调用"""
+        df = get_latest_backtest_datas()
+        #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
+        """汇总temp数据，并写入CSV文件，方便交易调用"""
+        temp_df = get_latest_temp_datas()
+        #temp_df = get_latest_temp_datas_from_csv()
+    return True
+
+    
+def back_test0(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', source='easyhistory',rate_to_confirm = 0.01,dapan_stocks=['000001','000002']):
     """
 高于三天收盘最大值时买入，低于三天最低价的最小值时卖出： 33策略
     """
@@ -296,10 +448,11 @@ def back_test(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', sou
                           'exit_3p', 's_price0', 's_price1', 's_price', 'b_price0', 'b_price1', 'b_price', 'trade', 'trade_na', 
                           'diff_v_MA10', 'diff_MA10', 'diff_std_MA10', 'diff_v_MA30', 'diff_MA30', 'diff_std_MA30','code']
 
-    
+    #multiprocess_back_test()
     code_list_dict = seprate_list(all_trade_codes,seprate_num=4)
     multiprocess_back_test(code_list_dict,k_num=0,source='yh',rate_to_confirm = 0.01,processor_id=0,save_type='',
                      all_result_columns=column_list,trend_columns=trend_column_list,all_temp_columns=[],deep_star_columns=[])
+    
     
     all_temp_hist_df,all_result_df,deep_star_df,all_trend_result_df =combine_multi_process_result(processor_num=4,all_result_columns=column_list,
                                                                      all_temp_columns=temp_columns,trend_columns=trend_column_list,deep_star_columns=deep_columns)

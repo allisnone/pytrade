@@ -3,12 +3,9 @@ from sqlalchemy import create_engine
 import pymysql 
 import pandas as pd
 import numpy as np
-from pandas.io import sql
-from pandas.lib import to_datetime
-from pandas.lib import Timestamp
 import datetime,time,os
 import tushare as ts
-
+from pandas.io import sql
 import easytrader,easyhistory
 import time,os
 
@@ -153,6 +150,19 @@ class StockSQL(object):
             values="'%s'"%values
         update_sql=form_sql(table_name=table,oper_type='update',update_field=fields,update_value=values,where_condition=condition)
         sql.execute(update_sql,self.engine)
+    
+    
+    def update_system_time(self,update_field,now_time_str='',time_format='%Y/%m/%d %X'):
+        """
+        :param update_field:string type, can be: tdx_update_time,pos_update_time,backtest_time
+        :param now_time_str: string type
+        :return: 
+        """
+        if not now_time_str:
+            now_time =datetime.datetime.now()
+            now_time_str = now_time.strftime(time_format)
+        self.update_data(table='systime',fields=update_field,values=now_time_str,condition='id=0')
+        return
         
     def write_tdx_histdata_update_time(self,now_time_str='',time_format='%Y/%m/%d %X'):
         """
@@ -188,14 +198,20 @@ class StockSQL(object):
     def is_histdata_uptodate(self):
         latest_date_str = tt.get_latest_trade_date(date_format='%Y/%m/%d')
         last_date_str = tt.get_last_trade_date(date_format='%Y/%m/%d')
-        print('last_date = ',last_date_str)
-        print('latest_date_str=',latest_date_str)
+        #print('last_date = ',last_date_str)
+        #print('latest_date_str=',latest_date_str)
         latest_datetime_str = latest_date_str + ' 15:00'
         systime_dict = self.get_systime()
         tdx_update_time_str = systime_dict['tdx_update_time']
         pos_update_time_str = systime_dict['pos_update_time']
-        is_tdx_uptodate = tdx_update_time_str[:10]>=latest_date_str
-        is_pos_uptodate = pos_update_time_str[:10]>=latest_date_str
+        backtest_time_str = systime_dict['backtest_time']
+        is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate=False,False,False
+        if tdx_update_time_str:
+            is_tdx_uptodate = tdx_update_time_str[:10]>=latest_date_str
+        if pos_update_time_str:
+            is_pos_uptodate = pos_update_time_str[:10]>=latest_date_str
+        if backtest_time_str:
+            is_backtest_uptodate = backtest_time_str[:10]>=last_date_str
         #deltatime=datetime.datetime.now()-starttime
         #print('update duration=',deltatime.days*24*3600+deltatime.seconds)
         this_day = datetime.datetime.now()
@@ -210,7 +226,7 @@ class StockSQL(object):
             is_tdx_uptodate = tdx_update_time_str[:10]>=last_date_str
             is_pos_uptodate = pos_update_time_str[:10]>=last_date_str
             
-        return is_tdx_uptodate,is_pos_uptodate,systime_dict
+        return is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict
         
     def delete_data(self,table_name,condition=None):
         """
