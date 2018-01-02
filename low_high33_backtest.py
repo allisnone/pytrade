@@ -210,8 +210,9 @@ def multiprocess_back_test(allcodes,pool_num=10):
     p.join()
     print('All subprocesses done.')
     end = time.time()
-    print('Task multiprocess_back_test runs %0.2f seconds.' % (end - start))
-    return True
+    time_cost = end - start
+    print('Task multiprocess_back_test runs %0.2f seconds.' % time_cost)
+    return time_cost
 
 def combine_multi_process_result(processor_num=4,all_result_columns=[],all_temp_columns=[],trend_columns=[],deep_star_columns=[]):
     #all_result_columns,all_temp_columns,trend_columns,deep_star_columns=[],[],[],[]
@@ -292,11 +293,6 @@ def get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_
         df.to_csv(write_file_name,encoding='utf-8')
     return df
 
-#columns = pds.get_data_columns(dest_dir=fc.ALL_TEMP_DIR)
-#print('columns=',columns)
-#get_latest_temp_datas()
-
-
 def get_latest_temp_datas_from_csv(file_name=fc.ALL_TEMP_FILE):
     """
     获取所有回测最后一个K线的数据
@@ -339,25 +335,32 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
     print('最后回测股票数量',len(final_codes))
     stock_sql = StockSQL()
     pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
-    print(pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict)
-    pre_is_backtest_uptodate = False
-    print('final_codes=',final_codes)
+    #print(pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict)
+    #pre_is_backtest_uptodate = False
+    #print('final_codes=',final_codes)
+    #stock_sql.close()
     if not pre_is_backtest_uptodate:
-        multiprocess_back_test(final_codes,pool_num=10)
+        time_cost = multiprocess_back_test(final_codes,pool_num=10)
+        if time_cost>300:#防止超时
+            stock_sql = StockSQL()
+        if mark_insql:
+            """标识已经更新回测数据至数据库"""
+            stock_sql.update_system_time(update_field='backtest_time')
         print('完成回测')
+        is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+        if is_backtest_uptodate:
+            """汇总回测数据，并写入CSV文件，方便交易调用"""
+            df = get_latest_backtest_datas()
+            #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
+            """汇总temp数据，并写入CSV文件，方便交易调用"""
+            temp_df = get_latest_temp_datas()
+            #temp_df = get_latest_temp_datas_from_csv()
+            print('完成回测数据持久化')
+        else:
+            print('数据未标识至数据库：显示数据未更新')
+        #stock_sql.close()
     else:
         print('已经完成回测，无需回测;上一次回测时间：%s' % systime_dict['backtest_time'])
-        
-    if mark_insql and not pre_is_backtest_uptodate:
-        stock_sql = StockSQL()
-        """标识已经更新回测数据"""
-        stock_sql.update_system_time(update_field='backtest_time')
-        """汇总回测数据，并写入CSV文件，方便交易调用"""
-        df = get_latest_backtest_datas()
-        #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
-        """汇总temp数据，并写入CSV文件，方便交易调用"""
-        temp_df = get_latest_temp_datas()
-        #temp_df = get_latest_temp_datas_from_csv()
     return True
 
     

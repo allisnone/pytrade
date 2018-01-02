@@ -96,6 +96,9 @@ class StockSQL(object):
         #self.engine = create_engine('mysql+pymysql://emsadmin:Ems4you@112.74.101.126/stock?charset=gbk')
         #self.engine.connect()
         #self.engine.close()
+    def close(self):
+        return
+        
     def get_table_df(self,table,columns=None):
         """
         :param table: string type, db_name.table_name
@@ -199,7 +202,7 @@ class StockSQL(object):
         latest_date_str = tt.get_latest_trade_date(date_format='%Y/%m/%d')
         last_date_str = tt.get_last_trade_date(date_format='%Y/%m/%d')
         #print('last_date = ',last_date_str)
-        #print('latest_date_str=',latest_date_str)
+        print('latest_date_str=',latest_date_str)
         latest_datetime_str = latest_date_str + ' 15:00'
         systime_dict = self.get_systime()
         tdx_update_time_str = systime_dict['tdx_update_time']
@@ -211,7 +214,7 @@ class StockSQL(object):
         if pos_update_time_str:
             is_pos_uptodate = pos_update_time_str[:10]>=latest_date_str
         if backtest_time_str:
-            is_backtest_uptodate = backtest_time_str[:10]>=last_date_str
+            is_backtest_uptodate = backtest_time_str[:10]>=last_date_str + ' 15:00'
         #deltatime=datetime.datetime.now()-starttime
         #print('update duration=',deltatime.days*24*3600+deltatime.seconds)
         this_day = datetime.datetime.now()
@@ -223,8 +226,8 @@ class StockSQL(object):
             is_pos_uptodate = pos_update_time_str[:10]>=latest_date_str
             
         else:
-            is_tdx_uptodate = tdx_update_time_str[:10]>=last_date_str
-            is_pos_uptodate = pos_update_time_str[:10]>=last_date_str
+            is_tdx_uptodate = tdx_update_time_str[:10]>=last_date_str +  ' 15:00'
+            is_pos_uptodate = pos_update_time_str[:10]>=last_date_str + ' 15:00'
             
         return is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict
         
