@@ -201,33 +201,41 @@ class StockSQL(object):
     def is_histdata_uptodate(self):
         latest_date_str = tt.get_latest_trade_date(date_format='%Y/%m/%d')
         last_date_str = tt.get_last_trade_date(date_format='%Y/%m/%d')
-        #print('last_date = ',last_date_str)
-        print('latest_date_str=',latest_date_str)
+        
         latest_datetime_str = latest_date_str + ' 15:00'
+        last_datetime_str = last_date_str +  ' 15:00'
+        print('last_date = ',last_datetime_str)
+        print('latest_date_str=',latest_datetime_str)
         systime_dict = self.get_systime()
         tdx_update_time_str = systime_dict['tdx_update_time']
         pos_update_time_str = systime_dict['pos_update_time']
         backtest_time_str = systime_dict['backtest_time']
         is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate=False,False,False
+        """
         if tdx_update_time_str:
-            is_tdx_uptodate = tdx_update_time_str[:10]>=latest_date_str
+            is_tdx_uptodate = tdx_update_time_str>=latest_date_str
         if pos_update_time_str:
-            is_pos_uptodate = pos_update_time_str[:10]>=latest_date_str
+            is_pos_uptodate = pos_update_time_str>=latest_date_str
+        
         if backtest_time_str:
-            is_backtest_uptodate = backtest_time_str[:10]>=last_date_str + ' 15:00'
+            is_backtest_uptodate = backtest_time_str>=last_datetime_str
+        """
         #deltatime=datetime.datetime.now()-starttime
         #print('update duration=',deltatime.days*24*3600+deltatime.seconds)
         this_day = datetime.datetime.now()
         if (this_day.hour>=0 and this_day.hour<9) or (this_day.hour==9 and this_day.minute<15):
-            is_tdx_uptodate = tdx_update_time_str[:10]>latest_date_str
-            is_pos_uptodate = pos_update_time_str[:10]>latest_date_str
+            is_tdx_uptodate = tdx_update_time_str>latest_date_str
+            is_pos_uptodate = pos_update_time_str>latest_date_str
+            is_backtest_uptodate = backtest_time_str>=latest_date_str
         elif this_day.hour>=16:
-            is_tdx_uptodate = tdx_update_time_str[:10]>=latest_date_str
-            is_pos_uptodate = pos_update_time_str[:10]>=latest_date_str
+            is_tdx_uptodate = tdx_update_time_str>=latest_datetime_str
+            is_pos_uptodate = pos_update_time_str>=latest_datetime_str
+            is_backtest_uptodate = backtest_time_str>=latest_datetime_str
             
         else:
-            is_tdx_uptodate = tdx_update_time_str[:10]>=last_date_str +  ' 15:00'
-            is_pos_uptodate = pos_update_time_str[:10]>=last_date_str + ' 15:00'
+            is_tdx_uptodate = tdx_update_time_str>=last_datetime_str
+            is_pos_uptodate = pos_update_time_str>=last_datetime_str
+            is_backtest_uptodate = backtest_time_str>=last_datetime_str
             
         return is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict
         

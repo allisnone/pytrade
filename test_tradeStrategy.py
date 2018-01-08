@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 import tradeStrategy as tds
 
+import pandas as pd
+import file_config as fc 
 
-
-stock_symbol = '300166'
+stock_symbol = '000002'
 
 """
 import pandas as pd
@@ -21,11 +22,18 @@ result_df = s_stock.form_temp_df(stock_symbol)
 #test_result = s_stock.get_regression_result(refresh_regression=False,rate_to_confirm=0.0001,from_csv=True,csv_dir='C:/work/temp/')
 #test_result = s_stock.get_and_save_regression_result()
 #test_result = s_stock.get_regression_result_from_csv()
-test_result = s_stock.get_regression_result()
+ALL_BACKTEST_DIR = 'D:/work/backtest/'
+#test_result = s_stock.get_regression_result(rate_to_confirm=0.0001,refresh_regression=False,from_csv=True,csv_dir=ALL_BACKTEST_DIR)
+confirm = 0.0001
+result_series = s_stock.get_regression_result(rate_to_confirm=confirm,refresh_regression=False,
+                                                      from_csv=True,bs_csv_dir=fc.ALL_BACKTEST_DIR,temp_csv_dir=fc.ALL_TEMP_DIR)
 
+print(result_series)
+df = pd.DataFrame({stock_symbol:test_result})
+print(df.T)
 
 #test_result = s_stock.get_regression_result(refresh_regression=True,rate_to_confirm=0.0001,from_csv=False,csv_dir='C:/work/temp/')
-print(test_result)
+#print(test_result)
 recent_trend = s_stock.get_recent_trend(num=20,column='close')
 s_stock.diff_ma_score()
 temp_hist_df = s_stock.temp_hist_df.set_index('date')

@@ -2214,7 +2214,7 @@ class Stockhistory:
                                                 -self.temp_hist_df['open'], -self.temp_hist_df['b_price0']) #高开
         self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['high']==self.temp_hist_df['low'])
                                                  & (self.temp_hist_df['p_change']>0) & (self.temp_hist_df['b_price1']<0),
-                                                    0,self.temp_hist_df['b_price1']) #一字涨停
+                                                    0,self.temp_hist_df['b_price1']) #一字涨停,剔除
         #self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['s_price'].shift(1)>0)
         #                                         & (self.temp_hist_df['p_change'].shift(1)>0.5) & (self.temp_hist_df['b_price2']==0),
         #                                            -self.temp_hist_df['open'],self.temp_hist_df['b_price2']) #昨日卖出后上涨，次日开盘买回
@@ -2393,8 +2393,10 @@ class Stockhistory:
         temp_df.to_csv('C:/work/temp/bs_%s.csv' % self.code)
         return summary_profit
     
-    def form_regression_temp_df(self,rate_to_confirm = 0.0001):
+    def form_regression_temp_df(self,rate_to_confirm = 0.0001,buyin_type='c_max3'):
         """
+        buyin_type='c_max3', 以超过三天收盘价的最大值为买入点
+        buyin_type='h_max3'， 以超过三天最高价的最大值为买入点
         卖出： 当天最低价小于之前三天的最低价，以最近三天的最低价卖出；如果跳空低开且开盘价小于近三天的最低价，以开盘价卖出
         买入： 当天价格高于前三天的收盘价的最大值，且当前建议仓位不小于25%，并无明显的减仓建议， 则以前三天收盘价的最大值买入；如果跳空高开且开盘价大于前三天的收盘价的最大值，以开盘价买入；
         """
@@ -2421,7 +2423,7 @@ class Stockhistory:
                                                  #0,self.temp_hist_df['s_price0'])
         self.temp_hist_df['s_price1'] = np.where((self.temp_hist_df['s_price0']>0) & (self.temp_hist_df['high']==self.temp_hist_df['low']) ,
                                                 0,self.temp_hist_df['s_price0']) #低开一字板跌停，卖不出去，第二天卖
-        self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price1']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price1']),
+        self.temp_hist_df['s_price2'] = np.where((self.temp_hist_df['s_price1']>0) & (self.temp_hist_df['high']<self.temp_hist_df['s_price1']),
                                                 self.temp_hist_df['open'],self.temp_hist_df['s_price1']) #低开，按开盘价卖
         #self.temp_hist_df['s_price'] = np.where((self.temp_hist_df['s_price1']>0) & (self.temp_hist_df['high']==self.temp_hist_df['low']) ,
         #                                        0,self.temp_hist_df['s_price1']) #低开一字板跌停，卖不出去，第二天卖
@@ -2444,28 +2446,31 @@ class Stockhistory:
                                                 & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
         """
         #"""
-        self.temp_hist_df['b_price0'] = np.where(((self.temp_hist_df['high']>((self.temp_hist_df['c_max3'].shift(1))*(1.0+self.rate_to_confirm))) 
+        self.temp_hist_df['b_price0'] = np.where(((self.temp_hist_df['high']>((self.temp_hist_df[buyin_type].shift(1))*(1.0+self.rate_to_confirm))) 
                                                  & (self.temp_hist_df['position']>0.3)),# & (self.temp_hist_df['operation']>-0.15),
-                                                 self.temp_hist_df['c_max3'].shift(1),0)
+                                                 self.temp_hist_df[buyin_type].shift(1),0)
         #self.temp_hist_df['b_price0'] = np.where((self.temp_hist_df['high']>self.temp_hist_df['h_max3'].shift(1)) #&
         #                                         #(self.temp_hist_df['position']>0.3) & (self.temp_hist_df['operation']>-0.15),
         #                                         ,self.temp_hist_df['h_max3'].shift(1),0)
         self.temp_hist_df['b_price1'] = np.where((self.temp_hist_df['b_price0']>0) & (self.temp_hist_df['low']>self.temp_hist_df['b_price0']),
                                                 -self.temp_hist_df['open'], -self.temp_hist_df['b_price0']) #高开
-        self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['high']==self.temp_hist_df['low'])
+        self.temp_hist_df['b_price2'] = np.where((self.temp_hist_df['high']==self.temp_hist_df['low'])
                                                  & (self.temp_hist_df['p_change']>0) & (self.temp_hist_df['b_price1']<0),
                                                     0,self.temp_hist_df['b_price1']) #一字涨停
         #self.temp_hist_df['b_price'] = np.where((self.temp_hist_df['s_price'].shift(1)>0)
         #                                         & (self.temp_hist_df['p_change'].shift(1)>0.5) & (self.temp_hist_df['b_price2']==0),
         #                                            -self.temp_hist_df['open'],self.temp_hist_df['b_price2']) #昨日卖出后上涨，次日开盘买回
         #"""
+        self.temp_hist_df['b_price2'] = np.where((self.temp_hist_df['s_price2']>0) & (self.temp_hist_df['b_price2']<0),
+                                                    0,self.temp_hist_df['b_price2']) #当天同时出现买点和卖点时，以卖出为准；卖出风险，不确定时
+        
         #print(self.temp_hist_df[['s_price', 'b_price']].tail(30))
-        self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['b_price'].shift(1)==0) 
-                                                & (self.temp_hist_df['s_price']==0)
-                                                & (self.temp_hist_df['b_price']<0)), self.temp_hist_df['b_price'], 0)
-        self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price'].shift(1)==0) 
-                                                & (self.temp_hist_df['s_price']>0)
-                                                & (self.temp_hist_df['b_price']==0)),self.temp_hist_df['s_price'],0)
+        self.temp_hist_df['b_price'] = np.where(((self.temp_hist_df['b_price2'].shift(1)==0) 
+                                                & (self.temp_hist_df['s_price2']==0)
+                                                & (self.temp_hist_df['b_price2']<0)), self.temp_hist_df['b_price2'], 0)
+        self.temp_hist_df['s_price'] = np.where(((self.temp_hist_df['s_price2'].shift(1)==0) 
+                                                & (self.temp_hist_df['s_price2']>0)
+                                                & (self.temp_hist_df['b_price2']==0)),self.temp_hist_df['s_price2'],0)
         
         #self.temp_hist_df['trade'] = self.temp_hist_df['b_price'] * self.temp_hist_df['s_price'] + self.temp_hist_df['b_price']  + self.temp_hist_df['s_price'] 
         self.temp_hist_df['trade'] = self.temp_hist_df['b_price']  + self.temp_hist_df['s_price'] 
@@ -2526,26 +2531,36 @@ class Stockhistory:
         temp_df['cum_prf'] = temp_df['profit'].cumsum()
         if save_dir:
             temp_df_save = temp_df[save_column]
-            temp_df_save.to_csv(save_dir + '%s.csv' % self.code)
+            try:
+                temp_df_save.to_csv(save_dir + '%s.csv' % self.code)
+            except:
+                pass
         return temp_df
     
-    def get_regression_result(self,rate_to_confirm=0.0001,refresh_regression=True,from_csv=False,csv_dir=''):
+    def get_regression_result(self,rate_to_confirm=0.0001,refresh_regression=True,from_csv=False,bs_csv_dir='',temp_csv_dir='',from_date='2017/01/01'):
         """获取分析结果,默认不保存回测文件bs-xx"""
         if refresh_regression:
             self.form_regression_temp_df(rate_to_confirm=rate_to_confirm)
             temp_df = self.form_regression_result(save_dir=csv_dir)
+            temp_hist_df =self.temp_hist_df
         else:
             """直接从制定csv文件读取，必须指定csv_dir"""
             if from_csv:
-                csv_file = csv_dir + 'bs_%s.csv' % self.code
-                temp_df =  pd.read_csv(csv_file,index_col=0)
-                temp_df['id'] = temp_df.index
+                bs_csv_file = bs_csv_dir + '%s.csv' % self.code
+                temp_csv_file = temp_csv_dir + '%s.csv' % self.code
+                try:
+                    temp_df =  pd.read_csv(bs_csv_file,index_col=0)
+                    #temp_df['id'] = temp_df.index
+                    #print(temp_df)
+                    temp_hist_df = pd.read_csv(temp_csv_file)
+                except:
+                    return pd.Series({})
             else:
                 return pd.Series({})
             
         if self.temp_hist_df.empty:
             return pd.Series({})
-        temp_hist_df =self.temp_hist_df.tail(100)
+        #temp_hist_df =self.temp_hist_df.tail(100)
         break_in_df = temp_hist_df[(temp_hist_df['break_in']!=0) & (temp_hist_df['break_in'].shift(1)==0)]
         #print(break_in_df)
         break_in_v_rate = 0
@@ -2556,6 +2571,7 @@ class Stockhistory:
             pass
         else:
             break_in_df['id'] = break_in_df.index
+            #break_in_df.loc[,'id'] = break_in_df.index
             break_in_v_rate = break_in_df.tail(1).iloc[0].break_in
             break_in_id = break_in_df.tail(1).iloc[0].id
             break_in_date = break_in_df.tail(1).iloc[0].date   
@@ -2655,6 +2671,16 @@ class Stockhistory:
         summary_profit['max_amount_rate'] = max_amount_rate_min2 
         summary_profit['max_amount_distance'] = last_id - id_amount_rate_min2_max20 + 1
         summary_profit['yearly_prf'] = yearly_prf
+        
+        latest_360d_num = 250
+        #latest_360d_temp_hist_df = temp_df.tail(latest_360d_num)
+        latest_360d_temp_hist_df = temp_df[temp_df.date>from_date]
+        latest_360d_sum_profit = latest_360d_temp_hist_df['profit'].sum()
+        init_fuli_profit = latest_360d_temp_hist_df.head(1).iloc[0].fuli_prf
+        last_360d_fuli_profit = latest_360d_temp_hist_df.tail(1).iloc[0].fuli_prf
+        latest_360d_fuli_profit = last_360d_fuli_profit/init_fuli_profit-1
+        summary_profit['last_year_prf'] = latest_360d_sum_profit
+        summary_profit['last_year_fuli_prf'] = latest_360d_fuli_profit
         #print(temp_df)
         #self.temp_hist_df.to_csv('C:/work/temp/hist_temp_%s.csv' % self.code)
         #temp_df.to_csv('C:/work/temp/bs_%s.csv' % self.code)

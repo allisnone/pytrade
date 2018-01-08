@@ -176,7 +176,10 @@ def back_test_one_stock(stock_symbol,rate_to_confirm=0.0001,temp_dir=fc.ALL_TEMP
     #recent_trend = s_stock.get_recent_trend(num=20,column='close')
     s_stock.diff_ma_score(ma=[10,30,60,120,250],target_column='close',win_num=5)
     temp_hist_df = s_stock.temp_hist_df.set_index('date')
-    temp_hist_df.to_csv(temp_dir + '%s.csv' % stock_symbol)
+    try:
+        temp_hist_df.to_csv(temp_dir + '%s.csv' % stock_symbol)
+    except:
+        pass
     """
     temp_hist_df_tail = temp_hist_df.tail(1)
     temp_hist_df_tail['code'] = stock_symbol
@@ -307,6 +310,29 @@ def get_latest_temp_datas_from_csv(file_name=fc.ALL_TEMP_FILE):
         return df
     except:
         return get_latest_backtest_datas(write_file_name=file_name)
+
+def get_all_regress_summary(given_stocks=[],confirm=0.01,dest_file=fc.all_SUMMARY_FILE):
+    all_result_df = tds.pd.DataFrame({})
+    """
+    latest_temp_df = tds.pd.read_csv( fc.ALL_TEMP_FILE)
+    latest_temp_df['name'] = latest_temp_df['name'].apply(lambda x: pds.format_code(x))
+    stock_codes = latest_temp_df['name'].values.tolist()
+    latest_temp_df = latest_temp_df.set_index('name')
+    #print(latest_temp_df.ix['000014'].date)
+    """
+    for stock_symbol in given_stocks:
+        s_stock = tds.Stockhistory(stock_symbol,'D',test_num=0,source='yh',rate_to_confirm=confirm)
+        result_series = s_stock.get_regression_result(rate_to_confirm=confirm,refresh_regression=False,
+                                                      from_csv=True,bs_csv_dir=fc.ALL_BACKTEST_DIR,temp_csv_dir=fc.ALL_TEMP_DIR)
+        if not result_series.empty:
+            test_result_df = tds.pd.DataFrame({stock_symbol:result_series}).T
+            all_result_df = all_result_df.append(test_result_df,ignore_index=False)
+    if dest_file:
+        try:
+            all_result_df.to_csv(dest_file,encoding='utf-8')
+        except:
+            pass
+    return all_result_df
     
 def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
     """
@@ -348,6 +374,7 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
             stock_sql.update_system_time(update_field='backtest_time')
         print('完成回测')
         is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+        is_backtest_uptodate = True
         if is_backtest_uptodate:
             """汇总回测数据，并写入CSV文件，方便交易调用"""
             df = get_latest_backtest_datas()
@@ -355,6 +382,7 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
             """汇总temp数据，并写入CSV文件，方便交易调用"""
             temp_df = get_latest_temp_datas()
             #temp_df = get_latest_temp_datas_from_csv()
+            summary_df = get_all_regress_summary(given_stocks=final_codes)
             print('完成回测数据持久化')
         else:
             print('数据未标识至数据库：显示数据未更新')

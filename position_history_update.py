@@ -337,7 +337,10 @@ def get_latest_yh_k_stocks(write_file_name=fc.ALL_YH_KDATA_FILE,data_dir=fc.YH_S
     df['name'] = df['name'].apply(lambda x: pds.format_code(x))
     df = df.set_index('name')
     if write_file_name:
-        df.to_csv(write_file_name,encoding='utf-8')
+        try:
+            df.to_csv(write_file_name,encoding='utf-8')
+        except:
+            pass
     return df
 
 def get_latest_yh_k_stocks_from_csv(file_name=fc.ALL_YH_KDATA_FILE):
@@ -440,7 +443,10 @@ def update_history_postion():
             #stock_sql.write_position_update_time(now_time_str)
             stock_sql.update_system_time(update_field='pos_update_time')
             """持仓数据写入CSV文件"""
-            pos_df.to_csv(fc.POSITION_FILE,encoding='utf-8')
+            try:
+                pos_df.to_csv(fc.POSITION_FILE,encoding='gb2312')#encoding='utf-8')
+            except:
+                pass
         df_dict = stock_sql.get_systime()
         print(df_dict)
     else:

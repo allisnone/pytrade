@@ -9,3 +9,5 @@ ALL_TEMP_DIR = 'D:/work/temp/'
 ALL_TEMP_FILE = 'D:/work/result/all_temp_stocks.csv'
 
 POSITION_FILE = 'D:/work/result/all_position.csv'
+
+all_SUMMARY_FILE = 'D:/work/result/all_summary.csv'

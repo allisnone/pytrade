@@ -5,8 +5,10 @@ import pandas as pd
 import numpy as np
 import datetime,time,os
 import tushare as ts
-#from pandas.lib import Timestamp
-from pandas._libs.lib import Timestamp
+try:
+    from pandas.lib import Timestamp
+except:
+    from pandas._libs.lib import Timestamp
 import easytrader,easyhistory
 import time,os
 
