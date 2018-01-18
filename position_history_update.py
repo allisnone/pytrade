@@ -257,7 +257,7 @@ def update_hist_k_datas(update_type='yh'):
     last_date_str,is_need_del_tdx_last_string = get_last_trade_date_yh_hist(target_last_date_str)
     is_need_update = pds.tt.is_need_update_histdata(last_date_str)
     update_state = 0
-    if True:#is_need_update or is_need_del_tdx_last_string:
+    if is_need_update or is_need_del_tdx_last_string:
         start = time.time()
         all_codes = pds.get_all_code(hist_dir='C:/中国银河证券海王星/T0002/export/')
         #multiprocess_update_k_data(code_list_dict)  #apply,非阻塞，传不同参数，支持回调函数
@@ -407,7 +407,8 @@ def update_history_postion():
     """
     stock_sql = StockSQL()
     pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
-    #pre_is_tdx_uptodate,pre_is_pos_uptodate=False,False
+    print(pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict)
+    #pre_is_tdx_uptodate,pre_is_pos_uptodate=True,False
     if not pre_is_tdx_uptodate:#更新历史数据
         update_state = update_hist_k_datas(update_type)
         if update_state:
@@ -453,8 +454,12 @@ def update_history_postion():
         print('持仓数据已经更新，无需更新；上一次更新时间：%s' % systime_dict['pos_update_time'])
     
     is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
-    print( 'is_tdx_uptodate=%s, is_pos_uptodate=%s'% (is_tdx_uptodate,is_pos_uptodate))
-    print('完成历史数据和持仓数据更新！')
+    if pre_is_tdx_uptodate!=is_tdx_uptodate:
+        print('完成历史数据更新！')
+    if pre_is_pos_uptodate!=is_pos_uptodate:
+        print('完成持仓数据更新！')
+    #print( 'is_tdx_uptodate=%s, is_pos_uptodate=%s'% (is_tdx_uptodate,is_pos_uptodate))
+    
     
     """
     print('Parent process %s.' % os.getpid())

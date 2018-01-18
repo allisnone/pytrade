@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import datetime,time,os
 import tushare as ts
+from file_config import YH_SOURCE_DATA_DIR,TDX_LAST_STRING
+
 try:
     from pandas.lib import Timestamp
 except:
@@ -15,8 +17,8 @@ import time,os
 #ROOT_DIR='E:/work/stockAnalyze'
 #ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
-RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"  
-TDX_LAST_STRING = '数据来源:通达信'
+#RAW_HIST_DIR=YH_SOURCE_DATA_DIR#"C:/中国银河证券海王星/T0002/export/"  
+#TDX_LAST_STRING = '数据来源:通达信'
 #HIST_DIR=ROOT_DIR+'/update/'
 #"""
 import tradeTime as tt
@@ -169,8 +171,8 @@ def append_to_csv(value,column_name='code',file_name='C:/work/temp/stop_stocks.c
 
 def get_yh_raw_hist_df(code_str,latest_count=None,target_last_date_str='',is_updated_raw_export_date=False):
     file_type='csv'
-    RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"
-    file_name=RAW_HIST_DIR+code_str+'.'+file_type
+    #RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"
+    file_name=YH_SOURCE_DATA_DIR+code_str+'.'+file_type
     raw_column_list=['date','open','high','low','close','volume','amount']
     #print('file_name=',file_name)
     df_0=pd.DataFrame({},columns=raw_column_list)
@@ -227,7 +229,7 @@ def get_yh_raw_hist_df(code_str,latest_count=None,target_last_date_str='',is_upd
 def get_easyhistory_df(code_str,source='easyhistory'):  #ta_lib
     data_path = 'C:/hist/day/data/'
     if source=='YH' or source=='yh':
-        data_path = 'C:/中国银河证券海王星/T0002/export/'
+        data_path = YH_SOURCE_DATA_DIR
     his = easyhistory.History(dtype='D', path=data_path,type='csv',codes=[code_str])
     #if his.empty:
     #    return his
@@ -327,8 +329,8 @@ def get_all_code(hist_dir):
             all_code.append(code)
     return all_code
 
-def get_all_quotation():
-    hist_dir = 'C:/中国银河证券海王星/T0002/export/'
+def get_all_quotation(his_dir=YH_SOURCE_DATA_DIR):
+    #hist_dir = 'C:/中国银河证券海王星/T0002/export/'
     all_codes = get_all_code(hist_dir)
     quotation_data = qq.get_qq_quotations_df(all_codes)
     print('quotation_data:',quotation_data)
@@ -397,7 +399,7 @@ def get_position(broker='yh',user_file='yh.json'):
     #print(holding_stocks_df)
     return holding_stocks_df,user_balance       
 
-def update_one_stock(symbol,realtime_update=False,dest_dir='C:/中国银河证券海王星/T0002/export/', force_update_from_YH=False):
+def update_one_stock(symbol,realtime_update=False,dest_dir=YH_SOURCE_DATA_DIR, force_update_from_YH=False):
     """
     运行之前先下载及导出YH历史数据
     """
@@ -423,8 +425,8 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/中国银河证�
     dest_file_name = dest_dir+ '%s.csv' % symbol
     dest_df = get_raw_hist_df(code_str=symbol)
     file_type='csv'
-    RAW_HIST_DIR = "C:/中国银河证券海王星/T0002/export/"
-    yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+    #RAW_HIST_DIR = YH_SOURCE_DATA_DIR#"C:/中国银河证券海王星/T0002/export/"
+    yh_file_name =YH_SOURCE_DATA_DIR+symbol+'.'+file_type
     if symbol in index_symbol_maps.keys():
         symbol = index_symbol_maps[symbol]
         dest_file_name = dest_dir+ '%s.csv' % symbol
@@ -432,7 +434,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/中国银河证�
     if dest_df.empty:
         if symbol in index_symbol_maps.keys():
             symbol = index_symbol_maps[symbol]
-        yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+        yh_file_name = YH_SOURCE_DATA_DIR+symbol+'.'+file_type
         #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
         #print('yh_file_namev=',yh_file_name)
         yh_index_df = pd.read_csv(yh_file_name)
@@ -483,7 +485,7 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/中国银河证�
             yh_symbol = symbol
             if symbol in index_symbol_maps.keys():
                 yh_symbol = index_symbol_maps[index_name]
-            yh_file_name = RAW_HIST_DIR+yh_symbol+'.'+file_type
+            yh_file_name = YH_SOURCE_DATA_DIR+yh_symbol+'.'+file_type
             #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
             yh_index_df = pd.read_csv(yh_file_name,encoding='GBK')
             #yh_index_df['factor'] = FIX_FACTOR
@@ -577,9 +579,8 @@ def update_one_stock(symbol,realtime_update=False,dest_dir='C:/中国银河证�
 
 #df = update_one_stock(symbol='399006',dest_dir="C:/中国银河证券海王星/T0002/export/", force_update_from_YH=False)
 #print(df)
-def update_realtime_k():
-    RAW_HIST_DIR = "C:/中国银河证券海王星/T0002/export/"
-    update_one_stock(symbol, realtime_update, RAW_HIST_DIR, force_update_from_YH)
+def update_realtime_k(hist_dir=YH_SOURCE_DATA_DIR):
+    update_one_stock(symbol, realtime_update, hist_dir, force_update_from_YH)
     return 
 
 def update_codes_from_YH(codes, realtime_update=False, dest_dir='C:/hist/day/data/', force_update_from_YH=False):
@@ -636,7 +637,7 @@ def get_exit_setting_rate(exit_setting_dict={}):
             pass
         return confirm_rate,tolerate_dropdown_rate,delay_minutes
 
-def get_stock_exit_price(hold_codes=['300162'],exit_setting_dict={},data_path='C:/中国银河证券海王星/T0002/export/'):#, has_update_history=False):
+def get_stock_exit_price(hold_codes=['300162'],exit_setting_dict={},data_path=YH_SOURCE_DATA_DIR):#'C:/中国银河证券海王星/T0002/export/'):#, has_update_history=False):
     """获取包括股票的止损数据"""
     """
     confirm_rate:超过止损价后再次下跌的幅度，以确认止损

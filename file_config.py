@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 YH_SOURCE_DATA_DIR = 'C:/中国银河证券海王星/T0002/export/'
+TDX_LAST_STRING = '数据来源:通达信'
+
 ALL_YH_KDATA_FILE = 'D:/work/result/all_stocks.csv'
 
 ALL_BACKTEST_DIR = 'D:/work/backtest/'
@@ -10,4 +12,4 @@ ALL_TEMP_FILE = 'D:/work/result/all_temp_stocks.csv'
 
 POSITION_FILE = 'D:/work/result/all_position.csv'
 
-all_SUMMARY_FILE = 'D:/work/result/all_summary.csv'
+ALL_SUMMARY_FILE = 'D:/work/result/all_summary.csv'

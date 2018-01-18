@@ -6,7 +6,7 @@ import tushare as ts
 import pdSql_common as pds
 from pdSql import StockSQL
 import numpy as np
-import sys
+import sys,datetime
 from pydoc import describe
 
 from multiprocessing import Pool
@@ -311,7 +311,7 @@ def get_latest_temp_datas_from_csv(file_name=fc.ALL_TEMP_FILE):
     except:
         return get_latest_backtest_datas(write_file_name=file_name)
 
-def get_all_regress_summary(given_stocks=[],confirm=0.01,dest_file=fc.all_SUMMARY_FILE):
+def get_all_regress_summary(given_stocks=[],confirm=0.01,dest_file=fc.ALL_SUMMARY_FILE):
     all_result_df = tds.pd.DataFrame({})
     """
     latest_temp_df = tds.pd.read_csv( fc.ALL_TEMP_FILE)
@@ -374,15 +374,19 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
             stock_sql.update_system_time(update_field='backtest_time')
         print('完成回测')
         is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
-        is_backtest_uptodate = True
+        #is_backtest_uptodate = True
         if is_backtest_uptodate:
+            print('触发回测数据持久化，', datetime.datetime.now())
             """汇总回测数据，并写入CSV文件，方便交易调用"""
             df = get_latest_backtest_datas()
+            print('完成回测数据汇总，',datetime.datetime.now())
             #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
             """汇总temp数据，并写入CSV文件，方便交易调用"""
             temp_df = get_latest_temp_datas()
+            print('完成temp数据汇总，',datetime.datetime.now())
             #temp_df = get_latest_temp_datas_from_csv()
             summary_df = get_all_regress_summary(given_stocks=final_codes)
+            print('完成回测数据分析汇总，',datetime.datetime.now())
             print('完成回测数据持久化')
         else:
             print('数据未标识至数据库：显示数据未更新')

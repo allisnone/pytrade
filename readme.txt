@@ -33,3 +33,13 @@ tscon console /dest:rdp-tcp#0
 
 recover:
 rundll32.exe user32.dll,LockWorkStation
+
+
+
+
+1. 每天下午15:40以后使用tdx更新历史数据 并降数据更新到制定目录
+2. 通达信数据预处理，并更新持仓数据： python -W ignore position_history_update_test.py
+3. 历史数据指标生成，回测33策略：python -W ignore low_high33_backtest_main.py
+4. 每天启动自动化止损程序： python -W ignore pymonitor.py
+5. 每个季度更新财务数据，过滤股票
+6. 每天执行买入策略，严格按照33原则买入

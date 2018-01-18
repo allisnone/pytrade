@@ -11,10 +11,11 @@ import time,os
 
 from tradeStrategy import Stockhistory
 import pdSql_common as pdsqlc
+from file_config import YH_SOURCE_DATA_DIR
 #ROOT_DIR='E:/work/stockAnalyze'
 #ROOT_DIR="C:/中国银河证券海王星/T0002"
 #ROOT_DIR="C:\work\stockAnalyze"
-RAW_HIST_DIR="C:/中国银河证券海王星/T0002/export/"  
+#RAW_HIST_DIR=YH_SOURCE_DATA_DIR
 #HIST_DIR=ROOT_DIR+'/update/'
 #"""
 import tradeTime as tt
@@ -224,9 +225,9 @@ class StockSQL(object):
         #print('update duration=',deltatime.days*24*3600+deltatime.seconds)
         this_day = datetime.datetime.now()
         if (this_day.hour>=0 and this_day.hour<9) or (this_day.hour==9 and this_day.minute<15):
-            is_tdx_uptodate = tdx_update_time_str>latest_date_str
-            is_pos_uptodate = pos_update_time_str>latest_date_str
-            is_backtest_uptodate = backtest_time_str>=latest_date_str
+            is_tdx_uptodate = tdx_update_time_str>latest_datetime_str
+            is_pos_uptodate = pos_update_time_str>latest_datetime_str
+            is_backtest_uptodate = backtest_time_str>=latest_datetime_str
         elif this_day.hour>=16:
             is_tdx_uptodate = tdx_update_time_str>=latest_datetime_str
             is_pos_uptodate = pos_update_time_str>=latest_datetime_str
@@ -324,7 +325,7 @@ class StockSQL(object):
             yh_symbol = symbol
             if symbol in index_symbol_maps.keys():
                 yh_symbol = index_symbol_maps[index_name]
-            yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+            yh_file_name = YH_SOURCE_DATA_DIR+symbol+'.'+file_type
             #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
             yh_index_df = pd.read_csv(yh_file_name)
             yh_index_df['factor'] = FIX_FACTOR
@@ -405,7 +406,7 @@ class StockSQL(object):
         #table_update_times = self.get_table_update_time()
         for index_name in index_list:
             yh_symbol = index_symbol_maps[index_name]
-            yh_file_name = RAW_HIST_DIR+symbol+'.'+file_type
+            yh_file_name = YH_SOURCE_DATA_DIR+symbol+'.'+file_type
             #yh_index_df = get_yh_raw_hist_df(code_str=symbol)
             yh_index_df = pd.read_csv(yh_file_name)
             yh_index_df['factor'] = FIX_FACTOR

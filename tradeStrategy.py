@@ -2673,12 +2673,15 @@ class Stockhistory:
         summary_profit['yearly_prf'] = yearly_prf
         
         latest_360d_num = 250
+        from_date = (datetime.datetime.now() + datetime.timedelta(days=-365)).strftime('%Y/%m/%d')
         #latest_360d_temp_hist_df = temp_df.tail(latest_360d_num)
         latest_360d_temp_hist_df = temp_df[temp_df.date>from_date]
         latest_360d_sum_profit = latest_360d_temp_hist_df['profit'].sum()
+        if last_trade_price<0:
+            latest_360d_sum_profit = latest_360d_sum_profit + (last_price+last_trade_price)/abs(last_trade_price)
         init_fuli_profit = latest_360d_temp_hist_df.head(1).iloc[0].fuli_prf
         last_360d_fuli_profit = latest_360d_temp_hist_df.tail(1).iloc[0].fuli_prf
-        latest_360d_fuli_profit = last_360d_fuli_profit/init_fuli_profit-1
+        latest_360d_fuli_profit = fuli_prf/init_fuli_profit-1
         summary_profit['last_year_prf'] = latest_360d_sum_profit
         summary_profit['last_year_fuli_prf'] = latest_360d_fuli_profit
         #print(temp_df)
