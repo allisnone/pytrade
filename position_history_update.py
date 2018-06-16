@@ -293,7 +293,7 @@ def append_to_csv(value,column_name='code',file_name='C:/work/temp/stop_stocks.c
     new_df.to_csv(file_name,encoding='utf-8')
     return new_df
 
-def combine_file(tail_num=1,dest_dir='C:/work/temp/',keyword='',prefile_slip_num=0,columns=None):
+def combine_file(tail_num=1,dest_dir='C:/work/temp/',keyword='',prefile_slip_num=0,columns=None,file_list=[]):
     """
     合并指定目录的最后几行
     """
@@ -312,6 +312,8 @@ def combine_file(tail_num=1,dest_dir='C:/work/temp/',keyword='',prefile_slip_num
                 continue
     #file_names=['bs_000001.csv', 'bs_000002.csv']
     #file_names=['000001.csv', '000002.csv']
+    if file_list:
+        file_names = list(set(file_names).intersection(set(file_list)))
     for file_name in file_names:
         tail_df = pd.read_csv(dest_dir+file_name,usecols=None).tail(tail_num)
         #columns = tail_df.columns.values.tolist()

@@ -278,14 +278,14 @@ def get_latest_backtest_datas_from_csv(file_name=fc.ALL_BACKTEST_FILE):
     except:
         return get_latest_backtest_datas(write_file_name=file_name)
     
-def get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR):
+def get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR,files=[]):
     """
     获取所有回测最后一个K线的数据：特定目录下
     """
     #columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
     columns = pds.get_data_columns(dest_dir=data_dir)
     #df = combine_file(tail_num=1,dest_dir=data_dir,keyword='bs_',prefile_slip_num=3,columns=columns)
-    df = combine_file(tail_num=1,dest_dir=data_dir,keyword='',prefile_slip_num=0,columns=columns)
+    df = combine_file(tail_num=1,dest_dir=data_dir,keyword='',prefile_slip_num=0,columns=columns,file_list=files)
     if df.empty:
         return df
     df['counts']=df.index
@@ -376,16 +376,16 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
         is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
         #is_backtest_uptodate = True
         if is_backtest_uptodate:
-            print('触发回测数据持久化，', datetime.datetime.now())
+            print('触发手动回测数据持久化，', datetime.datetime.now())
             """汇总回测数据，并写入CSV文件，方便交易调用"""
-            df = get_latest_backtest_datas()
+            df = get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.ALL_BACKTEST_DIR)
             print('完成回测数据汇总，',datetime.datetime.now())
             #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
             """汇总temp数据，并写入CSV文件，方便交易调用"""
-            temp_df = get_latest_temp_datas()
+            temp_df = get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR)
             print('完成temp数据汇总，',datetime.datetime.now())
             #temp_df = get_latest_temp_datas_from_csv()
-            summary_df = get_all_regress_summary(given_stocks=final_codes)
+            summary_df = get_all_regress_summary(given_stocks=final_codes,dest_file=fc.ALL_SUMMARY_FILE)
             print('完成回测数据分析汇总，',datetime.datetime.now())
             print('完成回测数据持久化')
         else:
@@ -393,6 +393,22 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
         #stock_sql.close()
     else:
         print('已经完成回测，无需回测;上一次回测时间：%s' % systime_dict['backtest_time'])
+        munual_update_csv_data = True
+        if munual_update_csv_data:
+            print('触发手动回测数据持久化，', datetime.datetime.now())
+            """汇总回测数据，并写入CSV文件，方便交易调用"""
+            df = get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.ALL_BACKTEST_DIR)
+            print('完成回测数据汇总，',datetime.datetime.now())
+            #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
+            """汇总temp数据，并写入CSV文件，方便交易调用"""
+            temp_df = get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR)
+            print('完成temp数据汇总，',datetime.datetime.now())
+            #temp_df = get_latest_temp_datas_from_csv()
+            summary_df = get_all_regress_summary(given_stocks=final_codes,dest_file=fc.ALL_SUMMARY_FILE)
+            print('完成回测数据分析汇总，',datetime.datetime.now())
+            print('完成回测数据持久化')
+        else:
+            print('数据未标识至数据库：显示数据未更新')
     return True
 
     

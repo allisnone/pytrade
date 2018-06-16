@@ -4,7 +4,7 @@ import tradeStrategy as tds
 import pandas as pd
 import file_config as fc 
 
-stock_symbol = '000002'
+stock_symbol = '600742'
 
 """
 import pandas as pd
@@ -16,21 +16,22 @@ print(temp_hist_df)
 s_stock=tds.Stockhistory(stock_symbol,'D',test_num=0,source='yh',rate_to_confirm=0.01)
 
 result_df = s_stock.form_temp_df(stock_symbol)
-#test_result = s_stock.regression_test0(0.01)
-#s_stock.form_regression_temp_df(rate_to_confirm = 0.0001)
-#s_stock.form_regression_result(save_dir='C:/work/temp/')
-#test_result = s_stock.get_regression_result(refresh_regression=False,rate_to_confirm=0.0001,from_csv=True,csv_dir='C:/work/temp/')
-#test_result = s_stock.get_and_save_regression_result()
-#test_result = s_stock.get_regression_result_from_csv()
+test_result = s_stock.regression_test0(0.01)
+s_stock.form_regression_temp_df(rate_to_confirm = 0.0001)
+s_stock.form_regression_result(save_dir='C:/work/temp/')
+test_result = s_stock.get_regression_result(refresh_regression=False,rate_to_confirm=0.0001,from_csv=True,temp_csv_dir='C:/work/temp/')
+test_result = s_stock.get_and_save_regression_result()
+test_result = s_stock.get_regression_result_from_csv()
+
 ALL_BACKTEST_DIR = 'D:/work/backtest/'
-#test_result = s_stock.get_regression_result(rate_to_confirm=0.0001,refresh_regression=False,from_csv=True,csv_dir=ALL_BACKTEST_DIR)
+#test_result = s_stock.get_regression_result(rate_to_confirm=0.0001,refresh_regression=False,from_csv=True,temp_csv_dir=ALL_BACKTEST_DIR)
 confirm = 0.0001
 result_series = s_stock.get_regression_result(rate_to_confirm=confirm,refresh_regression=False,
                                                       from_csv=True,bs_csv_dir=fc.ALL_BACKTEST_DIR,temp_csv_dir=fc.ALL_TEMP_DIR)
 
 print(result_series)
-df = pd.DataFrame({stock_symbol:test_result})
-print(df.T)
+#df = pd.DataFrame({stock_symbol:test_result})
+#print(df.T)
 
 #test_result = s_stock.get_regression_result(refresh_regression=True,rate_to_confirm=0.0001,from_csv=False,csv_dir='C:/work/temp/')
 #print(test_result)
@@ -48,7 +49,7 @@ all_temp_hist_df_file_name = 'C:/work/temp1/all_temp_hist_%s' %processor_id +'.c
 all_result_df_file_name = 'C:/work/temp1/all_result_%s' %processor_id +'.csv'
 deep_star_df_file_name = 'C:/work/temp1/deep_star_%s' %processor_id +'.csv'
 all_trend_result_df_file_name = 'C:/work/temp1/all_trend_result_%s' %processor_id +'.csv'
-df = tds.pd.read_csv(all_temp_hist_df_file_name, header=0,encoding='gb2312')
+#df = tds.pd.read_csv(all_temp_hist_df_file_name, header=0,encoding='gb2312')
 cl = temp_hist_df_tail.columns.values.tolist()
 print(cl)
 print(len(cl))
