@@ -91,7 +91,7 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
 
     
 class StockSQL(object):
-    def __init__(self,username='',password='',hostname='',db=''):
+    def __init__(self,username='emsadmin',password='Ems4you',hostname='118.89.107.40',db='stock'):
         self.engine = create_engine('mysql+pymysql://%s:%s@%s/%s?charset=utf8'%(username,password,hostname,db))#
         self.hold = {}
         #self.engine.connect()
