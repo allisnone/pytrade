@@ -50,7 +50,7 @@ def evaluate_realtime(y=2017,this_quater_num=4):
     df4= df4.set_index('code')
     df4['market_value'] = df4['totals']*df4['MA30']#df4['settlement']  #基于30日均价进行估值
     df4['market_evaluate'] = df4['market_value']/df4['net_profits']
-    baseline_stocks =['601398','600519','000651','300498','002415']
+    baseline_stocks =['601398','600519','000651','300498','002415','000333','002027','600030','600029','300059','300296','300124','300296']
     #print('df4[df4.index.isin(baseline_stocks)]',df4[df4.index.isin(baseline_stocks)])
     baseline_evaluate = df4[df4.index.isin(baseline_stocks)]['market_evaluate'].mean()
     print('baseline_evaluate=',baseline_evaluate)
@@ -174,10 +174,10 @@ def profit_analyze(y=2017,this_quater_num=4,year_count=3,dir='D:/work/result/'):
     ore_ratio_list = []
     return_columns = []
     q_name = '%sQ%s' % (y,this_quater_num)
+    last_profit_column = 'net_profits%s'%y
     while i>0:
         if i==year_count:
             profit_df = ts.get_profit_data(y,this_quater_num)
-            
             profit_df['net_profits'] = profit_df['net_profits'] / this_quater_num * 4.0 *0.01
             profit_df['business_income'] = profit_df['business_income'] / this_quater_num * 4.0 *0.01
             profit_df.rename(columns=lambda x:x+'%s'%y, inplace=True)
@@ -233,13 +233,15 @@ def profit_analyze(y=2017,this_quater_num=4,year_count=3,dir='D:/work/result/'):
     all_df = all_df.sort_values(axis=0,by=profit_rate_column,ascending=False)
     #print(all_df['net_profits_avrg'])
     #df.loc['Row_sum'] = df.apply(lambda x: x.sum())
+    all_df.rename(columns={last_profit_column:'net_profits'},inplace=True)
     all_df.to_csv(dir + 'profit_' +q_name + '.csv',encoding='GB18030')
     filter = (all_df[roe_ratio_min_column]>=bc.ROE_RATION_MIN
               ) & (all_df[profit_rate_column]>=bc.PROFIT_INCOME_RATION
                    ) & (all_df[net_profit_ratio_min_column]>=bc.PROFIT_RATION_MIN)
     filter_df = all_df[filter].sort_values(axis=0,by=roe_ratio_min_column,ascending=False)
     filter_df.to_csv(dir + '近%s年盈利能力-优选'%year_count +q_name + '.csv',encoding='GB18030') 
-    return_columns = ['code','name'] + [profit_column,income_column,profit_rate_column,profit_ratio_avrg_column,roe_ratio_min_column,roe_ratio_avrg_column]    
+    #all_df.rename(columns={last_profit_column:'net_profits'},inplace=True)
+    return_columns = ['code','name','net_profits'] + [profit_column,income_column,profit_rate_column,profit_ratio_avrg_column,roe_ratio_min_column,roe_ratio_avrg_column]    
     return all_df[return_columns],filter_df[return_columns]
 
 def growth_analyze(y=2017,this_quater_num=4,year_count=3,dir='D:/work/result/'):
@@ -453,29 +455,47 @@ def debtpaying_analyze(y=2017,this_quater_num=4,year_count=3,dir='D:/work/result
     return filter_df[return_columns]
 
 
-def profit_and_evaluate(y=2017,this_quater_num=4):
+def profit_and_evaluate(y=2017,this_quater_num=4,year_count=3):
     """
     根据蓝筹股相对净利润进行估值 其他股票
     """
     evaluate_df,baseline_evaluate = evaluate_realtime(y,this_quater_num)
     evaluate_df['code'] = evaluate_df.index
-    profit_df = profit_analyze(y,this_quater_num)
-    df  = pd.merge(evaluate_df, profit_df, on='code')
+    profit_df,filter_df = profit_analyze(y,this_quater_num,year_count)
+    #profit_df=report_analyze(y,this_quater_num)
+    profit_column = '%s年平均净利润亿'%year_count
+    """
+    print('profit_df:', profit_df)
+    print(profit_df['code'])
+    print(profit_df.dtypes)
+    print('evaluate_df:',evaluate_df)
+    print(evaluate_df['code'])
+    print(evaluate_df.dtypes)
+    """
+    df = pd.merge(evaluate_df, profit_df, on='code')#,validate='1:1')
     c = ''
-    for s in profit_df.columns.values.tolist():
-        if 'net_profits_avrg_' in s:
+    for s in df.columns.values.tolist():
+        if 'net_profits' in s:
             c = s
-    #相对基准蓝筹股的估值
-    df['market_avrg'] = df [c] * baseline_evaluate
+            print('net_profits_c=',c)
+            break
+        
+    
+    
+    #相对基准蓝筹股的平均估值,基于近几年的利润
+    df['market_avrg'] = df[profit_column] * baseline_evaluate
+    #相对基准蓝筹股的今年估值,基于今年的预期利润
+    print(df)
+    df['market_this_year'] = df[c] * baseline_evaluate
     #相对基准蓝筹股的估值比率，越大越便宜，越有高估的潜力
     df['future_evaluate_rate'] = df['market_avrg']/df['market_value']
-    
-    df['final_evaluate_rate'] = df['future_evaluate_rate'] * 0.4 + df['evaluate_rate'] * 0.6
+    #加权平均估值，越大越便宜，越有高估的潜力
+    df['final_evaluate_rate'] = df['future_evaluate_rate'] * 0.3 + df['evaluate_rate'] * 0.3 + df['market_this_year']/df['market_value'] * 0.4
     df = df.sort_values(axis=0,by='final_evaluate_rate',ascending=False)
     file_name = 'D:/work/result/baisc%sQ%s_%s.csv'% (y,this_quater_num,int(baseline_evaluate))
-    print(df)
+    #print(df)
     df.to_csv(file_name,encoding='GB18030')
-    return
+    return df
 
 def get_middle_value(str_value):
     """
@@ -515,21 +535,21 @@ def get_predict_profit(year=2017,quater=4):
     df.to_csv('D:/work/result/profit_predict_%sQ%s.csv'%(year,quater),encoding='GB18030')
     print(df)
     return df
-"""
+#"""
 y,this_quater_num = get_last_quater()
-this_quater_num = 4
-y = 2017
+this_quater_num = 3
+#y = 2017
 print('y,this_quater_num:',y,this_quater_num)
 profit_and_evaluate(y,this_quater_num)
 report_analyze(y,this_quater_num)
-"""
+#"""
 
 
-profit_growth_analyze(year=2017, quater=4, year_count=5,best_percentage=0.2)
+profit_growth_analyze(year=y, quater=this_quater_num, year_count=6,best_percentage=0.2)
 
 
 #np.float64(0)
 
-#debtpaying_df = debtpaying_analyze(2017, 4, 2)
+debtpaying_df = debtpaying_analyze(y, this_quater_num, 3)
 
-#get_predict_profit(year=y1, quater=this_quater_num1)
+get_predict_profit(year=y, quater=this_quater_num)

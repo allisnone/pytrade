@@ -333,7 +333,68 @@ def get_all_regress_summary(given_stocks=[],confirm=0.01,dest_file=fc.ALL_SUMMAR
         except:
             pass
     return all_result_df
-    
+
+def back_test_yh_only(given_codes=[],except_stocks=[],mark_insql=True):
+    """
+高于三天收盘最大值时买入，低于三天最低价的最小值时卖出： 33策略
+    """
+    """
+    :param k_num: string type or int type: mean counts of history if int type; mean start date of history if date str
+    :param given_codes: str type, 
+    :param except_stocks: list type, 
+    :param type: str type, force update K data from YH
+    :return: source: history data from web if 'easyhistory',  history data from YH if 'YH'
+    """
+    #addition_name = ''
+    #if type == 'index':
+    last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
+    print('last_date_str=',last_date_str)
+    all_stock_df = get_latest_yh_k_stocks_from_csv()
+    print('all_stock_df:',all_stock_df)
+    all_stocks = all_stock_df.index.values.tolist()
+    if given_codes:
+        all_stocks = list(set(all_stocks).intersection(set(given_codes)))
+    print('所有股票数量： ',len(all_stocks))
+    stop_df = all_stock_df[all_stock_df.date<last_date_str]
+    all_stop_codes = stop_df.index.values.tolist()
+    print('停牌股票数量',len(all_stop_codes))
+    all_trade_codes = list(set(all_stocks).difference(set(all_stop_codes)))
+    final_codes = list(set(all_trade_codes).difference(set(except_stocks)))
+    print('最后回测股票数量',len(final_codes))
+    #stock_sql = StockSQL()
+    #pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+    #print(pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict)
+    pre_is_backtest_uptodate = False
+    #print('final_codes=',final_codes)
+    #stock_sql.close()
+    if not pre_is_backtest_uptodate:
+        time_cost = multiprocess_back_test(final_codes,pool_num=10)  #20分钟左右
+        """
+        if time_cost>300:#防止超时
+            stock_sql = StockSQL()
+        if mark_insql:
+            #标识已经更新回测数据至数据库
+            stock_sql.update_system_time(update_field='backtest_time')
+        print('完成回测')
+        is_tdx_uptodate,is_pos_uptodate,is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
+        """
+        is_backtest_uptodate = True
+        if is_backtest_uptodate:
+            print('触发手动回测数据持久化，', datetime.datetime.now())
+            """汇总回测数据，并写入CSV文件，方便交易调用，2分钟左右"""
+            df = get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.ALL_BACKTEST_DIR)
+            print('完成回测数据汇总，',datetime.datetime.now())
+            #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
+            """汇总temp数据，并写入CSV文件，方便交易调用，8分钟"""
+            temp_df = get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR)
+            print('完成temp数据汇总，',datetime.datetime.now())
+            #temp_df = get_latest_temp_datas_from_csv()
+            summary_df = get_all_regress_summary(given_stocks=final_codes,dest_file=fc.ALL_SUMMARY_FILE)
+            print('完成回测数据分析汇总，约20分钟，',datetime.datetime.now())
+            print('完成回测数据持久化')
+        else:
+            print('数据未标识至数据库：显示数据未更新')
+                
 def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
     """
 高于三天收盘最大值时买入，低于三天最低价的最小值时卖出： 33策略
@@ -348,7 +409,9 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
     #addition_name = ''
     #if type == 'index':
     last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
+    print('last_date_str=',last_date_str)
     all_stock_df = get_latest_yh_k_stocks_from_csv()
+    print('all_stock_df:',all_stock_df)
     all_stocks = all_stock_df.index.values.tolist()
     if given_codes:
         all_stocks = list(set(all_stocks).intersection(set(given_codes)))
@@ -362,7 +425,7 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
     stock_sql = StockSQL()
     pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
     #print(pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict)
-    #pre_is_backtest_uptodate = False
+    pre_is_backtest_uptodate = False
     #print('final_codes=',final_codes)
     #stock_sql.close()
     if not pre_is_backtest_uptodate:

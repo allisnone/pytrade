@@ -411,6 +411,7 @@ def update_history_postion():
     pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict = stock_sql.is_histdata_uptodate()
     print(pre_is_tdx_uptodate,pre_is_pos_uptodate,pre_is_backtest_uptodate,systime_dict)
     #pre_is_tdx_uptodate,pre_is_pos_uptodate=True,False
+    pre_is_tdx_uptodate = False
     if not pre_is_tdx_uptodate:#更新历史数据
         update_state = update_hist_k_datas(update_type)
         if update_state:
