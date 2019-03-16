@@ -256,9 +256,9 @@ def get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.A
     if df.empty:
         return df
     df['counts']=df.index
-    df = df[columns+['counts','name']]
-    df['name'] = df['name'].apply(lambda x: pds.format_code(x))
-    df = df.set_index('name')
+    df = df[columns+['counts','code','name']]
+    df['code'] = df['code'].apply(lambda x: pds.format_code(x))
+    df = df.set_index('code')
     if write_file_name:
         df.to_csv(write_file_name,encoding='utf-8')
     return df
@@ -269,11 +269,11 @@ def get_latest_backtest_datas_from_csv(file_name=fc.ALL_BACKTEST_FILE):
     """
     #file_name = 'D:/work/backtest/all_bs_stocks.csv'
     columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
-    columns = pds.get_data_columns(dest_dir=fc.ALL_BACKTEST_DIR) + ['counts','name']
+    columns = pds.get_data_columns(dest_dir=fc.ALL_BACKTEST_DIR) + ['counts','code']
     try:
         df = pd.read_csv(file_name,usecols=columns)
-        df['name'] = df['name'].apply(lambda x: pds.format_code(x))
-        df = df.set_index('name')
+        df['code'] = df['code'].apply(lambda x: pds.format_code(x))
+        df = df.set_index('code')
         return df
     except:
         return get_latest_backtest_datas(write_file_name=file_name)
@@ -289,9 +289,9 @@ def get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_
     if df.empty:
         return df
     df['counts']=df.index
-    df = df[columns+['counts','name']]
-    df['name'] = df['name'].apply(lambda x: pds.format_code(x))
-    df = df.set_index('name')
+    df = df[columns+['counts','code','name']]
+    df['code'] = df['code'].apply(lambda x: pds.format_code(x))
+    df = df.set_index('code')
     if write_file_name:
         df.to_csv(write_file_name,encoding='utf-8')
     return df
@@ -302,11 +302,11 @@ def get_latest_temp_datas_from_csv(file_name=fc.ALL_TEMP_FILE):
     """
     #file_name = 'D:/work/backtest/all_bs_stocks.csv'
     #columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
-    columns = pds.get_data_columns(dest_dir=fc.ALL_TEMP_DIR) + ['counts','name']
+    columns = pds.get_data_columns(dest_dir=fc.ALL_TEMP_DIR) + ['counts','code']
     try:
         df = pd.read_csv(file_name,usecols=columns)
-        df['name'] = df['name'].apply(lambda x: pds.format_code(x))
-        df = df.set_index('name')
+        df['code'] = df['code'].apply(lambda x: pds.format_code(x))
+        df = df.set_index('code')
         return df
     except:
         return get_latest_backtest_datas(write_file_name=file_name)
@@ -315,9 +315,9 @@ def get_all_regress_summary(given_stocks=[],confirm=0.01,dest_file=fc.ALL_SUMMAR
     all_result_df = tds.pd.DataFrame({})
     """
     latest_temp_df = tds.pd.read_csv( fc.ALL_TEMP_FILE)
-    latest_temp_df['name'] = latest_temp_df['name'].apply(lambda x: pds.format_code(x))
-    stock_codes = latest_temp_df['name'].values.tolist()
-    latest_temp_df = latest_temp_df.set_index('name')
+    latest_temp_df['code'] = latest_temp_df['code'].apply(lambda x: pds.format_code(x))
+    stock_codes = latest_temp_df['code'].values.tolist()
+    latest_temp_df = latest_temp_df.set_index('code')
     #print(latest_temp_df.ix['000014'].date)
     """
     for stock_symbol in given_stocks:
@@ -523,7 +523,7 @@ def back_test0(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', so
     all_temp_hist_df = tds.pd.DataFrame({}, columns=[])
     ma_num = 20
     stock_basic_df=ts.get_stock_basics()
-    basic_code = stock_basic_df['name'].to_dict()
+    basic_code = stock_basic_df['code'].to_dict()
     basic_code_keys = basic_code.keys()
     #print('all_trade_codes=',all_trade_codes)
     deep_columns = ['date','close','p_change','o_change','position','low_high_open','high_o_day0','high_o_day1','high_o_day3',
@@ -605,20 +605,20 @@ def back_test0(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', so
             all_temp_dict[code]= basic_code[code]
         else:
             result_codes_dict[code] = 'NA'
-    all_temp_hist_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
+    all_temp_hist_df['code'] = tds.Series(result_codes_dict,index=all_result_df.index)
     """
     #print(result_codes_dict)
-    #print(tds.pd.DataFrame(result_codes_dict, columns=['name'], index=list(result_codes_dict.keys())))
-    #all_result_df['name'] = result_codes_dict
-    all_result_df['name'] = tds.Series(result_codes_dict,index=all_result_df.index)
-    deep_star_df['name'] = tds.Series(result_codes_dict,index=deep_star_df.index)
+    #print(tds.pd.DataFrame(result_codes_dict, columns=['code'], index=list(result_codes_dict.keys())))
+    #all_result_df['code'] = result_codes_dict
+    all_result_df['code'] = tds.Series(result_codes_dict,index=all_result_df.index)
+    deep_star_df['code'] = tds.Series(result_codes_dict,index=deep_star_df.index)
     print('deep_star_df=',deep_star_df)
-    deep_star_df = deep_star_df[['code','name','star_index']+high_open_columns]
+    deep_star_df = deep_star_df[['code','code','star_index']+high_open_columns]
     
     dapan_codes_dict = {}
     
     
-    all_trend_result_df['name'] = tds.Series(result_codes_dict,index=all_trend_result_df.index)
+    all_trend_result_df['code'] = tds.Series(result_codes_dict,index=all_trend_result_df.index)
     all_result_df['stopped'] = tds.Series(on_trade_dict,index=all_result_df.index)
     all_trend_result_df['stopped'] = tds.Series(on_trade_dict,index=all_trend_result_df.index)
     all_result_df['invalid'] = tds.Series(valid_dict, index=all_result_df.index)
@@ -626,7 +626,7 @@ def back_test0(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', so
     all_result_df['max_r'] = all_result_df['max']/all_result_df['cum_prf']
     ma_c_name = '%s日趋势数' % ma_num
     trend_column_chiness = {'count':ma_c_name, 'mean': '平均涨幅','chg_fuli': '复利涨幅', 'std': '标准差', 'min': '最小涨幅', '25%': '25%', '50%': '50%', '75%': '75%', 'max': '最大涨幅', 'c_state': '收盘价状态',
-                        'c_mean': '平均收盘价', 'pos_mean': '平均仓位', 'ft_rate': '低点反弹率', 'presure': '压力', 'holding': '支撑', 'close': '收盘价','cont_num': '连涨天数', 'name': '名字', 'stopped': '停牌','invalid': '除外',
+                        'c_mean': '平均收盘价', 'pos_mean': '平均仓位', 'ft_rate': '低点反弹率', 'presure': '压力', 'holding': '支撑', 'close': '收盘价','cont_num': '连涨天数', 'code': '名字', 'stopped': '停牌','invalid': '除外',
                         'amount_rate':'量比','ma_amount_rate':'短长量比'}
     print(all_trend_result_df)
     all_trend_result_df_chinese = all_trend_result_df.rename(index=str, columns=trend_column_chiness)
@@ -641,7 +641,7 @@ def back_test0(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', so
     #print('latest_date_str=',latest_date_str)
     tail_name = '%s_from_%s_%s.csv' % (latest_date_str,k_num,rate_to_confirm_str)
     #all_result_df['yearly_prf'] = all_result_df['fuli_prf']**(1.0/(all_result_df['days']/365.0))
-    result_column_list = ['count','name', 'mean', 'std', 'max', 'min', 'cum_prf',
+    result_column_list = ['count','code', 'mean', 'std', 'max', 'min', 'cum_prf',
                    'fuli_prf','yearly_prf','success_rate','last_trade_date','last_trade_price','min_hold_count',
                    'max_hold_count','avrg_hold_count','this_hold_count','exit','enter',
                    'position','max_amount_rate','max_amount_distance','break_in', 
@@ -657,14 +657,14 @@ def back_test0(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', so
         consider_df = all_result_df[(all_result_df['max_amount_rate']>2.0) & (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & (all_result_df['invalid']==0)]# & (all_result_df['last_trade_price'] ==0)]
         consider_df.to_csv('C:/work/temp/consider_' + addition_name +tail_name)
         
-        active_df = all_result_df[(all_result_df['max_r']<0.4)  & (all_result_df['name']!='NA') & # (all_result_df['min']>-0.08)  & (all_result_df['position']>0.35) &
+        active_df = all_result_df[(all_result_df['max_r']<0.4)  & (all_result_df['code']!='NA') & # (all_result_df['min']>-0.08)  & (all_result_df['position']>0.35) &
                                   (all_result_df['max']>(3.9 *all_result_df['min'].abs())) & (all_result_df['invalid']==0) &(all_result_df['stopped']==0)]
         active_df['active_score'] = active_df['fuli_prf']/active_df['max_r']/active_df['std']*active_df['fuli_prf']/active_df['cum_prf']
         active_df = active_df.sort_values(axis=0, by='active_score', ascending=False)
         active_df.to_csv('C:/work/temp/active_' + addition_name +tail_name)
         tupo_df = all_result_df[(all_result_df['break_in_distance']!=0) &(all_result_df['break_in_distance']<=20) & 
                                 (all_result_df['position']>0.35) & (all_result_df['stopped']==0) & 
-                                (all_result_df['invalid']==0) & (all_result_df['name']!='NA') & (all_result_df['last_trade_price']!=0)]# & (all_result_df['last_trade_price'] ==0)]
+                                (all_result_df['invalid']==0) & (all_result_df['code']!='NA') & (all_result_df['last_trade_price']!=0)]# & (all_result_df['last_trade_price'] ==0)]
         tupo_df.to_csv('C:/work/temp/tupo_' + addition_name +tail_name)
         
         
@@ -703,8 +703,8 @@ def back_test0(k_num=0,given_codes=[],except_stocks=['000029'], type='stock', so
                 dapan_codes_dict[code] = basic_code[code]
             else:
                 dapan_codes_dict[code] = 'NA'
-        dapan_ho_df['name'] = tds.Series(dapan_codes_dict,index=dapan_ho_df.index)
-        dapan_ho_df = dapan_ho_df[['code','name','ho_index']+dapan_high_open_columns]
+        dapan_ho_df['code'] = tds.Series(dapan_codes_dict,index=dapan_ho_df.index)
+        dapan_ho_df = dapan_ho_df[['code','code','ho_index']+dapan_high_open_columns]
     dapan_ho_df.to_csv('C:/work/temp/dapan_high_open_%s'% regress_column_type + addition_name +tail_name)
     """
     end = time.time()

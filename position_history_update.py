@@ -293,7 +293,7 @@ def append_to_csv(value,column_name='code',file_name='C:/work/temp/stop_stocks.c
     new_df.to_csv(file_name,encoding='utf-8')
     return new_df
 
-def combine_file(tail_num=1,dest_dir='C:/work/temp/',keyword='',prefile_slip_num=0,columns=None,file_list=[]):
+def combine_file(tail_num=1,dest_dir='C:/work/temp/',keyword='',prefile_slip_num=0,columns=None,file_list=[],chinese_dict={}):
     """
     合并指定目录的最后几行
     """
@@ -321,7 +321,14 @@ def combine_file(tail_num=1,dest_dir='C:/work/temp/',keyword='',prefile_slip_num
         prefile_name = file_name.split('.')[0]
         if prefile_slip_num:
             prefile_name = prefile_name[prefile_slip_num:]
-        tail_df['name'] = prefile_name
+        tail_df['code'] = prefile_name
+        stock_sql_obj=StockSQL(sqlite_file='pytrader.db',sqltype='sqlite',is_today_update=True)
+        chinese_dict = stock_sql_obj.get_code_to_name()
+        if chinese_dict:
+            try:
+                tail_df['name'] = chinese_dict[prefile_name]
+            except:
+                tail_df['name'] = '某指数'
         df=df.append(tail_df)
     return df
 
@@ -335,14 +342,14 @@ def get_latest_yh_k_stocks(write_file_name=fc.ALL_YH_KDATA_FILE,data_dir=fc.YH_S
     if df.empty:
         return df
     df['counts']=df.index
-    df = df[['date', 'open', 'high', 'low', 'close', 'volume', 'amount']+['counts','name']]
-    df['name'] = df['name'].apply(lambda x: pds.format_code(x))
-    df = df.set_index('name')
+    df = df[['date', 'open', 'high', 'low', 'close', 'volume', 'amount']+['counts','code','name']]
+    df['code'] = df['code'].apply(lambda x: pds.format_code(x))
+    df = df.set_index('code')
     if write_file_name:
         try:
             df.to_csv(write_file_name,encoding='utf-8')
-        except:
-            pass
+        except Exception as e:
+            print('get_latest_yh_k_stocks： ',e)
     return df
 
 def get_latest_yh_k_stocks_from_csv(file_name=fc.ALL_YH_KDATA_FILE):
@@ -350,15 +357,15 @@ def get_latest_yh_k_stocks_from_csv(file_name=fc.ALL_YH_KDATA_FILE):
     获取股票K线数据，数据来源银河证券
     """
     #file_name = 'C:/work/result/all_yh_stocks.csv'
-    #columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'amount']+['counts','name']
-    columns = pds.get_data_columns(dest_dir=fc.YH_SOURCE_DATA_DIR) + ['counts','name']
+    #columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'amount']+['counts','code']
+    columns = pds.get_data_columns(dest_dir=fc.YH_SOURCE_DATA_DIR) + ['counts','code']
     #try:
     if True:
         df = pd.read_csv(file_name,usecols=columns)
         #print(df)
-        print(type(df['name']))
-        df['name'] = df['name'].apply(lambda x:pds.format_code(x))
-        df = df.set_index('name')
+        #print(type(df['code']))
+        df['code'] = df['code'].apply(lambda x:pds.format_code(x))
+        df = df.set_index('code')
         return df
     #except:
     #    return get_latest_yh_k_stocks(write_file_name=file_name)

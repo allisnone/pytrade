@@ -91,11 +91,23 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
 
     
 class StockSQL(object):
-    def __init__(self,username='emsadmin',password='Ems4you',hostname='118.89.107.40',db='stock'): #emsadmin:Ems4you@112.74.101.126
-        self.engine = create_engine('mysql+pymysql://%s:%s@%s/%s?charset=utf8'%(username,password,hostname,db))#
+    def __init__(self,username='emsadmin',password='Ems4you',hostname='118.89.107.40',db='stock',sqlite_file='pytrader.db',sqltype='mysql', is_today_update=False): #emsadmin:Ems4you@112.74.101.126
+        self.engine = None
+        if sqltype=='mysql':
+            self.engine = create_engine('mysql+pymysql://%s:%s@%s/%s?charset=utf8'%(username,password,hostname,db))#
+        elif sqltype=='sqlite':
+            self.engine = create_engine('sqlite:///' + sqlite_file + '?check_same_thread=False', echo=False)
+        elif sqltype=='postgresql':
+            self.engine = create_engine('postgresql://%s:%s@%s/%s' % (username,password,hostname,db))
+        else:
+            pass
         self.hold = {}
+        self.is_today_update = is_today_update
         #self.engine.connect()
         #self.engine.close()
+    def set_today_update(self,updated=True):
+        self.is_today_update = updated
+        
     def close(self):
         return
         
@@ -106,17 +118,17 @@ class StockSQL(object):
         :return: DataFrame type
         """
         if columns:
-            return pd.read_sql_table(table, self.engine)
+            return pd.read_sql_table(table, self.engine, columns=columns)
         else:
-            return pd.read_sql_table(table, self.engine, columns)
-        
-    def insert_table(self,data_frame,table_name,is_index=False):
+            return pd.read_sql_table(table, self.engine)
+            
+    def insert_table(self,data_frame,table_name,is_index=False,exists='append'):
         """
         :param data_frame: DataFrame type
         :param table_name: string type, name of table
         :return: 
         """
-        data_frame.to_sql(table_name, self.engine, index=is_index,if_exists='append')#encoding='utf-8')
+        data_frame.to_sql(table_name, self.engine, index=is_index,if_exists=exists)#encoding='utf-8')
         return
     
     def query_data(self,table,fields=None,condition=None):
@@ -683,6 +695,35 @@ class StockSQL(object):
         exit_setting_df = self.get_table_df('exit_setting')
         setting_dict = exit_setting_df.iloc[0].to_dict()
         return setting_dict
+    
+    def get_today_df(self,cols=[],is_trade_time=False):
+        """
+        :param cols: list type, column list
+        :param is_trade_time: bool type
+        :param ts: object type, 
+        :return: dataframe
+        """
+        if self.is_today_update:
+            return self.get_table_df('today', columns=cols)
+        else:
+            df = ts.get_today_all()
+            self.insert_table(df, 'today', is_index=False,exists='replace')
+            if is_trade_time:
+                pass
+            else:
+                self.is_today_update = True
+            if cols:
+                return df[cols]
+            return df
+        
+    def get_code_to_name(self,column='name'):  
+        """
+        :param column: string
+        :return: dict
+        """  
+        df = self.get_today_df(cols=['code',column], is_trade_time=False)
+        df = df.set_index('code')
+        return df.to_dict()[column]
         
     #for chunk_df in pd.read_sql_query("SELECT * FROM today_stock", engine, chunksize=5):
     #    print(chunk_df)
@@ -693,18 +734,29 @@ print(setting_dict)
 """
 #stock_sql_obj.update_index_chooce_time()
 def stock_sql_test():
-    stock_sql_obj=StockSQL()
-    table='test'
+    #mysql
+    #stock_sql_obj=StockSQL()
+    #sqlite3
+    stock_sql_obj=StockSQL(sqlite_file='pytrader.db',sqltype='sqlite',is_today_update=False)
+    d = stock_sql_obj.get_code_to_name()
+    print(d)
+    """
+    table='today'
     df=stock_sql_obj.get_table_df(table)#, columns=['name']) 
     print('get_table_df=')
-    print(df)
-    df2=stock_sql_obj.get_table_df(table, columns=['name']) 
+    #print(df)
+    df2=stock_sql_obj.get_table_df(table, columns=['code','name']) 
     print(df2)
+    df2 = df2.set_index('code')
+    d = df2.to_dict()
+    print('dict=',d)
     print('query_data:')
     df3=stock_sql_obj.query_data(table)
     print(df3)
-    df3=stock_sql_obj.query_data(table, 'name', "name='王五'")
+    df3=stock_sql_obj.query_data(table, 'code,name', "name='格力电器'")
     print(df3)
+    
+    
     print('insert_data:')
     data=[['李二'],['黄三']]
     stock_sql_obj.insert_data(table, 'name', data)
@@ -713,6 +765,9 @@ def stock_sql_test():
     #stock_sql_obj.update_data(table, 'name', "'陈五'", condition="name='王五'")
     print('delete_data')
     stock_sql_obj.delete_data(table, "name='陈五'")
+    """
+
+#stock_sql_test()
 
 
     
