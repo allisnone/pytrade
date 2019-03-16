@@ -6,11 +6,13 @@ import numpy as np
 import datetime,time,os
 import tushare as ts
 from file_config import YH_SOURCE_DATA_DIR,TDX_LAST_STRING
-
+"""
 try:
     from pandas.lib import Timestamp
 except:
-    from pandas._libs.lib import Timestamp
+    pass
+"""
+from pandas._libs.lib import Timestamp
 import easytrader,easyhistory
 import time,os
 

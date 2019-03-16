@@ -501,7 +501,14 @@ def get_middle_value(str_value):
     """
     字符%处理
     """
-    values = str_value.split('~')
+    values = []
+    try:
+        if isinstance(str_value, float) or isinstance(str_value, int):
+            return str_value
+        else:
+            values = str_value.split('~')
+    except:
+        return 0
     v = 0
     if len(values)==2:
         v0 = values[0]
@@ -530,6 +537,8 @@ def get_predict_profit(year=2017,quater=4):
     """
     df = ts.forecast_data(year,quater)
     df=df.drop_duplicates('code')
+    print('get_predict')
+    print(df)
     df['profit_r'] = df['range'].apply(lambda x: get_middle_value(x))
     df = df.sort_index(axis=0,by='profit_r',ascending=False)
     df.to_csv('D:/work/result/profit_predict_%sQ%s.csv'%(year,quater),encoding='GB18030')
@@ -537,7 +546,7 @@ def get_predict_profit(year=2017,quater=4):
     return df
 #"""
 y,this_quater_num = get_last_quater()
-this_quater_num = 3
+this_quater_num = 4
 #y = 2017
 print('y,this_quater_num:',y,this_quater_num)
 profit_and_evaluate(y,this_quater_num)
