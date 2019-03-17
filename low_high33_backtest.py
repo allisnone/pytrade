@@ -12,7 +12,7 @@ from pydoc import describe
 from multiprocessing import Pool
 import os, time
 import file_config as fc 
-from position_history_update import combine_file
+from position_history_update import combine_file,CHINESE_DICT
 from position_history_update import get_latest_yh_k_stocks_from_csv
 
 def get_stop_trade_symbol():
@@ -256,8 +256,9 @@ def get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.A
     if df.empty:
         return df
     df['counts']=df.index
-    df = df[columns+['counts','code','name']]
+    df = df[columns+['counts','code']]
     df['code'] = df['code'].apply(lambda x: pds.format_code(x))
+    df['name'] = df['code'].apply(lambda x: pds.format_name_by_code(x,CHINESE_DICT))
     df = df.set_index('code')
     if write_file_name:
         df.to_csv(write_file_name,encoding='utf-8')
@@ -269,7 +270,7 @@ def get_latest_backtest_datas_from_csv(file_name=fc.ALL_BACKTEST_FILE):
     """
     #file_name = 'D:/work/backtest/all_bs_stocks.csv'
     columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
-    columns = pds.get_data_columns(dest_dir=fc.ALL_BACKTEST_DIR) + ['counts','code']
+    columns = pds.get_data_columns(dest_dir=fc.ALL_BACKTEST_DIR) + ['counts','code','name']
     try:
         df = pd.read_csv(file_name,usecols=columns)
         df['code'] = df['code'].apply(lambda x: pds.format_code(x))
@@ -289,8 +290,9 @@ def get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_
     if df.empty:
         return df
     df['counts']=df.index
-    df = df[columns+['counts','code','name']]
+    df = df[columns+['counts','code']]
     df['code'] = df['code'].apply(lambda x: pds.format_code(x))
+    df['name'] = df['code'].apply(lambda x: pds.format_name_by_code(x,CHINESE_DICT))
     df = df.set_index('code')
     if write_file_name:
         df.to_csv(write_file_name,encoding='utf-8')
@@ -302,7 +304,7 @@ def get_latest_temp_datas_from_csv(file_name=fc.ALL_TEMP_FILE):
     """
     #file_name = 'D:/work/backtest/all_bs_stocks.csv'
     #columns = ['date', 'close', 'id', 'trade', 'p_change', 'position', 'operation', 's_price', 'b_price', 'profit', 'cum_prf', 'fuli_prf', 'hold_count']
-    columns = pds.get_data_columns(dest_dir=fc.ALL_TEMP_DIR) + ['counts','code']
+    columns = pds.get_data_columns(dest_dir=fc.ALL_TEMP_DIR) + ['counts','code','name']
     try:
         df = pd.read_csv(file_name,usecols=columns)
         df['code'] = df['code'].apply(lambda x: pds.format_code(x))
@@ -320,6 +322,7 @@ def get_all_regress_summary(given_stocks=[],confirm=0.01,dest_file=fc.ALL_SUMMAR
     latest_temp_df = latest_temp_df.set_index('code')
     #print(latest_temp_df.ix['000014'].date)
     """
+    #given_stocks = ['000001','000002']
     for stock_symbol in given_stocks:
         s_stock = tds.Stockhistory(stock_symbol,'D',test_num=0,source='yh',rate_to_confirm=confirm)
         result_series = s_stock.get_regression_result(rate_to_confirm=confirm,refresh_regression=False,
@@ -329,6 +332,10 @@ def get_all_regress_summary(given_stocks=[],confirm=0.01,dest_file=fc.ALL_SUMMAR
             all_result_df = all_result_df.append(test_result_df,ignore_index=False)
     if dest_file:
         try:
+            all_result_df['code'] = all_result_df.index
+            all_result_df['name'] = all_result_df['code'].apply(lambda x: pds.format_name_by_code(x,CHINESE_DICT))
+            del all_result_df['code']
+            #dest_file = 'D:/work/result/all_summary1.csv'
             all_result_df.to_csv(dest_file,encoding='utf-8')
         except:
             pass
@@ -368,7 +375,7 @@ def back_test_yh_only(given_codes=[],except_stocks=[],mark_insql=True):
     #print('final_codes=',final_codes)
     #stock_sql.close()
     if not pre_is_backtest_uptodate:
-        time_cost = multiprocess_back_test(final_codes,pool_num=10)  #20分钟左右
+        #time_cost = multiprocess_back_test(final_codes,pool_num=10)  #20分钟左右
         """
         if time_cost>300:#防止超时
             stock_sql = StockSQL()
@@ -382,11 +389,11 @@ def back_test_yh_only(given_codes=[],except_stocks=[],mark_insql=True):
         if is_backtest_uptodate:
             print('触发手动回测数据持久化，', datetime.datetime.now())
             """汇总回测数据，并写入CSV文件，方便交易调用，2分钟左右"""
-            df = get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.ALL_BACKTEST_DIR)
+            #df = get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.ALL_BACKTEST_DIR)
             print('完成回测数据汇总，',datetime.datetime.now())
             #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
             """汇总temp数据，并写入CSV文件，方便交易调用，8分钟"""
-            temp_df = get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR)
+            #temp_df = get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR)
             print('完成temp数据汇总，',datetime.datetime.now())
             #temp_df = get_latest_temp_datas_from_csv()
             summary_df = get_all_regress_summary(given_stocks=final_codes,dest_file=fc.ALL_SUMMARY_FILE)

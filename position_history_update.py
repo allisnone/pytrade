@@ -14,6 +14,9 @@ import os, time
 import file_config as fc
 import code
 
+stock_sql_obj=StockSQL(sqlite_file='pytrader.db',sqltype='sqlite',is_today_update=True)
+CHINESE_DICT = stock_sql_obj.get_code_to_name()
+
 def seprate_list(all_codes,seprate_num=4):
     """
     分割股票池
@@ -322,15 +325,17 @@ def combine_file(tail_num=1,dest_dir='C:/work/temp/',keyword='',prefile_slip_num
         if prefile_slip_num:
             prefile_name = prefile_name[prefile_slip_num:]
         tail_df['code'] = prefile_name
-        stock_sql_obj=StockSQL(sqlite_file='pytrader.db',sqltype='sqlite',is_today_update=True)
-        chinese_dict = stock_sql_obj.get_code_to_name()
-        if chinese_dict:
+        #tail_df['name'] = tail_df['code'].apply(lambda x: pds.format_name_by_code(x,CHINESE_DICT))
+        """
+        if CHINESE_DICT:#添加中文代码
             try:
-                tail_df['name'] = chinese_dict[prefile_name]
+                tail_df['name'] = CHINESE_DICT[prefile_name]
             except:
                 tail_df['name'] = '某指数'
+        """
         df=df.append(tail_df)
     return df
+#df = combine_file(tail_num=1,dest_dir='d:/work/temp2/')
 
 def get_latest_yh_k_stocks(write_file_name=fc.ALL_YH_KDATA_FILE,data_dir=fc.YH_SOURCE_DATA_DIR):
     """
@@ -342,16 +347,24 @@ def get_latest_yh_k_stocks(write_file_name=fc.ALL_YH_KDATA_FILE,data_dir=fc.YH_S
     if df.empty:
         return df
     df['counts']=df.index
-    df = df[['date', 'open', 'high', 'low', 'close', 'volume', 'amount']+['counts','code','name']]
+    df = df[['date', 'open', 'high', 'low', 'close', 'volume', 'amount']+['counts','code']]
     df['code'] = df['code'].apply(lambda x: pds.format_code(x))
+    df['name'] = df['code'].apply(lambda x: pds.format_name_by_code(x,CHINESE_DICT))
     df = df.set_index('code')
+    """
+    if CHINESE_DICT:#添加中文代码
+            try:
+                tail_df['name'] = CHINESE_DICT[prefile_name]
+            except:
+                tail_df['name'] = '某指数'
+    """
     if write_file_name:
         try:
             df.to_csv(write_file_name,encoding='utf-8')
         except Exception as e:
             print('get_latest_yh_k_stocks： ',e)
     return df
-
+#get_latest_yh_k_stocks()
 def get_latest_yh_k_stocks_from_csv(file_name=fc.ALL_YH_KDATA_FILE):
     """
     获取股票K线数据，数据来源银河证券
@@ -361,10 +374,11 @@ def get_latest_yh_k_stocks_from_csv(file_name=fc.ALL_YH_KDATA_FILE):
     columns = pds.get_data_columns(dest_dir=fc.YH_SOURCE_DATA_DIR) + ['counts','code']
     #try:
     if True:
-        df = pd.read_csv(file_name,usecols=columns)
+        df = pd.read_csv(file_name)#,usecols=columns)
         #print(df)
         #print(type(df['code']))
-        df['code'] = df['code'].apply(lambda x:pds.format_code(x))
+        df['code'] = df['name'].apply(lambda x:pds.format_code(x))
+        df['name'] = df['code'].apply(lambda x: pds.format_name_by_code(x,CHINESE_DICT))
         df = df.set_index('code')
         return df
     #except:

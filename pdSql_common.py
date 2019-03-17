@@ -99,7 +99,7 @@ def format_code(code):
     股票代码规整
     """
     if not code:
-        pass
+        return ''
     else:
         if isinstance(code,int) or isinstance(code,str):
             code_str = '%s'%code
@@ -110,6 +110,15 @@ def format_code(code):
         else:
              pass
     return  code
+
+def format_name_by_code(code,dict):
+    if dict:
+        try:
+            return dict[code]
+        except:
+            return '其他指数'
+    else:
+        return 'None'
 
 def get_data_columns(dest_dir,remove_value='Unnamed: 0'):
     """
