@@ -375,7 +375,7 @@ def back_test_yh_only(given_codes=[],except_stocks=[],mark_insql=True):
     #print('final_codes=',final_codes)
     #stock_sql.close()
     if not pre_is_backtest_uptodate:
-        #time_cost = multiprocess_back_test(final_codes,pool_num=10)  #20分钟左右
+        time_cost = multiprocess_back_test(final_codes,pool_num=10)  #20分钟左右
         """
         if time_cost>300:#防止超时
             stock_sql = StockSQL()
@@ -389,13 +389,13 @@ def back_test_yh_only(given_codes=[],except_stocks=[],mark_insql=True):
         if is_backtest_uptodate:
             print('触发手动回测数据持久化，', datetime.datetime.now())
             """汇总回测数据，并写入CSV文件，方便交易调用，2分钟左右"""
-            #df = get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.ALL_BACKTEST_DIR)
+            df = get_latest_backtest_datas(write_file_name=fc.ALL_BACKTEST_FILE,data_dir=fc.ALL_BACKTEST_DIR)
             print('完成回测数据汇总，',datetime.datetime.now())
-            #df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
+            df = get_latest_backtest_datas_from_csv()  #从CSV文件读取所有回测数据
             """汇总temp数据，并写入CSV文件，方便交易调用，8分钟"""
             #temp_df = get_latest_temp_datas(write_file_name=fc.ALL_TEMP_FILE,data_dir=fc.ALL_TEMP_DIR)
             print('完成temp数据汇总，',datetime.datetime.now())
-            #temp_df = get_latest_temp_datas_from_csv()
+            temp_df = get_latest_temp_datas_from_csv()
             summary_df = get_all_regress_summary(given_stocks=final_codes,dest_file=fc.ALL_SUMMARY_FILE)
             print('完成回测数据分析汇总，约20分钟，',datetime.datetime.now())
             print('完成回测数据持久化')
@@ -418,7 +418,7 @@ def back_test_yh(given_codes=[],except_stocks=[],mark_insql=True):
     last_date_str = pds.tt.get_last_trade_date(date_format='%Y/%m/%d')
     print('last_date_str=',last_date_str)
     all_stock_df = get_latest_yh_k_stocks_from_csv()
-    print('all_stock_df:',all_stock_df)
+    #print('all_stock_df:',all_stock_df)
     all_stocks = all_stock_df.index.values.tolist()
     if given_codes:
         all_stocks = list(set(all_stocks).intersection(set(given_codes)))
