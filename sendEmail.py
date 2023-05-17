@@ -33,8 +33,8 @@ def send_mail(sub,content,mail_to_list=None,limit_try=50):
     if mail_to_list!=None:
         mailto_list=mail_to_list
     mail_host='smtp.163.com'
-    mail_user='zgx20022002@163.com'
-    mail_pass='821853Zgx'  
+    mail_user='xx@163.com'
+    mail_pass='xx'
     mail_postfix="qq.com"
     me=mail_user+"<"+mail_user+"@"+mail_postfix+">"
     msg = MIMEText(content)  
@@ -54,15 +54,15 @@ def send_mail(sub,content,mail_to_list=None,limit_try=50):
         s.sendmail(mail_user, mailto_list, msg.as_string())  
         s.close()  
         return True  
-    except:# SMTPDataError as e:
-        print("send mail failure to ",mailto_list)
+    except Exception as e:
+        print(e)
+        print("send mail failure to ", mailto_list)
         limit_try= limit_try -1
         if limit_try>0:
             print('Try to send mail again')
             send_mail(sub,content,mail_to_list,limit_try)
         else:
             return False
-        #print(e)
         
 #"""
 #send_mail(sub='test', content='test')
@@ -132,7 +132,7 @@ def get_position_content(sub,position, operation):
         pass
     return sub,additional_content
     
-"""
+
 if __name__ == '__main__':  
     #send_info=[['104450966@qq.com','sub1','content1'],['3151173548@qq.com','sub2','content2'] ]
     market_type='system'
@@ -141,8 +141,9 @@ if __name__ == '__main__':
     symbol='000987'
     give_content='仅仅是测试'
     sendto_list=['104450966@qq.com','3151173548@qq.com']
-    sub,content=form_mail_info(market_type, score)#,give_content=give_content)
+    sub,content=get_score_content(score)#,give_content=give_content)
     print(content)
     send_mail(sub,content,sendto_list)
-"""
+
+#""" for test
     
